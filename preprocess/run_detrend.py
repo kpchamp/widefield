@@ -1,7 +1,7 @@
 from movie_mask import *
 import tables as tb
 import timeit
-from simple_detrend import detrend
+from detrend import detrend
 
 ## GLOABL VARS
 dff = True
