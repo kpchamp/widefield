@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 
 def generate_mask(img, percentage):
@@ -17,10 +17,10 @@ def generate_mask(img, percentage):
     return mask
 
 def get_mask(mov):
-	frame = mov[0,:,:] # mask using the first frame of the movie
-	mask = generate_mask(frame, 50)
-	plt.imshow(frame * mask)
-	return mask
+    frame = mov[0,:,:] # mask using the first frame of the movie
+    mask = generate_mask(frame, 50)
+    #plt.imshow(frame * mask)
+    return mask
 
 def mask_to_index(mask):
     mask = mask.astype('uint16') #64 bit integer

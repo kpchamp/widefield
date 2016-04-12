@@ -4,13 +4,15 @@ import timeit
 from detrend import detrend
 
 ## GLOABL VARS
+datapath = '/gscratch/riekesheabrown/kpchamp/data'
+
 dff = True
 start = 0 # first frame in movie to detrend
 stop = 3000 # last frame to detrend
 window = 10 # window in seconds
 exposure = 10 # camera exposure in ms
-infile = '/Users/kpchamp/Dropbox (uwamath)/backup/research/python/widefield/data/20150727_subset.h5'
-outfile = '/Users/kpchamp/Dropbox (uwamath)/backup/research/python/widefield/data/20150727_detrend.h5'
+infile = datapath + '/m187201_150727_deci.h5'
+outfile = datapath + '/m187201_150727_deci_detrend.h5'
 
 # load data
 open_tb = tb.open_file(infile, 'r')
