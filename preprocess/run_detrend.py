@@ -8,8 +8,8 @@ datapath = '/gscratch/riekesheabrown/kpchamp/data'
 
 dff = True
 start = 0 # first frame in movie to detrend
-stop = 3000 # last frame to detrend
-window = 10 # window in seconds
+stop = 347973 # last frame to detrend
+window = 60 # window in seconds
 exposure = 10 # camera exposure in ms
 infile = datapath + '/m187201_150727_deci.h5'
 outfile = datapath + '/m187201_150727_deci_detrend.h5'
