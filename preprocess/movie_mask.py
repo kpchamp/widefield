@@ -35,3 +35,9 @@ def cut_to_mask(mov,pushmask):
     frames,ny,nx = mov.shape
     npxls = ny*nx
     return mov.reshape([frames,npxls])[:,pushmask]
+
+def unmask(mov_detrend,pushmask,npxls):
+    frames = mov_detrend.shape[1]
+    mov_full = np.zeros(npxls,frames)
+    mov_full[pushmask,:] = mov_detrend
+    return mov_full
