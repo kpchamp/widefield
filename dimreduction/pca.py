@@ -199,7 +199,7 @@ class ppca_model:
         self.LL = 0
 
         X -= self.mean
-        
+
 
         const = -self.n_features*0.5*np.log(2*np.pi)
         LLi = const - 0.5*LLdetC - 0.5*LLtr
