@@ -117,9 +117,11 @@ class ppca_model:
 
         self.evals = None
         self.evecs = None
-        self.components = None
-        self.s2 = None
-        self.fitWith = fitWith
+        self.components = None  # mapping
+        self.s2 = None          # singular values
+        self.fitWith = fitWith  # either SVD or EM
+        self.Minv = None        # used in inferring the latent variables
+        self.LLlogdetc = None   # used in computing log likelihood
         self.LL = None
 
         if fitWith == 'SVD':
@@ -164,6 +166,17 @@ class ppca_model:
         self.s2 = np.mean(np.std(X,axis=0)**2-np.diag(np.dot(SW,np.dot(Minv,W.T))))
         self.LL = np.array(LL)
 
+    def inferLatent(self,X):
+        if self.Minv is None:
+            U,S,V=la.svd(self.components,full_matrices=False)
+            self.Minv = np.dot(V.T*(1./(S**2+self.s2)),V)
+        MW=np.dot(self.components,self.Minv.T)
+        return np.dot(X,MW)
+
+    def reconstruct(self,X):
+        Z = self.inferLatent(X)
+        Xnew = np.dot(Z,self.components.T)
+        return Xnew
 
     def setComponents(self, n_components):
         if self.fitWith == 'EM':
@@ -172,13 +185,25 @@ class ppca_model:
             raise ValueError("n_components=%r invalid for n_features=%d"
                              % (n_components, self.n_features))
         self.s2 = np.mean(self.evals[n_components:])
-        self.components = np.dot(self.components, np.diag(np.sqrt((self.evals - self.s2 * np.ones([1, n_components])).flatten())))
-
+        self.components = np.dot(self.evecs[:,:n_components], np.diag(np.sqrt((self.evals - self.s2 * np.ones([1, n_components])).flatten())))
+        self.Minv = None
+        self.LLlogdetc = None
         return self
 
-
-    def logLikelihood(self, n_components):
+    def logLikelihood(self, n_components, X):
+        if self.Minv is None:
+            U,S,V=la.svd(self.components,full_matrices=False)
+            self.Minv = np.dot(V.T*(1./(S**2+self.s2)),V)
+        if self.LLlogdetc is None:
+            LLdetC=(self.n_features-n_components)*np.log(self.s2)+np.sum(np.log(self.evals[0:n_components]))
         self.LL = 0
+
+        X -= self.mean
+        
+
+        const = -self.n_features*0.5*np.log(2*np.pi)
+        LLi = const - 0.5*LLdetC - 0.5*LLtr
+        #LL = self.n_samples*const - self.n_samples*0.5*LLdetC - self.n_samples*0.5*LLtr
 
 
 # Standalone function for fitting PCA with EM
