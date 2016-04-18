@@ -108,12 +108,11 @@ class ppca_model:
         self.mean = np.mean(X, axis=0)
         X -= self.mean
 
-        if n_components is None:
-            self.n_components = min(self.n_features,self.n_samples)
-        elif not 0 <= n_components <= self.n_features:
-            raise ValueError("n_components=%r invalid for n_features=%d" % (n_components, self.n_features))
-        else:
-            self.n_components = n_components
+        if n_components is not None:
+            if not 0 <= n_components <= self.n_features:
+                raise ValueError("n_components=%r invalid for n_features=%d" % (n_components, self.n_features))
+            else:
+                self.n_components = n_components
 
         self.evals = None
         self.evecs = None
@@ -124,18 +123,21 @@ class ppca_model:
         if fitWith == 'SVD':
             self.fitSVD(X)
         elif fitWith == 'EM':
+            if self.n_components is None:
+                self.n_components = min(self.n_samples, self.n_features)
             self.fitEM(X, max_iters)
 
     def fitSVD(self, X):
         U, S, V = la.svd(X, full_matrices=False)
         self.evals = (S ** 2) / self.n_samples
         self.evecs = V.T
-        A=self.evecs[:,:self.n_components]
-        self.s2 = np.mean(self.evals[self.n_components:])
-        B=np.diag(np.sqrt((self.evals[:self.n_components] - self.s2 * np.ones([1, self.n_components])).flatten()))
-        self.components = np.dot(A,B)
+        if self.n_components is not None:
+            self.s2 = np.mean(self.evals[self.n_components:])
+            A=self.evecs[:,:self.n_components]
+            B=np.diag(np.sqrt((self.evals[:self.n_components] - self.s2 * np.ones([1, self.n_components])).flatten()))
+            self.components = np.dot(A,B)
 
-    def fitEM(self,X,max_iters):
+    def fitEM(self, X, max_iters):
         W = np.random.randn(self.n_features,self.n_components)
         cX = np.dot(X.T,X)/self.n_samples
         s2 = np.mean(np.diag(cX))
@@ -163,15 +165,16 @@ class ppca_model:
         self.s2 = np.mean(np.std(X,axis=0)**2-np.diag(np.dot(SW,np.dot(Minv,W.T))))
         self.LL = np.array(LL)
 
-    def inferLatent(self,X):
-        if self.Minv is None:
-            U,S,V=la.svd(self.components,full_matrices=False)
-            self.Minv = np.dot(V.T*(1./(S**2+self.s2)),V)
-        MW=np.dot(self.components,self.Minv.T)
+    def inferLatent(self, X, n_components):
+        if self.n_components != n_components:
+            self.setComponents(n_components)
+        U,S,V=la.svd(self.components,full_matrices=False)
+        Minv = np.dot(V.T*(1./(S**2+self.s2)),V)
+        MW=np.dot(self.components,Minv.T)
         return np.dot(X,MW)
 
-    def reconstruct(self,X):
-        Z = self.inferLatent(X)
+    def reconstruct(self, X, n_components):
+        Z = self.inferLatent(X,n_components)
         Xnew = np.dot(Z,self.components.T)
         return Xnew
 
@@ -183,12 +186,10 @@ class ppca_model:
                              % (n_components, self.n_features))
         self.s2 = np.mean(self.evals[n_components:])
         self.components = np.dot(self.evecs[:,:n_components], np.diag(np.sqrt((self.evals - self.s2 * np.ones([1, n_components])).flatten())))
-        self.Minv = None
-        self.LLlogdetc = None
         return self
 
     # Get the log likelihood of a PPCA model with any number of component.
-    def logLikelihood(self, n_components, X):
+    def logLikelihood(self, X, n_components):
         n_samples, n_features = X.shape
         if n_features != self.n_features:
             raise ValueError("X.shape[1]=%d not equal to n_features=%d"
