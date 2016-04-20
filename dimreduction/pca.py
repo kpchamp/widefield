@@ -113,6 +113,8 @@ class ppca_model:
                 raise ValueError("n_components=%r invalid for n_features=%d" % (n_components, self.n_features))
             else:
                 self.n_components = n_components
+        else:
+            self.n_components = None
 
         self.evals = None
         self.evecs = None

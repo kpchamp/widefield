@@ -1,6 +1,6 @@
+from __future__ import division
 import scipy.integrate
 import numpy as np
-from __future__ import division
 
 # Code modified from MATLAB. beta must be a number, not a vector.
 
