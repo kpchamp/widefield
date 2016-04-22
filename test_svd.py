@@ -5,7 +5,7 @@ import timeit
 import cProfile, pstats, sys
 import pickle
 
-dims = np.arange(50000,200000,50000)
+dims = np.arange(200000,350000,50000)
 
 results = np.zeros((dims.size,))
 
