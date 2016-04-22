@@ -15,7 +15,7 @@ f=tb.open_file(fname,'r')
 q, Tmax = f.root.data.shape
 Twin = Tmax
 #n_samples = 347972
-samples = np.array([30000,60000,90000])
+samples = np.array([30000])
 n_folds = 4
 p_ll = np.zeros((samples.size,n_folds))
 p_threshold = np.zeros((samples.size,))
@@ -52,3 +52,4 @@ for i_samples,n_samples in enumerate(samples):
 
 fout="p_twin%d.pkl" % Twin
 pickle.dump({'n_samples': samples, 'p_threshold': p_threshold, 'p_ll': p_ll},open(fout,'w'))
+f.close()
