@@ -17,7 +17,8 @@ Twin = Tmax
 #n_samples = 347972
 samples = np.array([30000])
 n_folds = 4
-p_ll = np.zeros((samples.size,n_folds))
+ps = np.arange(1,4000,50)
+ll = np.zeros((samples.size,n_folds,ps.size))
 p_threshold = np.zeros((samples.size,))
 
 for i_samples,n_samples in enumerate(samples):
@@ -38,18 +39,20 @@ for i_samples,n_samples in enumerate(samples):
         testSet = folds[i_folds,:]
         trainSet = folds[np.arange(n_folds)[~(np.arange(n_folds) == i_folds)],:].flatten()
 
-        ppca = ppca_model(f.root.data[:,trainSet].T)
-        ps = np.arange(1,4000,50)
+        Xtest = f.root.data[:,testSet].T
+        Xtrain = f.root.data[:,trainSet].T
+        
+        ppca = ppca_model(Xtrain)
         LLs = np.zeros(ps.shape)
         for p_idx,p in enumerate(ps):
-            LLs[p_idx] = ppca.logLikelihood(f.root.data[:,testSet].T,p)
+            LLs[p_idx] = ppca.logLikelihood(Xtest,p)
 
-        p_ll[i_samples,i_folds]=ps[np.argmax(LLs)]
+        ll[i_samples,i_folds,:]=LLs
 
     fout="p_twin%d_nsamples%d.pkl" % (Twin,n_samples)
-    pickle.dump({'p_threshold': p_threshold[i_samples], 'p_ll': p_ll[i_samples,:]},open(fout,'w'))
+    pickle.dump({'p_threshold': p_threshold[i_samples], 'p_ll': ll[i_samples,:,:].reshape((ll.shape[1:]))},open(fout,'w'))
 
 
 fout="p_twin%d.pkl" % Twin
-pickle.dump({'n_samples': samples, 'p_threshold': p_threshold, 'p_ll': p_ll},open(fout,'w'))
+pickle.dump({'n_samples': samples, 'p_threshold': p_threshold, 'p_ll': ll},open(fout,'w'))
 f.close()
