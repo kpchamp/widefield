@@ -36,8 +36,8 @@ for i_samples,n_samples in enumerate(samples):
     tau = optimal_svht_coef(n_features/n_samples,False)*np.median(s)
     p_threshold[i_samples] = np.where(s<tau)[0][0]-1
 
-    LLs = np.zeros(n_folds,ps.shape)
-    BICs = np.zeros(n_folds,ps.shape)
+    LLs = np.zeros(n_folds,ps.size)
+    BICs = np.zeros(n_folds,ps.size)
     for i_folds in np.arange(n_folds):
         testSet = folds[i_folds,:]
         trainSet = folds[np.arange(n_folds)[~(np.arange(n_folds) == i_folds)],:].flatten()
