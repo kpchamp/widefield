@@ -9,7 +9,7 @@ import pickle
 fname="/gscratch/riekesheabrown/kpchamp/data/m187201_150727_decitranspose_detrend.h5"
 #fname="/Users/kpchamp/Dropbox (uwamath)/backup/research/python/data/20150727_detrend.h5"
 f=tb.open_file(fname,'r')
-
+X=f.root.data[:,:].T
 
 # note: total frames are 347973
 q, Tmax = f.root.data.shape
@@ -31,7 +31,7 @@ for i_samples,n_samples in enumerate(samples):
     folds=np.reshape(perm,(n_folds,testSize))
 
     # compute p for full set using singular value thresholding
-    U,s,V = la.svd(f.root.data[:,perm].T,full_matrices=False)
+    U,s,V = la.svd(X[perm,:],full_matrices=False)
     tau = optimal_svht_coef(q/n_samples,False)*np.median(s)
     p_threshold[i_samples] = np.where(s<tau)[0][0]-1
 
@@ -39,9 +39,9 @@ for i_samples,n_samples in enumerate(samples):
         testSet = folds[i_folds,:]
         trainSet = folds[np.arange(n_folds)[~(np.arange(n_folds) == i_folds)],:].flatten()
 
-        Xtest = f.root.data[:,testSet].T
-        Xtrain = f.root.data[:,trainSet].T
-        
+        Xtest = X[testSet,:]
+        Xtrain = X[trainSet,:]
+
         ppca = ppca_model(Xtrain)
         LLs = np.zeros(ps.shape)
         for p_idx,p in enumerate(ps):
