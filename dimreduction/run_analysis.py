@@ -15,12 +15,14 @@ X=f.root.data[:,:].T
 n_features, Tmax = f.root.data.shape
 Twin = Tmax
 #n_samples = 347972
-samples = np.array([30000])
+samples = np.arange(30000,300000,30000)
 n_folds = 4
 ps = np.concatenate(([1],np.arange(25,8200,25)))
-ll = np.zeros((samples.size,ps.size))
-bic = np.zeros((samples.size,ps.size))
+#ll = np.zeros((samples.size,ps.size))
+#bic = np.zeros((samples.size,ps.size))
 p_threshold = np.zeros((samples.size,))
+p_ll = np.zeros((samples.size,))
+p_bic = np.zeros((samples.size,))
 
 for i_samples,n_samples in enumerate(samples):
     if (n_samples % n_folds) != 0:
@@ -52,13 +54,16 @@ for i_samples,n_samples in enumerate(samples):
             BICs[i_folds,p_idx] = -2*LLs[i_folds,p_idx]+(n_features*p+1.-0.5*p*(p-1.))*np.log(Xtest.shape[0])
 
 
-    ll[i_samples,:]=np.mean(LLs,axis=0)
-    bic[i_samples,:]=np.mean(BICs,axis=0)
+    ll=np.mean(LLs,axis=0)
+    bic=np.mean(BICs,axis=0)
+    p_ll[i_samples]=ps[np.argmax(ll)]
+    p_bic[i_samples]=ps[np.argmin(bic)]
 
     fout="p_twin%d_nsamples%d.pkl" % (Twin,n_samples)
-    pickle.dump({'p_threshold': p_threshold[i_samples], 'll': ll[i_samples,:], 'bic': bic[i_samples,:]},open(fout,'w'))
+    pickle.dump({'ps': ps, 'p_threshold': p_threshold[i_samples], 'p_ll': p_ll[i_samples], 'p_bic': p_bic[i_samples],
+                 'll': ll, 'bic': bic}, open(fout,'w'))
 
 
 fout="p_twin%d.pkl" % Twin
-pickle.dump({'n_samples': samples, 'p_threshold': p_threshold, 'll': ll, 'bic': bic},open(fout,'w'))
+pickle.dump({'n_samples': samples, 'p_threshold': p_threshold, 'p_ll': p_ll, 'p_bic': p_bic},open(fout,'w'))
 f.close()
