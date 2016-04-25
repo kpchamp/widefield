@@ -13,13 +13,12 @@ X=f.root.data[:,:].T
 
 # note: total frames are 347973
 n_features, Tmax = f.root.data.shape
-Twin = Tmax
-#n_samples = 347972
-samples = np.arange(30000,300000,30000)
+# actually use only first 347968 = 64*5437 frames
+Tmax = 347968
+Twin = Tmax/2
+samples = np.linspace(n_features,Twin,5,dtype=np.int)
 n_folds = 4
 ps = np.concatenate(([1],np.arange(25,8200,25)))
-#ll = np.zeros((samples.size,ps.size))
-#bic = np.zeros((samples.size,ps.size))
 p_threshold = np.zeros((samples.size,))
 p_ll = np.zeros((samples.size,))
 p_bic = np.zeros((samples.size,))
