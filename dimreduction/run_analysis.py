@@ -13,10 +13,11 @@ X=f.root.data[:,:].T
 
 # note: total frames are 347973
 n_features, Tmax = f.root.data.shape
-# actually use only first 347968 = 64*5437 frames
-Tmax = 347968
-Twin = Tmax/2
-samples = np.linspace(n_features,Twin,5,dtype=np.int)
+# actually use only first 347904 = 128*2718 frames
+Tmax = 347904
+Twin = np.int(Tmax/4)
+Tstart = 3*Twin
+samples = np.arange(Tmax/16,Twin+1,Tmax/16,dtype=np.int)
 n_folds = 4
 ps = np.concatenate(([1],np.arange(25,8200,25)))
 p_threshold = np.zeros((samples.size,))
@@ -29,8 +30,9 @@ for i_samples,n_samples in enumerate(samples):
     testSize = n_samples/n_folds
     trainSize = (n_folds-1)*testSize
 
-    perm=np.random.choice(np.arange(Twin),n_samples,replace=False)
+    perm=np.random.choice(np.arange(Twin),n_samples,replace=False)+Tstart
     folds=np.reshape(perm,(n_folds,testSize))
+    print >>open('output.txt','a'), np.min(perm), np.max(perm)
 
     # compute p for full set using singular value thresholding
     U,s,V = la.svd(X[perm,:],full_matrices=False)
@@ -58,11 +60,11 @@ for i_samples,n_samples in enumerate(samples):
     p_ll[i_samples]=ps[np.argmax(ll)]
     p_bic[i_samples]=ps[np.argmin(bic)]
 
-    fout="p_twin%d_nsamples%d.pkl" % (Twin,n_samples)
+    fout="p_twin%d_nsamples%d_4.pkl" % (Twin,n_samples)
     pickle.dump({'ps': ps, 'p_threshold': p_threshold[i_samples], 'p_ll': p_ll[i_samples], 'p_bic': p_bic[i_samples],
                  'll': ll, 'bic': bic}, open(fout,'w'))
 
 
-fout="p_twin%d.pkl" % Twin
+fout="p_twin%d_4.pkl" % Twin
 pickle.dump({'n_samples': samples, 'p_threshold': p_threshold, 'p_ll': p_ll, 'p_bic': p_bic},open(fout,'w'))
 f.close()
