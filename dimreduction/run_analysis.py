@@ -15,8 +15,8 @@ X=f.root.data[:,:].T
 n_features, Tmax = f.root.data.shape
 # actually use only first 347904 = 128*2718 frames
 Tmax = 347904
-Twin = np.int(Tmax/4)
-Tstart = 3*Twin
+Twin = np.int(Tmax)
+Tstart = 0
 samples = np.arange(Tmax/16,Twin+1,Tmax/16,dtype=np.int)
 n_folds = 4
 ps = np.concatenate(([1],np.arange(25,8200,25)))
@@ -60,11 +60,11 @@ for i_samples,n_samples in enumerate(samples):
     p_ll[i_samples]=ps[np.argmax(ll)]
     p_bic[i_samples]=ps[np.argmin(bic)]
 
-    fout="p_twin%d_nsamples%d_4.pkl" % (Twin,n_samples)
+    fout="p_twin%d_nsamples%d_1.pkl" % (Twin,n_samples)
     pickle.dump({'ps': ps, 'p_threshold': p_threshold[i_samples], 'p_ll': p_ll[i_samples], 'p_bic': p_bic[i_samples],
                  'll': ll, 'bic': bic}, open(fout,'w'))
 
 
-fout="p_twin%d_4.pkl" % Twin
+fout="p_twin%d_1.pkl" % Twin
 pickle.dump({'n_samples': samples, 'p_threshold': p_threshold, 'p_ll': p_ll, 'p_bic': p_bic},open(fout,'w'))
 f.close()
