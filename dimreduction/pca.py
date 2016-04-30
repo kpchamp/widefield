@@ -9,12 +9,12 @@ def centerCols(X):
 
 
 class pca_model:
-    def __init__(self, X, n_components=None, fitWith='SVD', max_iters=1000):
-        self.n_samples, self.n_features = X.shape
+    def __init__(self, Xin, n_components=None, fitWith='SVD', max_iters=1000):
+        self.n_samples, self.n_features = Xin.shape
 
         # Center data
-        self.mean = np.mean(X, axis=0)
-        X -= self.mean
+        self.mean = np.mean(Xin, axis=0)
+        X = Xin - self.mean
 
         if n_components is None:
             self.n_components = min(self.n_features,self.n_samples)
@@ -101,12 +101,12 @@ class pca_model:
 
 
 class ppca_model:
-    def __init__(self, X, n_components=None, fitWith='SVD', max_iters=500):
-        self.n_samples, self.n_features = X.shape
+    def __init__(self, Xin, n_components=None, fitWith='SVD', max_iters=500):
+        self.n_samples, self.n_features = Xin.shape
 
         # Center data
-        self.mean = np.mean(X, axis=0)
-        X -= self.mean
+        self.mean = np.mean(Xin, axis=0)
+        X = Xin - self.mean
 
         if n_components is not None:
             if not 0 <= n_components <= self.n_features:
@@ -121,6 +121,7 @@ class ppca_model:
         self.components = None  # mapping
         self.s2 = None          # singular values
         self.fitWith = fitWith  # either SVD or EM
+        self.LLtrain = None
 
         if fitWith == 'SVD':
             self.fitSVD(X)
@@ -138,6 +139,15 @@ class ppca_model:
             A=self.evecs[:,:self.n_components]
             B=np.diag(np.sqrt((self.evals[:self.n_components] - self.s2 * np.ones([1, self.n_components])).flatten()))
             self.components = np.dot(A,B)
+        pmax = min(self.n_samples,self.n_features)
+        self.LLtrain = np.zeros((pmax,))
+        pmaxf=float(pmax)
+        for i in range(pmax-1):
+            p=i+1
+            s2 = self.evals[p:].mean()
+            self.LLtrain[i] = -self.n_samples/2.*(pmaxf*np.log(2.*np.pi)+np.sum(np.log(self.evals[:p]))
+                                             +(pmaxf-p)*np.log(s2)+pmaxf)
+        self.LLtrain[pmax-1] = -self.n_samples/2.*(pmaxf*np.log(2.*np.pi)+np.sum(np.log(self.evals))+pmaxf)
 
     def fitEM(self, X, max_iters):
         W = np.random.randn(self.n_features,self.n_components)
@@ -190,14 +200,14 @@ class ppca_model:
         self.components = np.dot(self.evecs[:,:n_components], np.diag(np.sqrt((self.evals - self.s2 * np.ones([1, n_components])).flatten())))
         return self
 
-    # Get the log likelihood of a PPCA model with any number of component.
-    def logLikelihood(self, X, n_components):
-        n_samples, n_features = X.shape
+    # Get the log likelihood of a PPCA model with test data and any number of components.
+    def logLikelihood(self, Xin, n_components, trainingData=False):
+        n_samples, n_features = Xin.shape
         if n_features != self.n_features:
             raise ValueError("X.shape[1]=%d not equal to n_features=%d"
                              % (n_features, self.n_features))
         s2=np.mean(self.evals[n_components:])
-        X -= self.mean
+        X = Xin - self.mean
 
         # compute determinant term of LL
         LLdetC=(self.n_features-n_components)*np.log(s2)+np.sum(np.log(self.evals[0:n_components]))
@@ -213,6 +223,35 @@ class ppca_model:
         LL=np.sum(LLi)
         return LL
 
+
+    def minkaEval(self,X,n_components):
+        n_samples, n_features = X.shape
+
+        if n_components == n_features:
+            s2 = 1
+            pv = 0
+        else:
+            s2 = np.mean(self.evals[n_components:])
+            pv = -n_samples*(n_features-n_components)/2.*np.log(s2)
+
+        pl = -n_samples/2.*np.sum(np.log(self.evals[0:n_components]))
+
+        m = n_features*n_components-n_components*(n_components+1.)/2.
+        pp = np.log(2.*np.pi)*(m+n_components+1.)/2.
+
+        evals_=self.evals.copy()
+        evals_[n_components:]=s2
+        pa=0.
+        for i in range(n_components):
+            for j in range(i+1, n_features):
+                pa += np.log(1./evals_[j]-1./evals_[i])+np.log(self.evals[i]-self.evals[j])+np.log(n_samples)
+        pa=-pa/2.
+
+        pu = -n_components*np.log(2.)
+        for i in range(1,n_components+1):
+            pu += special.gammaln((n_features-i+1)/2.)-np.log(np.pi)*(n_features-i+1)/2.
+
+        return pu+pl+pv+pp+pa-n_components/2.*np.log(n_samples)
 
 # Standalone function for fitting PCA with EM
 def pcaEM(X, n_components, max_iters):
