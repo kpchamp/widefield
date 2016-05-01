@@ -46,6 +46,8 @@ for i_samples,n_samples in enumerate(samples):
     m=n_features*ps_all+1.-0.5*ps_all*(ps_all-1.)
     aic = -2.*ppca.LLtrain+m*2.
     bic = -2.*ppca.LLtrain+m*np.log(n_samples)
+    p_bic[i_samples]=np.argmin(bic)+1
+    p_aic[i_samples]=np.argmin(aic)+1
 
     LLs_test = np.zeros((n_folds,ps.size))
     for i_folds in np.arange(n_folds):
@@ -62,8 +64,6 @@ for i_samples,n_samples in enumerate(samples):
 
     ll_test=np.mean(LLs_test,axis=0)
     p_xval[i_samples]=ps[np.argmax(ll_test)]
-    p_bic[i_samples]=ps[np.argmin(bic)]
-    p_aic[i_samples]=ps[np.argmin(aic)]
 
     fout="p_twin%d_nsamples%d_1.pkl" % (Twin,n_samples)
     pickle.dump({'ps': ps, 'p_threshold': p_threshold[i_samples], 'lltrain': ppca.LLtrain,
