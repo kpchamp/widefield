@@ -42,7 +42,8 @@ for i_samples,n_samples in enumerate(samples):
     tau = optimal_svht_coef(n_features/n_samples,False)*np.median(s)
     p_threshold[i_samples] = np.where(s<tau)[0][0]-1
 
-    m=n_features*p+1.-0.5*p*(p-1.)
+    ps_all=ps_all=np.arange(min(ppca.n_features,ppca.n_samples))+1.
+    m=n_features*ps_all+1.-0.5*ps_all*(ps_all-1.)
     aic = -2.*ppca.LLtrain+m*2.
     bic = -2.*ppca.LLtrain+m*np.log(n_samples)
 
