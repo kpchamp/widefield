@@ -15,7 +15,7 @@ X=f.root.data[:,:].T
 n_features, Tmax = f.root.data.shape
 # actually use only first 347904 = 128*2718 frames
 Tmax = 347904
-Twin = np.int(Tmax)
+Twin = np.int(Tmax/4.)
 Tstart = 0
 samples = np.arange(Tmax/16,Twin+1,Tmax/16,dtype=np.int)
 n_folds = 4
@@ -42,7 +42,7 @@ for i_samples,n_samples in enumerate(samples):
     tau = optimal_svht_coef(n_features/n_samples,False)*np.median(s)
     p_threshold[i_samples] = np.where(s<tau)[0][0]-1
 
-    ps_all=ps_all=np.arange(min(ppca.n_features,ppca.n_samples))+1.
+    ps_all=ps_all=np.arange(min(n_features,n_samples))+1.
     m=n_features*ps_all+1.-0.5*ps_all*(ps_all-1.)
     aic = -2.*ppca.LLtrain+m*2.
     bic = -2.*ppca.LLtrain+m*np.log(n_samples)
