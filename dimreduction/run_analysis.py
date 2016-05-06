@@ -42,10 +42,11 @@ for i_samples,n_samples in enumerate(samples):
     tau = optimal_svht_coef(n_features/n_samples,False)*np.median(s)
     p_threshold[i_samples] = np.where(s<tau)[0][0]-1
 
-    ps_all=ps_all=np.arange(min(n_features,n_samples))+1.
+    lltrain = ppca.LLtrain
+    ps_all=np.arange(min(n_features,n_samples))+1.
     m=n_features*ps_all+1.-0.5*ps_all*(ps_all-1.)
-    aic = -2.*ppca.LLtrain+m*2.
-    bic = -2.*ppca.LLtrain+m*np.log(n_samples)
+    aic = -2.*lltrain+m*2.
+    bic = -2.*lltrain+m*np.log(n_samples)
     p_bic[i_samples]=np.argmin(bic)+1
     p_aic[i_samples]=np.argmin(aic)+1
 
@@ -62,12 +63,12 @@ for i_samples,n_samples in enumerate(samples):
         for p_idx,p in enumerate(ps):
             LLs_test[i_folds,p_idx] = ppca.logLikelihood(Xtest,p)
 
-    ll_test=np.mean(LLs_test,axis=0)
-    p_xval[i_samples]=ps[np.argmax(ll_test)]
+    lltest=np.mean(LLs_test,axis=0)
+    p_xval[i_samples]=ps[np.argmax(lltest)]
 
-    fout="p_twin%d_nsamples%d_1.pkl" % (Twin,n_samples)
-    pickle.dump({'ps': ps, 'p_threshold': p_threshold[i_samples], 'lltrain': ppca.LLtrain,
-                 'lltest': ll_test, 'bic': bic, 'aic': aic, 'perm': perm}, open(fout,'w'))
+    fout="p_twin%d_nsamples%d_8.pkl" % (Twin,n_samples)
+    pickle.dump({'ps': ps, 'p_threshold': p_threshold[i_samples], 'lltrain': lltrain,
+                 'lltest': lltest, 'bic': bic, 'aic': aic, 'perm': perm}, open(fout,'w'))
 
 
 fout="p_twin%d_1.pkl" % Twin
