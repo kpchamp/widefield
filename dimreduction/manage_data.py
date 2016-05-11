@@ -1,10 +1,20 @@
-import bisect
+import glob, re, pickle
+
+def process_files(str):
+    allData = DataCollection()
+    files=glob.glob(str)
+    for i,fname in enumerate(files):
+        t_win, n_samples, startidx = map(int,re.findall('[0-9]+',fname))
+        t_start = (startidx-1)*t_win
+        data = pickle.load(open(fname,'r'))
+        allData.add_data(Dataset(t_win, t_start, n_samples, data))
+    pickle.dump(allData,open('allData','w'))
 
 
 class Dataset:
-    def __init__(self, Twin, Tstart, n_samples, data):
-        self.windowLength = Twin
-        self.startTime = Tstart
+    def __init__(self, t_win, t_start, n_samples, data):
+        self.windowLength = t_win
+        self.startTime = t_start
         self.sampleSize = n_samples
         self.data = data
 
@@ -20,9 +30,9 @@ class DataCollection:
         self.windowLengths.append(dataset.windowLength)
         self.startTimes.append(dataset.startTime)
         self.sampleSizes.append(dataset.sampleSize)
-        self.data.append(dataset.data)
+        self.data.append(dataset)
 
-    def get_data(self,t_win=None,t_start=None,n_samples=None):
+    def get_data(self, t_win=None, t_start=None, n_samples=None):
         idxs = set(range(len(self.data)))
         if t_win is not None:
             tmp = set([i for i, x in enumerate(self.windowLengths) if x==t_win])
