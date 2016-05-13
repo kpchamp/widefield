@@ -2,7 +2,6 @@ from __future__ import division
 from pca import ppca_model
 import tables as tb
 import numpy as np
-import scipy.linalg as la
 from optimal_svht_coef import optimal_svht_coef
 import pickle
 
@@ -46,15 +45,16 @@ for idx in range(winDiv):
         tau = optimal_svht_coef(n_features/n_samples,False)*np.median(s)
         p_threshold[i_samples] = np.where(s<tau)[0][0]-1
 
-        lltrain = ppca.LLtrain
+        ll_all = ppca.LLtrain
         ps_all=np.arange(min(n_features,n_samples))+1.
         m=n_features*ps_all+1.-0.5*ps_all*(ps_all-1.)
-        aic = -2.*lltrain+m*2.
-        bic = -2.*lltrain+m*np.log(n_samples)
+        aic = -2.*ll_all+m*2.
+        bic = -2.*ll_all+m*np.log(n_samples)
         p_bic[i_samples]=np.argmin(bic)+1
         p_aic[i_samples]=np.argmin(aic)+1
 
-        LLs_test = np.zeros((n_folds,ps.size))
+        LLs_xval = np.zeros((n_folds,ps.size))
+        err_xval = np.zeros((n_folds,))
         for i_folds in np.arange(n_folds):
             testSet = folds[i_folds,:]
             trainSet = folds[np.arange(n_folds)[~(np.arange(n_folds) == i_folds)],:].flatten()
@@ -65,15 +65,17 @@ for idx in range(winDiv):
             ppca = ppca_model(Xtrain)
 
             for p_idx,p in enumerate(ps):
-                LLs_test[i_folds,p_idx] = ppca.logLikelihood(Xtest,p)
+                LLs_xval[i_folds,p_idx] = ppca.logLikelihood(Xtest,p)
+            err_xval[i_folds] = ps[np.argmax(LLs_xval[i_folds,:])]
 
-        lltest=np.mean(LLs_test,axis=0)
-        p_xval[i_samples]=ps[np.argmax(lltest)]
+        ll_xval=np.mean(LLs_xval,axis=0)
+        p_xval[i_samples]=ps[np.argmax(ll_xval)]
 
         fout="p_twin%d_nsamples%d_%d.pkl" % (Twin,n_samples,idx+1)
-        pickle.dump({'ps': ps, 'p_threshold': p_threshold[i_samples], 'lltrain': lltrain, 'svs': s,
-                     'lltest': lltest, 'bic': bic, 'aic': aic, 'perm': perm}, open(fout,'w'))
+        pickle.dump({'ps': ps, 'p_threshold': p_threshold[i_samples], 'll_all': ll_all, 'svs': s,
+                     'll_xval': ll_xval, 'err_xval': err_xval, 'bic': bic, 'aic': aic, 'perm': perm},
+                    open(fout,'w'))
 
-    fout="p_twin%d_%d.pkl" % (Twin,idx+1)
-    pickle.dump({'n_samples': samples, 'p_threshold': p_threshold, 'p_xval': p_xval, 'p_aic': p_aic, 'p_bic': p_bic},open(fout,'w'))
+    #fout="p_twin%d_%d.pkl" % (Twin,idx+1)
+    #pickle.dump({'n_samples': samples, 'p_threshold': p_threshold, 'p_xval': p_xval, 'p_aic': p_aic, 'p_bic': p_bic},open(fout,'w'))
     f.close()
