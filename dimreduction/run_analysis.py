@@ -21,7 +21,7 @@ Twin = np.int(Tmax/winDiv)
 for idx in range(winDiv):
     Tstart = idx*Twin
     print >>open('output.txt','a'), Tstart
-    samples = np.arange(Tmax/64,Twin+1,Tmax/32,dtype=np.int)
+    samples = np.arange(3*Tmax/64,Twin+1,Tmax/32,dtype=np.int)
     n_folds = 4
     ps = np.concatenate(([1],np.arange(25,8200,25)))
     p_threshold = np.zeros((samples.size,))
@@ -42,7 +42,6 @@ for idx in range(winDiv):
 
         # compute p for full set using singular value thresholding
         ppca = ppca_model(X[perm,:])
-        #U,s,V = la.svd(X[perm,:],full_matrices=False)
         s = np.sqrt(ppca.evals*n_samples)
         tau = optimal_svht_coef(n_features/n_samples,False)*np.median(s)
         p_threshold[i_samples] = np.where(s<tau)[0][0]-1
