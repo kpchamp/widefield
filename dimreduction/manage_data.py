@@ -66,16 +66,22 @@ def plot_data_collection(allData):
                 p_threshold.append(allData.data[j].data['p_threshold'])
                 p_aic.append(np.argmin(allData.data[j].data['aic']))
                 p_bic.append(np.argmin(allData.data[j].data['bic']))
-                p_xval.append(np.argmax(allData.data[j].data['lltest']))
+                p_xval.append(allData.data[j].data['ps'][np.argmax(allData.data[j].data['lltest'])])
                 sv_totals=np.array([np.sum(allData.data[j].data['svs'][0:k+1]) for k in range(len(allData.data[j].data['svs']))])
                 p_90percent.append(np.argmax(sv_totals>(0.9*sv_totals[-1])))
-            plt.subplot(1,len(startTimes),i+1)
+            if len(startTimes)>8:
+                plt.subplot(4,len(startTimes)/4,i+1)
+            elif len(startTimes)>2:
+                plt.subplot(2,len(startTimes)/2,i+1)
+            else:
+                plt.subplot(1,len(startTimes),i+1)
             plt.plot(sampleSizes,p_threshold,'o-',label='threshold')
             plt.plot(sampleSizes,p_bic,'o-',label='BIC')
             plt.plot(sampleSizes,p_aic,'o-',label='AIC')
             plt.plot(sampleSizes,p_xval,'o-',label='xval')
             plt.plot(sampleSizes,p_90percent,'o-',label='90%')
-            plt.legend(loc=2)
+            if i==0:
+                plt.legend(loc=2)
             plt.xlabel('number of samples')
             plt.ylabel('p')
             plt.title('Samples vs p - T_win=%d, T_start=%d'%(t_win,t_start))
