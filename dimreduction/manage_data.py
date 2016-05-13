@@ -56,7 +56,9 @@ def plot_data_collection(allData):
         for i, t_start in enumerate(startTimes):
             idxs2 = allData.get_data(t_win=t_win, t_start=t_start)
             sampleSizes = np.array(sorted(set([allData.sampleSizes[j] for j in idxs2])))
+            print sampleSizes
             idxs2_ord = [x for (y,x) in zip([allData.sampleSizes[j] for j in idxs2],idxs2)]
+            print idxs2_ord
             p_threshold=[]
             p_aic=[]
             p_bic=[]
@@ -69,7 +71,6 @@ def plot_data_collection(allData):
                 p_xval.append(np.argmax(allData.data[j].data['lltest']))
                 sv_totals=np.array([np.sum(allData.data[j].data['svs'][0:k+1]) for k in range(len(allData.data[j].data['svs']))])
                 p_90percent.append(np.argmax(sv_totals>(0.9*sv_totals[-1])))
-            print len(startTimes),i+1
             plt.subplot(1,len(startTimes),i+1)
             plt.plot(sampleSizes,p_threshold,'o-',label='threshold')
             plt.plot(sampleSizes,p_bic,'o-',label='BIC')
