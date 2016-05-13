@@ -64,11 +64,11 @@ def plot_data_collection(allData):
             p_90percent=[]
             for j in idxs2_ord:
                 p_threshold.append(allData.data[j].data['p_threshold'])
-                p_aic.append(np.argmin(allData.data[j].data['aic']))
-                p_bic.append(np.argmin(allData.data[j].data['bic']))
+                p_aic.append(np.argmin(allData.data[j].data['aic'])+1)
+                p_bic.append(np.argmin(allData.data[j].data['bic'])+1)
                 p_xval.append(allData.data[j].data['ps'][np.argmax(allData.data[j].data['lltest'])])
                 sv_totals=np.array([np.sum(allData.data[j].data['svs'][0:k+1]) for k in range(len(allData.data[j].data['svs']))])
-                p_90percent.append(np.argmax(sv_totals>(0.9*sv_totals[-1])))
+                p_90percent.append(np.argmax(sv_totals>(0.9*sv_totals[-1]))+1)
             if len(startTimes)>8:
                 plt.subplot(4,len(startTimes)/4,i+1)
             elif len(startTimes)>2:
