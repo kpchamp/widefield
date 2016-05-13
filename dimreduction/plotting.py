@@ -15,7 +15,7 @@ def dim_vs_samples(df):
             p_xval=[]
             p_90percent=[]
             for n_samples in sampleSizes:
-                data = df['data'][(df['windowLength']==t_win)&(df['startTime']==t_start)&(df['sampleSize']==n_samples)]
+                data = df['data'][(df['windowLength']==t_win)&(df['startTime']==t_start)&(df['sampleSize']==n_samples)].item()
                 p_threshold.append(data['p_threshold'])
                 p_aic.append(np.argmin(data['aic'])+1)
                 p_bic.append(np.argmin(data['bic'])+1)
