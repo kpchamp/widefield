@@ -80,7 +80,7 @@ def plot_data_collection(allData):
             plt.plot(sampleSizes,p_aic,'o-',label='AIC')
             plt.plot(sampleSizes,p_xval,'o-',label='xval')
             plt.plot(sampleSizes,p_90percent,'o-',label='90%')
-            if i==0:
+            if i==0 and len(startTimes)<8:
                 plt.legend(loc=2)
             plt.xlabel('number of samples')
             plt.ylabel('p')
