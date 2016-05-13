@@ -18,10 +18,10 @@ Tmax = 347904
 winDiv = 16
 Twin = np.int(Tmax/winDiv)
 
-for idx in range(1,winDiv+1):
+for idx in range(winDiv):
     Tstart = idx*Twin
     print >>open('output.txt','a'), Tstart
-    samples = np.arange(Tmax/32,Twin+1,Tmax/32,dtype=np.int)
+    samples = np.arange(Tmax/64,Twin+1,Tmax/32,dtype=np.int)
     n_folds = 4
     ps = np.concatenate(([1],np.arange(25,8200,25)))
     p_threshold = np.zeros((samples.size,))
@@ -30,6 +30,7 @@ for idx in range(1,winDiv+1):
     p_aic = np.zeros((samples.size,))
 
     for i_samples,n_samples in enumerate(samples):
+        print >>open('output.txt','a'), n_samples
         if (n_samples % n_folds) != 0:
             raise ValueError("number of samples n_samples=%d is not a multiple of n_folds=%d",n_samples,n_folds)
         testSize = n_samples/n_folds
@@ -70,10 +71,10 @@ for idx in range(1,winDiv+1):
         lltest=np.mean(LLs_test,axis=0)
         p_xval[i_samples]=ps[np.argmax(lltest)]
 
-        fout="p_twin%d_nsamples%d_%d.pkl" % (Twin,n_samples,idx)
+        fout="p_twin%d_nsamples%d_%d.pkl" % (Twin,n_samples,idx+1)
         pickle.dump({'ps': ps, 'p_threshold': p_threshold[i_samples], 'lltrain': lltrain, 'svs': s,
                      'lltest': lltest, 'bic': bic, 'aic': aic, 'perm': perm}, open(fout,'w'))
 
-    fout="p_twin%d_%d.pkl" % (Twin,idx)
+    fout="p_twin%d_%d.pkl" % (Twin,idx+1)
     pickle.dump({'n_samples': samples, 'p_threshold': p_threshold, 'p_xval': p_xval, 'p_aic': p_aic, 'p_bic': p_bic},open(fout,'w'))
     f.close()
