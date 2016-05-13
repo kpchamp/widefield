@@ -18,7 +18,7 @@ Tmax = 347904
 winDiv = 16
 Twin = np.int(Tmax/winDiv)
 
-for idx in range(winDiv)+1:
+for idx in range(1,winDiv+1):
     Tstart = idx*Twin
     print >>open('output.txt','a'), Tstart
     samples = np.arange(Tmax/32,Twin+1,Tmax/32,dtype=np.int)
