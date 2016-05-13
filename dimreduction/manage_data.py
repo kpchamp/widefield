@@ -49,6 +49,16 @@ class DataCollection:
         return idxs
 
 
+def convert_collection_to_pandas(allData):
+    dictList = []
+    for data in allData.data:
+        dictList.append(data.data)
+    dict = {'windowLength': allData.windowLengths, 'startTime': allData.startTimes,
+            'sampleSize': allData.sampleSizes, 'data': dictList}
+    df = pd.DataFrame(dict)
+    return df
+
+
 def plot_data_collection(allData):
     for t_win in set(allData.windowLengths):
         idxs=allData.get_data(t_win=t_win)
