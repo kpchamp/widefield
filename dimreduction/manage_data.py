@@ -69,6 +69,7 @@ def plot_data_collection(allData):
                 p_xval.append(np.argmax(allData.data[j].data['lltest']))
                 sv_totals=np.array([np.sum(allData.data[j].data['svs'][0:k+1]) for k in range(len(allData.data[j].data['svs']))])
                 p_90percent.append(np.argmax(sv_totals>(0.9*sv_totals[-1])))
+            print len(idxs2),i+1
             plt.subplot(1,len(idxs2),i+1)
             plt.plot(sampleSizes,p_threshold,'o-',label='threshold')
             plt.plot(sampleSizes,p_bic,'o-',label='BIC')
