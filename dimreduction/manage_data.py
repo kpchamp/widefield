@@ -84,7 +84,7 @@ def plot_data_collection(allData):
                 plt.legend(loc=2)
             plt.xlabel('number of samples')
             plt.ylabel('p')
-            plt.title('Samples vs p - T_win=%d, T_start=%d'%(t_win,t_start))
+            plt.title('T_win=%d, T_start=%d'%(t_win,t_start))
         plt.tight_layout()
         pickle.dump(fig,open('plot_Twin%d.pkl'%t_win,'w'))
 
