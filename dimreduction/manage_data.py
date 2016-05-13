@@ -56,9 +56,7 @@ def plot_data_collection(allData):
         for i, t_start in enumerate(startTimes):
             idxs2 = allData.get_data(t_win=t_win, t_start=t_start)
             sampleSizes = np.array(sorted(set([allData.sampleSizes[j] for j in idxs2])))
-            print sampleSizes
-            idxs2_ord = [x for (y,x) in zip([allData.sampleSizes[j] for j in idxs2],idxs2)]
-            print idxs2_ord
+            idxs2_ord = [x for (y,x) in sorted(zip([allData.sampleSizes[j] for j in idxs2],idxs2))]
             p_threshold=[]
             p_aic=[]
             p_bic=[]
