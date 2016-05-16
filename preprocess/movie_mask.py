@@ -1,5 +1,4 @@
 import numpy as np
-#import matplotlib.pyplot as plt
 
 
 def generate_mask(img, percentage):
@@ -16,11 +15,13 @@ def generate_mask(img, percentage):
     mask = mask.reshape(img_dims)
     return mask
 
+
 def get_mask(mov):
     frame = mov[0,:,:] # mask using the first frame of the movie
     mask = generate_mask(frame, 50)
     #plt.imshow(frame * mask)
     return mask
+
 
 def mask_to_index(mask):
     mask = mask.astype('uint16') #64 bit integer
@@ -31,10 +32,12 @@ def mask_to_index(mask):
     pushmask = pushmask[0]
     return mask_idx, pullmask, pushmask
 
+
 def cut_to_mask(mov,pushmask):
     frames,ny,nx = mov.shape
     npxls = ny*nx
     return mov.reshape([frames,npxls])[:,pushmask]
+
 
 def unmask(mov_detrend,pushmask,npxls):
     frames = mov_detrend.shape[1]
