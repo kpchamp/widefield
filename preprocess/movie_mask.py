@@ -41,9 +41,10 @@ def cut_to_mask(mov,pushmask):
 
 def unmask(mov_detrend,pushmask,npxls):
     if mov_detrend.ndim == 1:
-        frames = 1
+        mov_full = np.zeros((npxls,1))
+        mov_full[pushmask,0] = mov_detrend
     else:
         frames = mov_detrend.shape[1]
-    mov_full = np.zeros((npxls,frames))
-    mov_full[pushmask,:] = mov_detrend
+        mov_full = np.zeros((npxls,frames))
+        mov_full[pushmask,:] = mov_detrend
     return mov_full
