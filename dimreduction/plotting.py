@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pickle
 import numpy as np
-from preprocess.movie_mask import unmask
+from widefield.preprocess.movie_mask import unmask
 
 
 datapath = '/gscratch/riekesheabrown/kpchamp/data/m187201_150727_decitranspose_detrend.h5'
