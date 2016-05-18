@@ -7,14 +7,15 @@ from widefield.preprocess.movie_mask import unmask
 datapath = '/gscratch/riekesheabrown/kpchamp/data/m187201_150727_decitranspose_detrend.h5'
 
 
-def plot_components(W, components_to_plot, pushmask, n_rows, n_cols, fname):
+def plot_components(W, components_to_plot, pushmask, n_rows, n_cols, fname=None):
     n_plots = components_to_plot.size
     for i,c in components_to_plot:
         plt.subplot(np.floor(np.sqrt(n_plots)),np.ceil(n_plots/np.floor(np.sqrt(n_plots))),i)
         img = np.reshape(unmask(W[:,c], pushmask, n_rows*n_cols), [n_rows, n_cols])
         plt.imshow(img)
         plt.title('component %d' % c)
-    pickle.dump(plt, open(fname, 'w'))
+    if fname is not None:
+        pickle.dump(plt, open(fname, 'w'))
 
 
 def dim_vs_samples(df):
