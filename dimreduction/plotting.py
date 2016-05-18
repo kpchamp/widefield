@@ -7,12 +7,14 @@ from widefield.preprocess.movie_mask import unmask
 datapath = '/gscratch/riekesheabrown/kpchamp/data/m187201_150727_decitranspose_detrend.h5'
 
 
-def plot_components(W, components_to_plot, pushmask, n_rows, n_cols, fname=None):
+def plot_components(W, components_to_plot, pushmask, n_rows, n_cols, fname=None, clim=None):
     n_plots = len(components_to_plot)
     for i in range(n_plots):
         plt.subplot(np.floor(np.sqrt(n_plots)),np.ceil(n_plots/np.floor(np.sqrt(n_plots))),i+1)
         img = np.reshape(unmask(W[:,components_to_plot[i]], pushmask, n_rows*n_cols), [n_rows, n_cols])
         plt.imshow(img)
+        if clim is not None:
+            plt.clim(clim)
         plt.title('component %d' % components_to_plot[i])
     if fname is not None:
         pickle.dump(plt, open(fname, 'w'))
