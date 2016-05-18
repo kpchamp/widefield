@@ -8,12 +8,12 @@ datapath = '/gscratch/riekesheabrown/kpchamp/data/m187201_150727_decitranspose_d
 
 
 def plot_components(W, components_to_plot, pushmask, n_rows, n_cols, fname=None):
-    n_plots = components_to_plot.size
-    for i,c in np.nditer(components_to_plot):
+    n_plots = len(components_to_plot)
+    for i in range(n_plots):
         plt.subplot(np.floor(np.sqrt(n_plots)),np.ceil(n_plots/np.floor(np.sqrt(n_plots))),i)
-        img = np.reshape(unmask(W[:,c], pushmask, n_rows*n_cols), [n_rows, n_cols])
+        img = np.reshape(unmask(W[:,components_to_plot[i]], pushmask, n_rows*n_cols), [n_rows, n_cols])
         plt.imshow(img)
-        plt.title('component %d' % c)
+        plt.title('component %d' % components_to_plot[i])
     if fname is not None:
         pickle.dump(plt, open(fname, 'w'))
 
