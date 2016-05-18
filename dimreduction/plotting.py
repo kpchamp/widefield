@@ -16,6 +16,7 @@ def plot_components(W, components_to_plot, pushmask, n_rows, n_cols, fname=None,
         if clim is not None:
             plt.clim(clim)
         plt.title('component %d' % components_to_plot[i])
+        plt.axis('off')
     if fname is not None:
         pickle.dump(plt, open(fname, 'w'))
 
