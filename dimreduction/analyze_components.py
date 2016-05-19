@@ -16,7 +16,7 @@ def subspace_angle(A,B):
 def compare_components(A,B):
     A = A/np.sqrt(np.sum(np.abs(A)**2,axis=0))
     B = B/np.sqrt(np.sum(np.abs(B)**2,axis=0))
-    return np.dot(A.T,B)
+    return np.abs(np.dot(A.T,B))
 
 
 # f = tb.open_file("/gscratch/riekesheabrown/kpchamp/data/m187201_150727_decitranspose_detrend.h5",'r')
