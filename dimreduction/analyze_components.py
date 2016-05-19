@@ -13,7 +13,7 @@ def subspace_angle(A,B):
     return math.acos(s[-1])
 
 
-def component_angles(A,B):
+def compare_components(A,B):
     A = A/np.sqrt(np.sum(np.abs(A)**2,axis=0))
     B = B/np.sqrt(np.sum(np.abs(B)**2,axis=0))
     return np.dot(A.T,B)
