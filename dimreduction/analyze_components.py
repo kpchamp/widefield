@@ -1,9 +1,11 @@
 import numpy as np
 import math
 import scipy.linalg as la
-import tables as tb
-import pandas as pd
-from manage_data import get_cutoff
+import pickle
+
+
+basepath = '/gscratch/riekesheabrown/kpchamp/data/'
+datapath = basepath + 'm187201_150727_decitranspose_detrend.h5'
 
 
 def subspace_angle(A,B):
@@ -18,6 +20,29 @@ def compare_components(A,B):
     B = B/np.sqrt(np.sum(np.abs(B)**2,axis=0))
     return np.abs(np.dot(A.T,B))
 
+
+def get_component_comparison(dfrow1,dfrow2):
+    fname1 = basepath + 'components_twin%d_nsamples%d_tstart%d.pkl' % (dfrow1['windowLength'],dfrow1['sampleSize'],dfrow1['startTime'])
+    fname2 = basepath + 'components_twin%d_nsamples%d_tstart%d.pkl' % (dfrow2['windowLength'],dfrow2['sampleSize'],dfrow2['startTime'])
+    A = pickle.load(open(fname1,'r'))
+    B = pickle.load(open(fname2,'r'))
+    return compare_components(A,B)
+
+
+def get_cutoff(data,type):
+    if type == 'threshold':
+        return data['p_threshold']
+    elif type == 'aic':
+        return np.argmin(data['aic'])+1
+    elif type == 'bic':
+        return np.argmin(data['bic'])+1
+    elif type == 'xval':
+        return data['ps'][np.argmax(data['lltest'])]
+    elif type == '90percent':
+        sv_totals=np.array([np.sum(data['svs'][0:k+1]) for k in range(len(data['svs']))])
+        return np.argmax(sv_totals>(0.9*sv_totals[-1]))+1
+    else:
+        raise ValueError('must specify a type')
 
 # f = tb.open_file("/gscratch/riekesheabrown/kpchamp/data/m187201_150727_decitranspose_detrend.h5",'r')
 # df = pd.read_pickle("/gscratch/riekesheabrown/kpchamp/data/allData_df.pkl")

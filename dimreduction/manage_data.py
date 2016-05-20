@@ -4,22 +4,6 @@ import numpy as np
 import pandas as pd
 
 
-def get_cutoff(data,type):
-    if type == 'threshold':
-        return data['p_threshold']
-    elif type == 'aic':
-        return np.argmin(data['aic'])+1
-    elif type == 'bic':
-        return np.argmin(data['bic'])+1
-    elif type == 'xval':
-        return data['ps'][np.argmax(data['lltest'])]
-    elif type == '90percent':
-        sv_totals=np.array([np.sum(data['svs'][0:k+1]) for k in range(len(data['svs']))])
-        return np.argmax(sv_totals>(0.9*sv_totals[-1]))+1
-    else:
-        raise ValueError('must specify a type')
-
-
 def process_files(str):
     allData = DataCollection()
     files=glob.glob(str)
