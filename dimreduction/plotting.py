@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import pickle
-import numpy as np
 from widefield.preprocess.movie_mask import unmask
 from widefield.dimreduction.analyze_components import *
 
@@ -9,7 +8,7 @@ basepath = '/gscratch/riekesheabrown/kpchamp/data/'
 datapath = basepath + 'm187201_150727_decitranspose_detrend.h5'
 
 
-def plot_components(W, components_to_plot, pushmask, n_rows, n_cols, fname=None, clim=None):
+def plot_components(W, components_to_plot, pushmask, n_rows, n_cols, clim=None):
     n_plots = len(components_to_plot)
     for i in range(n_plots):
         plt.subplot(np.floor(np.sqrt(n_plots)),np.ceil(n_plots/np.floor(np.sqrt(n_plots))),i+1)
@@ -19,21 +18,17 @@ def plot_components(W, components_to_plot, pushmask, n_rows, n_cols, fname=None,
             plt.clim(clim)
         plt.title('component %d' % components_to_plot[i])
         plt.axis('off')
-    if fname is not None:
-        pickle.dump(plt, open(fname, 'w'))
 
 
-def plot_component_comparison(dfrow1, dfrow2, component_limit=500, fname=None):
+def plot_component_comparison(dfrow1, dfrow2, component_limit=500):
     fname1 = basepath + 'components_twin%d_nsamples%d_tstart%d.pkl' % (dfrow1['windowLength'],dfrow1['sampleSize'],dfrow1['startTime'])
     fname2 = basepath + 'components_twin%d_nsamples%d_tstart%d.pkl' % (dfrow2['windowLength'],dfrow2['sampleSize'],dfrow2['startTime'])
     A = pickle.load(open(fname1,'r'))
     B = pickle.load(open(fname2,'r'))
     C = compare_components(A,B)
-    plt.imshow(C[0:component_limit,0:component_limit])
+    plt.imshow(C[0:component_limit,0:component_limit],interpolation='nearest')
     plt.ylabel('t_win=%d, n_samples=%d, t_start=%d' % (dfrow1['windowLength'],dfrow1['sampleSize'],dfrow1['startTime']))
     plt.xlabel('t_win=%d, n_samples=%d, t_start=%d' % (dfrow2['windowLength'],dfrow2['sampleSize'],dfrow2['startTime']))
-    if fname is not None:
-        pickle.dump(plt, open(fname, 'w'))
 
 
 def dim_vs_samples(df):
