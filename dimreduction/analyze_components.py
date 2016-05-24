@@ -12,7 +12,7 @@ def subspace_angle(A,B):
     A = A/np.sqrt(np.sum(np.abs(A)**2,axis=0))
     B = B/np.sqrt(np.sum(np.abs(B)**2,axis=0))
     u,s,v = la.svd(np.dot(A.T,B),full_matrices=False)
-    return math.acos(s[-1])
+    return math.acos(min(1,max(s[-1],-1)))
 
 
 def compare_components(A,B):
@@ -34,10 +34,9 @@ def get_subspace_angles(dfrow1,dfrow2,cutoff):
     fname2 = basepath + 'components/components_twin%d_nsamples%d_tstart%d.pkl' % (dfrow2['windowLength'],dfrow2['sampleSize'],dfrow2['startTime'])
     A = pickle.load(open(fname1,'r'))
     B = pickle.load(open(fname2,'r'))
-    angles = np.zeros((cutoff,cutoff))
+    angles = np.zeros((cutoff,))
     for i in range(cutoff):
-        for j in range(cutoff):
-            angles[i,j] = subspace_angle(A[:,0:i+1],B[:,0:j+1])
+        angles[i] = subspace_angle(A[:,0:i+1],B[:,0:i+1])
     return angles
 
 
