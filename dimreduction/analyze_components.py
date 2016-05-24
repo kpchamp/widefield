@@ -29,6 +29,18 @@ def get_component_comparison(dfrow1,dfrow2):
     return compare_components(A,B)
 
 
+def get_subspace_angles(dfrow1,dfrow2,cutoff):
+    fname1 = basepath + 'components_twin%d_nsamples%d_tstart%d.pkl' % (dfrow1['windowLength'],dfrow1['sampleSize'],dfrow1['startTime'])
+    fname2 = basepath + 'components_twin%d_nsamples%d_tstart%d.pkl' % (dfrow2['windowLength'],dfrow2['sampleSize'],dfrow2['startTime'])
+    A = pickle.load(open(fname1,'r'))
+    B = pickle.load(open(fname2,'r'))
+    angles = np.zeros((cutoff,cutoff))
+    for i in range(cutoff):
+        for j in range(cutoff):
+            angles[i,j] = subspace_angle(A[:,0:i+1],B[:,0:j+1])
+    return angles
+
+
 def get_cutoff(data,type):
     if type == 'threshold':
         return data['p_threshold']
