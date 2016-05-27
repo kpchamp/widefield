@@ -24,42 +24,43 @@ def plot_component_comparison(dfrow1, dfrow2, component_limit=500):
 
 def dim_vs_samples(df):
     for t_win in set(df['windowLength']):
+        f = {}
         startTimes = sorted(set(df['startTime'][df['windowLength'] == t_win]))
-        fig = plt.figure()
+        f['code'] = 'fig = plt.figure()\n'
         for i, t_start in enumerate(startTimes):
-            sampleSizes = sorted(set(df['sampleSize'][(df['windowLength'] == t_win) & (df['startTime'] == t_start)]))
-            p_threshold = []
-            p_aic = []
-            p_bic = []
-            p_xval = []
-            p_90percent = []
-            for n_samples in sampleSizes:
+            f['sampleSizes'] = sorted(set(df['sampleSize'][(df['windowLength'] == t_win) & (df['startTime'] == t_start)]))
+            f['p_threshold'] = []
+            f['p_aic'] = []
+            f['p_bic'] = []
+            f['p_xval'] = []
+            f['p_90percent'] = []
+            for n_samples in f['sampleSizes']:
                 data = df['data'][(df['windowLength'] == t_win) & (df['startTime'] == t_start) & (df['sampleSize'] == n_samples)].item()
-                p_threshold.append(data['p_threshold'])
-                p_aic.append(np.argmin(data['aic'])+1)
-                p_bic.append(np.argmin(data['bic'])+1)
-                p_xval.append(data['ps'][np.argmax(data['lltest'])])
+                f['p_threshold'].append(data['p_threshold'])
+                f['p_aic'].append(np.argmin(data['aic'])+1)
+                f['p_bic'].append(np.argmin(data['bic'])+1)
+                f['p_xval'].append(data['ps'][np.argmax(data['lltest'])])
                 sv_totals=np.array([np.sum(data['svs'][0:k+1]) for k in range(len(data['svs']))])
-                p_90percent.append(np.argmax(sv_totals>(0.9*sv_totals[-1]))+1)
+                f['p_90percent'].append(np.argmax(sv_totals>(0.9*sv_totals[-1]))+1)
             if len(startTimes)>8:
-                plt.subplot(4,len(startTimes)/4,i+1)
+                f['code'] += 'plt.subplot(4,%d,i+1)\n' % np.int(len(startTimes)/4)
             elif len(startTimes)>2:
-                plt.subplot(2,len(startTimes)/2,i+1)
+                f['code'] += 'plt.subplot(2,%d,i+1)\n' % np.int(len(startTimes)/2)
             else:
-                plt.subplot(1, len(startTimes), i+1)
-            plt.plot(sampleSizes, p_threshold, 'o-', label='threshold')
-            plt.plot(sampleSizes, p_bic, 'o-', label='BIC')
-            plt.plot(sampleSizes, p_aic, 'o-', label='AIC')
-            plt.plot(sampleSizes, p_xval, 'o-', label='xval')
-            plt.plot(sampleSizes, p_90percent, 'o-', label='90%')
+                f['code'] += 'plt.subplot(1, %d, i+1)\n' % len(startTimes)
+            f['code'] += "plt.plot(f['sampleSizes'], f['p_threshold'], 'o-', label='threshold')\n"
+            f['code'] += "plt.plot(f['sampleSizes'], f['p_bic'], 'o-', label='BIC')\n"
+            f['code'] += "plt.plot(f['sampleSizes'], f['p_aic'], 'o-', label='AIC')\n"
+            f['code'] += "plt.plot(f['sampleSizes'], f['p_xval'], 'o-', label='xval')\n"
+            f['code'] += "plt.plot(f['sampleSizes'], f['p_90percent'], 'o-', label='90%')\n"
             if i == 0 and len(startTimes) < 8:
-                plt.legend(loc=2)
-            plt.xlabel('number of samples')
-            plt.ylabel('p')
-            plt.title('T_win=%d, T_start=%d' % (t_win, t_start))
+                f['code'] += "plt.legend(loc=2)\n"
+            f['code'] += "plt.xlabel('number of samples')\n"
+            f['code'] += "plt.ylabel('p')\n"
+            f['code'] += "plt.title('T_win=%d, T_start=%d')\n" % (t_win, t_start)
         if len(startTimes) < 8:
-            plt.tight_layout()
-        pickle.dump(fig, open('plot_Twin%d.pkl' % t_win, 'w'))
+            f['code'] += "plt.tight_layout()\n"
+        pickle.dump(f, open('plot_Twin%d.pkl' % t_win, 'w'))
 
 
 def plot_dims(data, n_samples, legendLoc=2):
