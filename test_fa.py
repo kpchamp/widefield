@@ -10,7 +10,7 @@ X=f.root.data[:,:].T
 n_features, Tmax = f.root.data.shape
 # actually use only first 347904 = 128*2718 frames
 Tmax = 347904
-winDiv = 16
+winDiv = 2
 Twin = Tmax/winDiv
 
 fa = FactorAnalysis(n_components=1000)
