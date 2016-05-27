@@ -13,7 +13,6 @@ maskfile = datapath + 'm187201/150805/mask.h5'
 # load data
 open_tb = tb.open_file(infile, 'r')
 mov = open_tb.root.data
-open_tb.close()
 
 dff = True
 start = 0 # first frame in movie to detrend
@@ -46,3 +45,4 @@ f.create_array(f.root,'mask_idx',mask_idx)
 f.create_array(f.root,'pullmask',pullmask)
 f.create_array(f.root,'pushmask',pushmask)
 f.close()
+open_tb.close()
