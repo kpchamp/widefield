@@ -13,7 +13,7 @@ Tmax = 347904
 winDiv = 2
 Twin = Tmax/winDiv
 
-fa = FactorAnalysis(n_components=1000)
+fa = FactorAnalysis(n_components=1000, svd_method='lapack')
 fa.fit(X[:,:])
 pickle.dump(fa, open('factoranalysis_test.pkl','w'))
 f.close()
