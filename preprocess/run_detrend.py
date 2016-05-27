@@ -6,17 +6,19 @@ from detrend import detrend
 ## GLOABL VARS
 datapath = '/gscratch/riekesheabrown/kpchamp/data'
 
-dff = True
-start = 0 # first frame in movie to detrend
-stop = 347973 # last frame to detrend
-window = 60 # window in seconds
-exposure = 10 # camera exposure in ms
-infile = datapath + '/m187201_150727_deci.h5'
-outfile = datapath + '/m187201_150727_deci_detrend.h5'
+infile = datapath + '/m187201/150805/data.h5'
+outfile = datapath + '/m187201/150805/transpose_detrend.h5'
+maskfile = datapath + 'm187201/150805/mask.h5'
 
 # load data
 open_tb = tb.open_file(infile, 'r')
 mov = open_tb.root.data
+
+dff = True
+start = 0 # first frame in movie to detrend
+stop = open_tb.root.data.shape[0] # last frame to detrend
+window = 60 # window in seconds
+exposure = 10 # camera exposure in ms
 
 frames = range(start, stop)
 print str(len(frames)) + ' frames will be detrended'
@@ -36,9 +38,11 @@ print 'detrending took ' + str(detrend_time) + ' seconds\n'
 # Kathleen mods start here
 f=tb.open_file(outfile,'w')
 f.create_array(f.root,'data',cut_to_mask(mov_detrend,pushmask))
-f.create_group(f.root,'mask')
-f.create_array(f.root.mask,'mask_idx',mask_idx)
-f.create_array(f.root.mask,'pullmask',pullmask)
-f.create_array(f.root.mask,'pushmask',pushmask)
+f.close()
+
+f=tb.open_file(maskfile,'w')
+f.create_array(f.root,'mask_idx',mask_idx)
+f.create_array(f.root,'pullmask',pullmask)
+f.create_array(f.root,'pushmask',pushmask)
 f.close()
 open_tb.close()
