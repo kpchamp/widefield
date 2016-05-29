@@ -135,10 +135,11 @@ class ppca_model:
         self.evals = (S ** 2) / self.n_samples
         self.evecs = V.T
         if self.n_components is not None:
-            self.s2 = np.mean(self.evals[self.n_components:])
-            A=self.evecs[:,:self.n_components]
-            B=np.diag(np.sqrt((self.evals[:self.n_components] - self.s2 * np.ones([1, self.n_components])).flatten()))
-            self.components = np.dot(A,B)
+            self.setComponents(self.n_components)
+            # self.s2 = np.mean(self.evals[self.n_components:])
+            # A=self.evecs[:,:self.n_components]
+            # B=np.diag(np.sqrt((self.evals[:self.n_components] - self.s2 * np.ones([1, self.n_components])).flatten()))
+            # self.components = np.dot(A,B)
         pmax = min(self.n_samples,self.n_features)
         self.LLtrain = np.zeros((pmax,))
         pmaxf=float(pmax)
@@ -177,8 +178,8 @@ class ppca_model:
         self.s2 = np.mean(np.std(X,axis=0)**2-np.diag(np.dot(SW,np.dot(Minv,W.T))))
         self.LL = np.array(LL)
 
-    def inferLatent(self, Xin, n_components):
-        if self.n_components != n_components:
+    def inferLatent(self, Xin, n_components=None):
+        if (n_components is not None) and (self.n_components != n_components):
             self.setComponents(n_components)
         X = Xin - self.mean
         U,S,V=la.svd(self.components,full_matrices=False)
@@ -223,7 +224,6 @@ class ppca_model:
         LLi = const - 0.5*LLdetC - 0.5*LLtr
         LL=np.sum(LLi)
         return LL
-
 
     def minkaEval(self,X,n_components):
         n_samples, n_features = X.shape
