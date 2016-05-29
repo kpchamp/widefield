@@ -177,18 +177,19 @@ class ppca_model:
         self.s2 = np.mean(np.std(X,axis=0)**2-np.diag(np.dot(SW,np.dot(Minv,W.T))))
         self.LL = np.array(LL)
 
-    def inferLatent(self, X, n_components):
+    def inferLatent(self, Xin, n_components):
         if self.n_components != n_components:
             self.setComponents(n_components)
+        X = Xin - self.mean
         U,S,V=la.svd(self.components,full_matrices=False)
         Minv = np.dot(V.T*(1./(S**2+self.s2)),V)
         MW=np.dot(self.components,Minv.T)
         return np.dot(X,MW)
 
-    def reconstruct(self, X, n_components):
-        Z = self.inferLatent(X,n_components)
-        Xnew = np.dot(Z,self.components.T)
-        return Xnew
+    def reconstruct(self, Xin, n_components):
+        Z = self.inferLatent(Xin,n_components)
+        X = np.dot(Z,self.components.T)
+        return X
 
     def setComponents(self, n_components):
         if self.fitWith == 'EM':
@@ -252,6 +253,7 @@ class ppca_model:
             pu += special.gammaln((n_features-i+1)/2.)-np.log(np.pi)*(n_features-i+1)/2.
 
         return pu+pl+pv+pp+pa-n_components/2.*np.log(n_samples)
+
 
 # Standalone function for fitting PCA with EM
 def pcaEM(X, n_components, max_iters):
