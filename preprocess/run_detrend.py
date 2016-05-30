@@ -4,10 +4,10 @@ import timeit
 from detrend import detrend
 
 ## GLOABL VARS
-datapath = '/gscratch/riekesheabrown/kpchamp/data'
+datapath = '/gscratch/riekesheabrown/kpchamp/data/'
 
-infile = datapath + '/m187201/150805/data.h5'
-outfile = datapath + '/m187201/150805/transpose_detrend.h5'
+infile = datapath + 'm187201/150805/data.h5'
+outfile = datapath + 'm187201/150805/transpose_detrend.h5'
 maskfile = datapath + 'm187201/150805/mask.h5'
 
 # load data
