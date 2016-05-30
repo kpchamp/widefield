@@ -4,17 +4,23 @@ import tables as tb
 import numpy as np
 from optimal_svht_coef import optimal_svht_coef
 import pickle
+import pandas as pd
 
-fname="/gscratch/riekesheabrown/kpchamp/data/m187201_150727_decitranspose_detrend.h5"
-#fname="/Users/kpchamp/Dropbox (uwamath)/backup/research/python/data/20150727_detrend.h5"
-f=tb.open_file(fname,'r')
+
+mouseId = 'm187201'
+collectionDate = '150805'
+basepath = "/gscratch/riekesheabrown/kpchamp/data/"
+datapath = basepath + mouseId + "/" + collectionDate + "/transpose_detrend.h5"
+dfpath = basepath + "allData_df.pkl"
+df = pd.read_pickle(dfpath)
+f=tb.open_file(datapath,'r')
 X=f.root.data[:,:].T
 
 # note: total frames are 347973
 n_features, Tmax = f.root.data.shape
 # actually use only first 347904 = 128*2718 frames
 Tmax = 347904
-winDiv = 16
+winDiv = 4
 Twin = np.int(Tmax/winDiv)
 
 for idx in range(winDiv):
@@ -29,6 +35,8 @@ for idx in range(winDiv):
     p_aic = np.zeros((samples.size,))
 
     for i_samples,n_samples in enumerate(samples):
+        dfrow = {'mouseId': mouseId, 'date': collectionDate, 'windowLength': Twin, 'startTime': Tstart,
+                 'sampleSize': n_samples}
         print >>open('output.txt','a'), n_samples
         if (n_samples % n_folds) != 0:
             raise ValueError("number of samples n_samples=%d is not a multiple of n_folds=%d",n_samples,n_folds)
@@ -72,10 +80,10 @@ for idx in range(winDiv):
         p_xval[i_samples]=ps[np.argmax(ll_xval)]
 
         fout="p_twin%d_nsamples%d_%d.pkl" % (Twin,n_samples,idx+1)
-        pickle.dump({'ps': ps, 'p_threshold': p_threshold[i_samples], 'll_all': ll_all, 'svs': s,
-                     'll_xval': ll_xval, 'err_xval': err_xval, 'bic': bic, 'aic': aic, 'perm': perm},
-                    open(fout,'w'))
+        dfrow['data'] = {'ps': ps, 'p_threshold': p_threshold[i_samples], 'll_all': ll_all, 'svs': s,
+                     'll_xval': ll_xval, 'err_xval': err_xval, 'bic': bic, 'aic': aic, 'perm': perm}
+        pickle.dump(dfrow['data'], open(fout,'w'))
+        df.append(dfrow, ignore_index=True)
+        df.to_pickle(dfpath)
 
-    #fout="p_twin%d_%d.pkl" % (Twin,idx+1)
-    #pickle.dump({'n_samples': samples, 'p_threshold': p_threshold, 'p_xval': p_xval, 'p_aic': p_aic, 'p_bic': p_bic},open(fout,'w'))
     f.close()
