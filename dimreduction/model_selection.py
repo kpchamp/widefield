@@ -61,6 +61,9 @@ for idx in range(winDiv):
         p_bic[i_samples]=np.argmin(bic)+1
         p_aic[i_samples]=np.argmin(aic)+1
 
+        fout="evecs_twin%d_nsamples%d_tstart%d.pkl" % (Twin,n_samples,Tstart)
+        pickle.dump(ppca.evecs, open(basepath + mouseId + "/" + collectionDate + "/evecs/" + fout,'w'))
+
         LLs_xval = np.zeros((n_folds,ps.size))
         err_xval = np.zeros((n_folds,))
         for i_folds in np.arange(n_folds):

@@ -37,7 +37,7 @@ print 'detrending took ' + str(detrend_time) + ' seconds\n'
 
 # Kathleen mods start here
 f=tb.open_file(outfile,'w')
-f.create_array(f.root,'data',cut_to_mask(mov_detrend,pushmask))
+f.create_array(f.root,'data',cut_to_mask(mov_detrend,pushmask).T)
 f.close()
 
 f=tb.open_file(maskfile,'w')
