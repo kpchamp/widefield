@@ -199,7 +199,7 @@ class ppca_model:
             raise ValueError("n_components=%r invalid for n_features=%d"
                              % (n_components, self.n_features))
         self.s2 = np.mean(self.evals[n_components:])
-        self.components = np.dot(self.evecs[:,:n_components], np.diag(np.sqrt((self.evals - self.s2 * np.ones([1, n_components])).flatten())))
+        self.components = np.dot(self.evecs[:,:n_components], np.diag(np.sqrt((self.evals[:n_components] - self.s2 * np.ones(n_components)).flatten())))
         return self
 
     # Get the log likelihood of a PPCA model with test data and any number of components.
