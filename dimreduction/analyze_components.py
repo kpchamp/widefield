@@ -2,10 +2,11 @@ import numpy as np
 import math
 import scipy.linalg as la
 import pickle
+from widefield.dimreduction.pca import ppca_model
 
 
-basepath = '/gscratch/riekesheabrown/kpchamp/data/'
-datapath = basepath + 'm187201_150727_decitranspose_detrend.h5'
+basepath = '/gscratch/riekesheabrown/kpchamp/data/m187201/150727/'
+datapath = basepath + 'decitranspose_detrend.h5'
 
 
 def subspace_angle(A,B):
@@ -55,9 +56,9 @@ def get_cutoff(data,type):
     else:
         raise ValueError('must specify a type')
 
-# f = tb.open_file("/gscratch/riekesheabrown/kpchamp/data/m187201_150727_decitranspose_detrend.h5",'r')
-# df = pd.read_pickle("/gscratch/riekesheabrown/kpchamp/data/allData_df.pkl")
-# X=f.root.data[:,:].T
-#
-# t_win = 86976
-# df_subset = df[df['windowLength'] == t_win]
+
+def get_residuals(X, n_components):
+    ppca = ppca_model(X, n_components=n_components)
+    Xnew = ppca.reconstruct(X)
+    residual = X - Xnew
+    return residual

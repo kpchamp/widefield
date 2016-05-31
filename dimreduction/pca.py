@@ -187,7 +187,7 @@ class ppca_model:
         MW=np.dot(self.components,Minv.T)
         return np.dot(X,MW)
 
-    def reconstruct(self, Xin, n_components):
+    def reconstruct(self, Xin, n_components=None):
         Z = self.inferLatent(Xin,n_components)
         X = np.dot(Z,self.components.T)
         return X
