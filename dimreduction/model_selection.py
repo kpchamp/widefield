@@ -20,7 +20,7 @@ X=f.root.data[:,:].T
 n_features, Tmax = f.root.data.shape
 # actually use only first 347904 = 128*2718 frames
 Tmax = 347904
-winDiv = 4
+winDiv = 2
 Twin = np.int(Tmax/winDiv)
 
 for idx in range(winDiv):
@@ -86,7 +86,7 @@ for idx in range(winDiv):
         dfrow['data'] = {'ps': ps, 'p_threshold': p_threshold[i_samples], 'll_all': ll_all, 'svs': s,
                      'll_xval': ll_xval, 'err_xval': err_xval, 'bic': bic, 'aic': aic, 'perm': perm}
         pickle.dump(dfrow['data'], open(fout,'w'))
-        df.append(dfrow, ignore_index=True)
+        df = df.append(dfrow, ignore_index=True)
         df.to_pickle(dfpath)
 
     f.close()
