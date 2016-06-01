@@ -19,10 +19,10 @@ X=f.root.data[:,:].T
 n_features, Tmax = f.root.data.shape
 # actually use only first 347904 = 128*2718 frames
 Tmax = 347904
-winDiv = 2
+winDiv = 8
 Twin = np.int(Tmax/winDiv)
 
-for idx in range(1,winDiv):
+for idx in range(winDiv):
     Tstart = idx*Twin
     print >>open('output.txt','a'), Tstart
     samples = np.arange(Twin/4,Twin+1,Twin/4,dtype=np.int)
