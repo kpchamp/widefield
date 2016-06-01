@@ -25,7 +25,7 @@ def plot_component_comparison(dfrow1, dfrow2, component_limit=500):
 
 def plot_residual(residuals):
     if residuals.ndim == 1:
-        np.reshape(residuals,(residuals.shape[0],1))
+        residuals = np.reshape(residuals,(residuals.shape[0],1))
     n_plots = residuals.shape[1]
     for i in range(n_plots):
         mu = np.mean(residuals[:,i])
