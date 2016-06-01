@@ -72,8 +72,6 @@ def dim_vs_samples(df):
             f['code'] += "plt.xlabel('number of samples')\n"
             f['code'] += "plt.ylabel('p')\n"
             f['code'] += "plt.title('T_win=%d, T_start=%d')\n" % (t_win, t_start)
-        if len(startTimes) < 8:
-            f['code'] += "plt.tight_layout()\n"
         pickle.dump(f, open('plot_Twin%d.pkl' % t_win, 'w'))
 
 
