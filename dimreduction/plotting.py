@@ -57,11 +57,11 @@ def dim_vs_samples(df):
                 sv_totals=np.array([np.sum(data['svs'][0:k+1]) for k in range(len(data['svs']))])
                 f['p_90percent'].append(np.argmax(sv_totals>(0.9*sv_totals[-1]))+1)
             if len(startTimes)>8:
-                f['code'] += 'plt.subplot(4,%d,i+1)\n' % np.int(len(startTimes)/4)
+                f['code'] += 'plt.subplot(4,%d,%d)\n' % (np.int(len(startTimes)/4),i+1)
             elif len(startTimes)>2:
-                f['code'] += 'plt.subplot(2,%d,i+1)\n' % np.int(len(startTimes)/2)
+                f['code'] += 'plt.subplot(2,%d,%d)\n' % (np.int(len(startTimes)/2),i+1)
             else:
-                f['code'] += 'plt.subplot(1, %d, i+1)\n' % len(startTimes)
+                f['code'] += 'plt.subplot(1, %d, %d)\n' % (len(startTimes),i+1)
             f['code'] += "plt.plot(f['sampleSizes'], f['p_threshold'], 'o-', label='threshold')\n"
             f['code'] += "plt.plot(f['sampleSizes'], f['p_bic'], 'o-', label='BIC')\n"
             f['code'] += "plt.plot(f['sampleSizes'], f['p_aic'], 'o-', label='AIC')\n"
