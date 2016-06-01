@@ -21,6 +21,7 @@ n_features, Tmax = f.root.data.shape
 Tmax = 347904
 winDiv = 8
 Twin = np.int(Tmax/winDiv)
+print >>open('output.txt','a'), Twin
 
 for idx in range(winDiv):
     Tstart = idx*Twin
