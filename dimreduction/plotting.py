@@ -71,7 +71,8 @@ def dim_vs_samples(df):
                 f['code'] += "plt.legend(loc=2)\n"
             f['code'] += "plt.xlabel('number of samples')\n"
             f['code'] += "plt.ylabel('p')\n"
-            f['code'] += "plt.title('T_win=%d, T_start=%d')\n" % (t_win, t_start)
+            f['code'] += "plt.title('T_start=%d')\n" % (t_win, t_start)
+        f['code'] += "plt.suptitle('T_win=%d')\n" % t_win
         pickle.dump(f, open('plot_Twin%d.pkl' % t_win, 'w'))
 
 
