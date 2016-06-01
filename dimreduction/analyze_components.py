@@ -56,9 +56,3 @@ def get_cutoff(data,type):
     else:
         raise ValueError('must specify a type')
 
-
-def get_residuals(X, n_components):
-    ppca = ppca_model(X, n_components=n_components)
-    Xnew = ppca.reconstruct(X)
-    residual = X - Xnew
-    return residual

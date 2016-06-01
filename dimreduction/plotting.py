@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from widefield.preprocess.movie_mask import unmask
 from widefield.dimreduction.analyze_components import *
+from matplotlib.mlab import normpdf
 
 
 def plot_components(W, components_to_plot, pushmask, n_rows, n_cols, clim=None):
@@ -20,6 +21,19 @@ def plot_component_comparison(dfrow1, dfrow2, component_limit=500):
     plt.imshow(C[0:component_limit,0:component_limit],interpolation='nearest')
     plt.ylabel('t_win=%d, n_samples=%d, t_start=%d' % (dfrow1['windowLength'],dfrow1['sampleSize'],dfrow1['startTime']))
     plt.xlabel('t_win=%d, n_samples=%d, t_start=%d' % (dfrow2['windowLength'],dfrow2['sampleSize'],dfrow2['startTime']))
+
+
+def plot_residual(residuals):
+    if residuals.ndim == 1:
+        np.reshape(residuals,(residuals.shape[0],1))
+    n_plots = residuals.shape[1]
+    for i in range(n_plots):
+        mu = np.mean(residuals[:,i])
+        sigma = np.std(residuals[:,i])
+        x = np.linspace(np.min(residuals[:,i]), np.max(residuals[:,i]), 1000)
+        plt.subplot(np.floor(np.sqrt(n_plots)),np.ceil(n_plots/np.floor(np.sqrt(n_plots))),i+1)
+        plt.plot(x, normpdf(x, mu, sigma))
+        plt.hist(residuals[:,i], bins=100, normed=True)
 
 
 def dim_vs_samples(df):
