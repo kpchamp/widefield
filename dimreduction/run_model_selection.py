@@ -19,7 +19,7 @@ X=f.root.data[:,:].T
 n_features, Tmax = f.root.data.shape
 # actually use only first 347904 = 128*2718 frames
 Tmax = 347904
-winDiv = 8
+winDiv = 1
 Twin = np.int(Tmax/winDiv)
 print >>open('output.txt','a'), Twin
 
