@@ -6,9 +6,12 @@ from detrend import detrend
 ## GLOABL VARS
 datapath = '/gscratch/riekesheabrown/kpchamp/data/'
 
-infile = datapath + 'm187201/150805/data.h5'
-outfile = datapath + 'm187201/150805/transpose_detrend.h5'
-maskfile = datapath + 'm187201/150805/mask.h5'
+mouseId = "m177931"
+collectionDate = "150729"
+
+infile = datapath + mouseId + "/" + collectionDate + "/data.h5"
+outfile = datapath + mouseId + "/" + collectionDate + "/transpose_detrend.h5"
+maskfile = datapath + mouseId + "/" + collectionDate + "/mask.h5"
 
 # load data
 open_tb = tb.open_file(infile, 'r')
