@@ -23,16 +23,16 @@ def compare_components(A,B):
 
 
 def get_component_comparison(dfrow1,dfrow2):
-    fname1 = basepath + dfrow1['mouseId'] + '/' + dfrow1['date'] + '/components/components_twin%d_nsamples%d_tstart%d.pkl' % (dfrow1['windowLength'],dfrow1['sampleSize'],dfrow1['startTime'])
-    fname2 = basepath + dfrow2['mouseId'] + '/' + dfrow2['date']  + '/components/components_twin%d_nsamples%d_tstart%d.pkl' % (dfrow2['windowLength'],dfrow2['sampleSize'],dfrow2['startTime'])
+    fname1 = basepath + dfrow1['mouseId'] + '/' + dfrow1['date'] + '/evecs/evecs_twin%d_nsamples%d_tstart%d.pkl' % (dfrow1['windowLength'],dfrow1['sampleSize'],dfrow1['startTime'])
+    fname2 = basepath + dfrow2['mouseId'] + '/' + dfrow2['date']  + '/evecs/evecs_twin%d_nsamples%d_tstart%d.pkl' % (dfrow2['windowLength'],dfrow2['sampleSize'],dfrow2['startTime'])
     A = pickle.load(open(fname1,'r'))
     B = pickle.load(open(fname2,'r'))
     return compare_components(A,B)
 
 
 def get_subspace_angles(dfrow1,dfrow2,cutoff):
-    fname1 = basepath + dfrow1['mouseId'] + '/' + dfrow1['date'] + '/components/components_twin%d_nsamples%d_tstart%d.pkl' % (dfrow1['windowLength'],dfrow1['sampleSize'],dfrow1['startTime'])
-    fname2 = basepath + dfrow2['mouseId'] + '/' + dfrow2['date'] + '/components/components_twin%d_nsamples%d_tstart%d.pkl' % (dfrow2['windowLength'],dfrow2['sampleSize'],dfrow2['startTime'])
+    fname1 = basepath + dfrow1['mouseId'] + '/' + dfrow1['date'] + '/evecs/evecs_twin%d_nsamples%d_tstart%d.pkl' % (dfrow1['windowLength'],dfrow1['sampleSize'],dfrow1['startTime'])
+    fname2 = basepath + dfrow2['mouseId'] + '/' + dfrow2['date'] + '/evecs/evecs_twin%d_nsamples%d_tstart%d.pkl' % (dfrow2['windowLength'],dfrow2['sampleSize'],dfrow2['startTime'])
     A = pickle.load(open(fname1,'r'))
     B = pickle.load(open(fname2,'r'))
     angles = np.zeros((cutoff,))
