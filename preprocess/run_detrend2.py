@@ -31,7 +31,7 @@ print str(len(frames)) + ' frames will be detrended'
 # maskx = mask.shape[1]
 # mask_idx, pullmask, pushmask = mask_to_index(mask)
 
-mask = tb.open_file('/gscratch/riekesheabrown/kpchamp/data/mask.h5','r')
+mask = tb.open_file('/gscratch/riekesheabrown/kpchamp/data/mask2.h5','r')
 mask_idx = mask.root.mask_idx
 pullmask = mask.root.pullmask
 pushmask = mask.root.pushmask
