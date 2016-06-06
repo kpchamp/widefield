@@ -15,7 +15,7 @@ maskfile = datapath + mouseId + "/" + collectionDate + "/mask.h5"
 
 # load data
 open_tb = tb.open_file(infile, 'r')
-mov = open_tb.root.data[:,:]
+mov = open_tb.root.data[:]
 
 dff = True
 start = 0 # first frame in movie to detrend
