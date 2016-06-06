@@ -6,8 +6,8 @@ from detrend import detrend
 ## GLOABL VARS
 datapath = '/gscratch/riekesheabrown/kpchamp/data/'
 
-mouseId = "m177931"
-collectionDate = "150731"
+mouseId = "m187201"
+collectionDate = "150727"
 
 infile = datapath + mouseId + "/" + collectionDate + "/data.h5"
 outfile = datapath + mouseId + "/" + collectionDate + "/transpose_detrend.h5"
@@ -26,8 +26,12 @@ exposure = 10 # camera exposure in ms
 frames = range(start, stop)
 print str(len(frames)) + ' frames will be detrended'
 
-mask = get_mask(mov)
-#mask = tb.open_file('/gscratch/riekesheabrown/kpchamp/data/mask.h5','r')
+# mask = get_mask(mov)
+# masky = mask.shape[0]
+# maskx = mask.shape[1]
+# mask_idx, pullmask, pushmask = mask_to_index(mask)
+
+mask = tb.open_file('/gscratch/riekesheabrown/kpchamp/data/mask.h5','r')
 mask_idx = (mask.root.mask_idx[0], mask.root.mask_idx[1])
 pullmask = mask.root.pullmask[:]
 pushmask = mask.root.pushmask[:]
