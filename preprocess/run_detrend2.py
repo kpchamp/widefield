@@ -7,7 +7,7 @@ from detrend import detrend
 datapath = '/gscratch/riekesheabrown/kpchamp/data/'
 
 mouseId = "m187201"
-collectionDate = "150727"
+collectionDate = "150805"
 
 infile = datapath + mouseId + "/" + collectionDate + "/data.h5"
 outfile = datapath + mouseId + "/" + collectionDate + "/transpose_detrend.h5"
