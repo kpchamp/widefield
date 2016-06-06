@@ -22,7 +22,7 @@ def detrend(mov, mask_idx, pushmask, frames, exposure, window, dff):
     len_iter = pushmask.shape[0]
     #print str(len_iter) + ' pixels'
     for n in range(len_iter):
-        print n
+        print >>open('output.txt','a'),n
         # put data in padded frame
         mov_pad = pad_vector(mov[frames,yidx[n],xidx[n]], win)
         # moving average by convolution

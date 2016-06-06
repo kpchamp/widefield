@@ -26,7 +26,8 @@ exposure = 10 # camera exposure in ms
 frames = range(start, stop)
 print str(len(frames)) + ' frames will be detrended'
 
-mask = tb.open_file('/gscratch/riekesheabrown/kpchamp/data/mask.h5','r')
+mask = get_mask(mov)
+#mask = tb.open_file('/gscratch/riekesheabrown/kpchamp/data/mask.h5','r')
 mask_idx = (mask.root.mask_idx[0], mask.root.mask_idx[1])
 pullmask = mask.root.pullmask[:]
 pushmask = mask.root.pushmask[:]
