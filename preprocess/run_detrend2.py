@@ -26,15 +26,15 @@ exposure = 10 # camera exposure in ms
 frames = range(start, stop)
 print str(len(frames)) + ' frames will be detrended'
 
-mask = get_mask(mov)
-masky = mask.shape[0]
-maskx = mask.shape[1]
-mask_idx, pullmask, pushmask = mask_to_index(mask)
+# mask = get_mask(mov)
+# masky = mask.shape[0]
+# maskx = mask.shape[1]
+# mask_idx, pullmask, pushmask = mask_to_index(mask)
 
-# mask = tb.open_file('/gscratch/riekesheabrown/kpchamp/data/mask.h5','r')
-# mask_idx = (mask.root.mask_idx[0], mask.root.mask_idx[1])
-# pullmask = mask.root.pullmask[:]
-# pushmask = mask.root.pushmask[:]
+mask = tb.open_file('/gscratch/riekesheabrown/kpchamp/data/mask.h5','r')
+mask_idx = mask.root.mask_idx
+pullmask = mask.root.pullmask
+pushmask = mask.root.pushmask
 
 # detrend the movie
 start_time = timeit.default_timer()
@@ -48,3 +48,4 @@ f.create_array(f.root,'data',cut_to_mask(mov_detrend,pushmask).T)
 f.close()
 
 open_tb.close()
+mask.close()
