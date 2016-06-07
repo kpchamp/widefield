@@ -33,7 +33,7 @@ def detrend(mov, mask_idx, pushmask, frames, exposure, window, dff):
         # and now use moving average as f0 for df/f
         if dff:
             mov_detrend[:,yidx[n],xidx[n]] = (mov[frames,yidx[n],xidx[n]] - mov_ave)/mov_ave
-            if mov_ave == 0:
+            if np.any(mov_ave == 0):
                 print >>open('output.txt','a'), n
         else:
             mov_detrend[:,yidx[n],xidx[n]] = (mov[frames,yidx[n],xidx[n]] - mov_ave)
