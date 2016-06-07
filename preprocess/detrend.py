@@ -32,8 +32,7 @@ def detrend(mov, mask_idx, pushmask, frames, exposure, window, dff):
         mov_ave = mov_ave.astype('float32')
         # and now use moving average as f0 for df/f
         if dff:
-            if np.min(mov_ave) == 0:
-                mov_detrend[:,yidx[n],xidx[n]] = (mov[frames,yidx[n],xidx[n]] - mov_ave)/mov_ave
+            mov_detrend[:,yidx[n],xidx[n]] = (mov[frames,yidx[n],xidx[n]] - mov_ave)/mov_ave
         else:
             mov_detrend[:,yidx[n],xidx[n]] = (mov[frames,yidx[n],xidx[n]] - mov_ave)
     return mov_detrend
