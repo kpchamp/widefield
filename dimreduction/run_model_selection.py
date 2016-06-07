@@ -11,7 +11,8 @@ collectionDate = '150810'
 basepath = "/gscratch/riekesheabrown/kpchamp/data/"
 datapath = basepath + mouseId + "/" + collectionDate + "/transpose_detrend.h5"
 dfpath = basepath + "allData_df_new.pkl"
-df = pd.read_pickle(dfpath)
+#df = pd.read_pickle(dfpath)
+df = pd.DataFrame()
 f=tb.open_file(datapath,'r')
 X=f.root.data[:,:].T
 
