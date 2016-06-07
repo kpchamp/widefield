@@ -7,7 +7,7 @@ from widefield.dimreduction.model_selection import pca_select
 
 
 mouseId = 'm187201'
-collectionDate = '150805'
+collectionDate = '150810'
 basepath = "/gscratch/riekesheabrown/kpchamp/data/"
 datapath = basepath + mouseId + "/" + collectionDate + "/transpose_detrend.h5"
 dfpath = basepath + "allData_df.pkl"
@@ -17,7 +17,7 @@ X=f.root.data[:,:].T
 
 # note: total frames are 347973
 n_features, Tmax = f.root.data.shape
-# actually use only first 347904 = 128*2718 frames
+# actually use only first 347904 = 128*2718 frames (for full would be 366000 = 128*2859)
 Tmax = 347904
 winDiv = 1
 Twin = np.int(Tmax/winDiv)
