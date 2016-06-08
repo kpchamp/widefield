@@ -16,6 +16,7 @@ maskfile = datapath + mouseId + "/" + collectionDate + "/mask.h5"
 # load data
 open_tb = tb.open_file(infile, 'r')
 mov = open_tb.root.data[:]
+open_tb.close()
 
 dff = True
 start = 0 # first frame in movie to detrend
@@ -31,10 +32,10 @@ print str(len(frames)) + ' frames will be detrended'
 # maskx = mask.shape[1]
 # mask_idx, pullmask, pushmask = mask_to_index(mask)
 
-mask = tb.open_file('/gscratch/riekesheabrown/kpchamp/data/mask2.h5','r')
-mask_idx = mask.root.mask_idx
-pullmask = mask.root.pullmask
-pushmask = mask.root.pushmask
+# mask = tb.open_file('/gscratch/riekesheabrown/kpchamp/data/mask2.h5','r')
+# mask_idx = mask.root.mask_idx
+# pullmask = mask.root.pullmask
+# pushmask = mask.root.pushmask
 
 # detrend the movie
 start_time = timeit.default_timer()
@@ -42,12 +43,12 @@ start_time = timeit.default_timer()
 mov_detrend = detrend_nomask(mov, frames, exposure, window, dff)
 detrend_time = timeit.default_timer() - start_time
 print 'detrending took ' + str(detrend_time) + ' seconds\n'
+del mov
 
 # Kathleen mods start here
 f=tb.open_file(outfile,'w')
 #f.create_array(f.root,'data',cut_to_mask(mov_detrend,pushmask).T)
-f.create_array(f.root,'data',mov_detrend.T)
+f.create_array(f.root,'data',mov_detrend)
 f.close()
 
-open_tb.close()
-mask.close()
+# mask.close()
