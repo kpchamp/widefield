@@ -1,7 +1,7 @@
-from movie_mask import *
+from widefield.preprocess.movie_mask import *
 import tables as tb
 import timeit
-from detrend import detrend
+from widefield.preprocess.detrend import detrend, detrend_nomask
 
 ## GLOABL VARS
 datapath = '/gscratch/riekesheabrown/kpchamp/data/'
@@ -38,13 +38,15 @@ pushmask = mask.root.pushmask
 
 # detrend the movie
 start_time = timeit.default_timer()
-mov_detrend = detrend(mov, mask_idx, pushmask, frames, exposure, window, dff)
+#mov_detrend = detrend(mov, mask_idx, pushmask, frames, exposure, window, dff)
+mov_detrend = detrend_nomask(mov, frames, exposure, window, dff)
 detrend_time = timeit.default_timer() - start_time
 print 'detrending took ' + str(detrend_time) + ' seconds\n'
 
 # Kathleen mods start here
 f=tb.open_file(outfile,'w')
-f.create_array(f.root,'data',cut_to_mask(mov_detrend,pushmask).T)
+#f.create_array(f.root,'data',cut_to_mask(mov_detrend,pushmask).T)
+f.create_array(f.root,'data',mov_detrend.T)
 f.close()
 
 open_tb.close()
