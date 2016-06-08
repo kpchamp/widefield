@@ -6,8 +6,8 @@ from detrend import detrend
 ## GLOABL VARS
 datapath = '/gscratch/riekesheabrown/kpchamp/data/'
 
-mouseId = "m187201"
-collectionDate = "150810"
+mouseId = "m177931"
+collectionDate = "150731"
 
 infile = datapath + mouseId + "/" + collectionDate + "/data.h5"
 outfile = datapath + mouseId + "/" + collectionDate + "/transpose_detrend.h5"
