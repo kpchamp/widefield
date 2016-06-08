@@ -9,25 +9,31 @@ basepath = '/gscratch/riekesheabrown/kpchamp/data/'
 datapath = basepath + 'decitranspose_detrend.h5'
 
 
-def subspace_angle(A,B):
+def subspace_angle(Ain,Bin,cutoff=None):
+    if cutoff is not None:
+        A = Ain[0:cutoff,0:cutoff]
+        B = Bin[0:cutoff,0:cutoff]
     A = A/np.sqrt(np.sum(np.abs(A)**2,axis=0))
     B = B/np.sqrt(np.sum(np.abs(B)**2,axis=0))
     u,s,v = la.svd(np.dot(A.T,B),full_matrices=False)
     return math.acos(min(1,max(s[-1],-1)))
 
 
-def compare_components(A,B):
+def compare_components(Ain,Bin,cutoff=None):
+    if cutoff is not None:
+        A = Ain[0:cutoff,0:cutoff]
+        B = Bin[0:cutoff,0:cutoff]
     A = A/np.sqrt(np.sum(np.abs(A)**2,axis=0))
     B = B/np.sqrt(np.sum(np.abs(B)**2,axis=0))
     return np.abs(np.dot(A.T,B))
 
 
-def get_component_comparison(dfrow1,dfrow2):
+def get_component_comparison(dfrow1,dfrow2,cutoff=None):
     fname1 = basepath + dfrow1['mouseId'] + '/' + dfrow1['date'] + '/evecs/evecs_twin%d_nsamples%d_tstart%d.pkl' % (dfrow1['windowLength'],dfrow1['sampleSize'],dfrow1['startTime'])
     fname2 = basepath + dfrow2['mouseId'] + '/' + dfrow2['date']  + '/evecs/evecs_twin%d_nsamples%d_tstart%d.pkl' % (dfrow2['windowLength'],dfrow2['sampleSize'],dfrow2['startTime'])
     A = pickle.load(open(fname1,'r'))
     B = pickle.load(open(fname2,'r'))
-    return compare_components(A,B)
+    return compare_components(A,B,cutoff)
 
 
 def get_subspace_angles(dfrow1,dfrow2,cutoff):
