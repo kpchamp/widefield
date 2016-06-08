@@ -11,8 +11,8 @@ datapath = basepath + 'decitranspose_detrend.h5'
 
 def subspace_angle(Ain,Bin,cutoff=None):
     if cutoff is not None:
-        A = Ain[0:cutoff,0:cutoff]
-        B = Bin[0:cutoff,0:cutoff]
+        A = Ain[:,0:cutoff]
+        B = Bin[:,0:cutoff]
     A = A/np.sqrt(np.sum(np.abs(A)**2,axis=0))
     B = B/np.sqrt(np.sum(np.abs(B)**2,axis=0))
     u,s,v = la.svd(np.dot(A.T,B),full_matrices=False)
@@ -21,8 +21,8 @@ def subspace_angle(Ain,Bin,cutoff=None):
 
 def compare_components(Ain,Bin,cutoff=None):
     if cutoff is not None:
-        A = Ain[0:cutoff,0:cutoff]
-        B = Bin[0:cutoff,0:cutoff]
+        A = Ain[:,0:cutoff]
+        B = Bin[:,0:cutoff]
     A = A/np.sqrt(np.sum(np.abs(A)**2,axis=0))
     B = B/np.sqrt(np.sum(np.abs(B)**2,axis=0))
     return np.abs(np.dot(A.T,B))
