@@ -1,6 +1,9 @@
 import numpy as np
 
 
+pxls_exlude = np.array([1463,1464,2232,2233,2234,2235,2358,2359,2360,2361,2362,2363,2364,2609,2612])
+
+
 def generate_mask(img, percentage):
     img_dims = img.shape
     bitdepth = 2**16
@@ -12,6 +15,7 @@ def generate_mask(img, percentage):
     mask = np.zeros(img_dims[0]*img_dims[1])
     img_flat = img.reshape(img_dims[0]*img_dims[1])
     mask[img_flat>thresh] = 1
+    mask[pxls_exlude] = 0
     mask = mask.reshape(img_dims)
     return mask
 
