@@ -7,7 +7,7 @@ from widefield.preprocess.detrend import detrend, detrend_nomask
 datapath = '/gscratch/riekesheabrown/kpchamp/data/'
 
 mouseId = "m187201"
-collectionDate = "150805"
+collectionDate = "150727"
 
 infile = datapath + mouseId + "/" + collectionDate + "/data.h5"
 outfile = datapath + mouseId + "/" + collectionDate + "/data_detrend.h5"
