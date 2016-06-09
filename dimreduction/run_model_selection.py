@@ -27,7 +27,7 @@ print >>open('output.txt','a'), Twin
 for idx in range(winDiv):
     Tstart = idx*Twin
     print >>open('output.txt','a'), Tstart
-    samples = np.arange(Twin,Twin+1,Twin/2,dtype=np.int)
+    samples = np.arange(Twin/2,Twin/2+1,Twin/2,dtype=np.int)
     n_folds = 4
     ps = np.concatenate(([1],np.arange(25,8200,25)))
 
