@@ -9,12 +9,12 @@ from widefield.dimreduction.model_selection import pca_select
 mouseId = 'm1877931'
 collectionDate = '150729'
 basepath = "/gscratch/riekesheabrown/kpchamp/data/"
-datapath = basepath + mouseId + "/" + collectionDate + "/transpose_detrend.h5"
+datapath = basepath + mouseId + "/" + collectionDate + "/data_detrend_mask.h5"
 dfpath = basepath + "allData_df_new.pkl"
 #df = pd.read_pickle(dfpath)
 df = pd.DataFrame()
 f=tb.open_file(datapath,'r')
-X=f.root.data[:,:].T
+X=f.root.data[:,:]
 
 # note: total frames are 347973
 n_features, Tmax = f.root.data.shape
@@ -27,7 +27,7 @@ print >>open('output.txt','a'), Twin
 for idx in range(winDiv):
     Tstart = idx*Twin
     print >>open('output.txt','a'), Tstart
-    samples = np.arange(Twin/2,Twin+1,Twin/2,dtype=np.int)
+    samples = np.arange(Twin,Twin+1,Twin/2,dtype=np.int)
     n_folds = 4
     ps = np.concatenate(([1],np.arange(25,8200,25)))
 
