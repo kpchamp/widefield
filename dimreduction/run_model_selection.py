@@ -6,7 +6,7 @@ import pandas as pd
 from widefield.dimreduction.model_selection import pca_select
 
 
-mouseId = 'm1877931'
+mouseId = 'm177931'
 collectionDate = '150729'
 basepath = "/gscratch/riekesheabrown/kpchamp/data/"
 datapath = basepath + mouseId + "/" + collectionDate + "/data_detrend_mask.h5"
