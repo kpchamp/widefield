@@ -20,6 +20,7 @@ def get_residual_and_moments(n_components):
     del X
     del Xnew
 
+    print "getting moments"
     moments = np.zeros((R.shape[1],4))
     for i in range(R.shape[1]):
         moments[i,0] = np.mean(R[:,i])
