@@ -23,7 +23,7 @@ def plot_component_comparison(dfrow1, dfrow2, component_limit=500):
     plt.xlabel('t_win=%d, n_samples=%d, t_start=%d' % (dfrow2['windowLength'],dfrow2['sampleSize'],dfrow2['startTime']))
 
 
-def plot_residual(residuals):
+def plot_residual(residuals,bins=100):
     if residuals.ndim == 1:
         residuals = np.reshape(residuals,(residuals.shape[0],1))
     n_plots = residuals.shape[1]
@@ -33,7 +33,7 @@ def plot_residual(residuals):
         x = np.linspace(np.min(residuals[:,i]), np.max(residuals[:,i]), 1000)
         plt.subplot(np.floor(np.sqrt(n_plots)),np.ceil(n_plots/np.floor(np.sqrt(n_plots))),i+1)
         plt.plot(x, normpdf(x, mu, sigma))
-        plt.hist(residuals[:,i], bins=100, normed=True)
+        plt.hist(residuals[:,i], bins=bins, normed=True)
 
 
 def dim_vs_samples(df):

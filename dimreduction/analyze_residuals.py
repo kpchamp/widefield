@@ -10,7 +10,7 @@ def get_residual_and_moments(n_components):
     basepath = "/gscratch/riekesheabrown/kpchamp/data/"
     datapath = basepath + mouseId + "/" + collectionDate + "/data_detrend_mask.h5"
     f=tb.open_file(datapath,'r')
-    X=f.root.data[:,:]
+    X=np.log(f.root.data[:,:])
     f.close()
 
     ppca = ppca_model(X, n_components=n_components)
