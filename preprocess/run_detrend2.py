@@ -10,8 +10,6 @@ mouseId = "m187201"
 collectionDate = "150727"
 
 infile = datapath + mouseId + "/" + collectionDate + "/data.h5"
-outfile = datapath + mouseId + "/" + collectionDate + "/data_detrend.h5"
-maskfile = datapath + mouseId + "/" + collectionDate + "/mask.h5"
 
 # load data
 open_tb = tb.open_file(infile, 'r')
@@ -27,28 +25,33 @@ exposure = 10 # camera exposure in ms
 frames = range(start, stop)
 print str(len(frames)) + ' frames will be detrended'
 
-# mask = get_mask(mov)
-# masky = mask.shape[0]
-# maskx = mask.shape[1]
-# mask_idx, pullmask, pushmask = mask_to_index(mask)
+# create and save the mask
+mask = get_mask(mov)
+masky = mask.shape[0]
+maskx = mask.shape[1]
+mask_idx, pullmask, pushmask = mask_to_index(mask)
+maskfile = datapath + mouseId + "/" + collectionDate + "/mask.h5"
+f = tb.open_file(maskfile,'w')
+f.create_array(f.root,'mask_idx',mask_idx)
+f.create_array(f.root,'pullmask',pullmask)
+f.create_array(f.root,'pushmask',pushmask)
+f.close()
 
-# mask = tb.open_file('/gscratch/riekesheabrown/kpchamp/data/mask2.h5','r')
-# mask_idx = mask.root.mask_idx
-# pullmask = mask.root.pullmask
-# pushmask = mask.root.pushmask
-
-# detrend the movie
+# detrend the movie without masking
 start_time = timeit.default_timer()
-#mov_detrend = detrend(mov, mask_idx, pushmask, frames, exposure, window, dff)
 mov_detrend = detrend_nomask(mov, frames, exposure, window, dff)
 detrend_time = timeit.default_timer() - start_time
 print 'detrending took ' + str(detrend_time) + ' seconds\n'
 del mov
 
-# Kathleen mods start here
-f=tb.open_file(outfile,'w')
-#f.create_array(f.root,'data',cut_to_mask(mov_detrend,pushmask).T)
+# save the unmasked detrended movie
+outfile1 = datapath + mouseId + "/" + collectionDate + "/data_detrend.h5"
+f = tb.open_file(outfile1,'w')
 f.create_array(f.root,'data',mov_detrend)
 f.close()
 
-# mask.close()
+# save the masked detrended movie
+outfile2 = datapath + mouseId + "/" + collectionDate + "/data_detrend_mask.h5"
+f = tb.open_file(outfile2,'w')
+f.create_array(f.root,'data',cut_to_mask(mov_detrend,pushmask).T)
+f.close()
