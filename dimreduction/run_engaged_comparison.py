@@ -27,18 +27,18 @@ if (n_samples % n_folds) != 0:
     raise ValueError("number of samples n_samples=%d is not a multiple of n_folds=%d", n_samples, n_folds)
 
 # run disengaged analysis
-print >>open('output.txt','a'), "starting disengaged analysis"
-frames = de_idxs[0][0:n_samples]
-dfrow = {'mouseId': mouseId, 'date': collectionDate, 'sampleSize': n_samples, 'chunkNumber': 1,
-         'engagement': 'D', 'frames': frames}
-dfrow['data'], evecs = pca_select(X[frames, :], ps, n_folds=n_folds)
-pickle.dump(evecs, open(basepath + mouseId + "/" + collectionDate + "/evecs_de/" + "evecs_D.pkl", 'w'))
-df = df.append(dfrow, ignore_index=True)
-df.to_pickle(dfpath)
+# print >>open('output.txt','a'), "starting disengaged analysis"
+# frames = de_idxs[0][0:n_samples]
+# dfrow = {'mouseId': mouseId, 'date': collectionDate, 'sampleSize': n_samples, 'chunkNumber': 1,
+#          'engagement': 'D', 'frames': frames}
+# dfrow['data'], evecs = pca_select(X[frames, :], ps, n_folds=n_folds)
+# pickle.dump(evecs, open(basepath + mouseId + "/" + collectionDate + "/evecs_de/" + "evecs_D.pkl", 'w'))
+# df = df.append(dfrow, ignore_index=True)
+# df.to_pickle(dfpath)
 
 # run engaged analysis
 startIdxs = np.arange(0, num_engaged, num_disengaged, dtype=np.int)
-for idx in startIdxs.shape[0]:
+for idx in np.range(startIdxs.shape[0]):
     print >>open('output.txt','a'), "starting engaged analysis, chunk %d" % (idx+1)
     startIdx = startIdxs[idx]
 
