@@ -38,7 +38,7 @@ if (n_samples % n_folds) != 0:
 
 # run engaged analysis
 startIdxs = np.arange(0, num_engaged, num_disengaged, dtype=np.int)
-for idx in np.range(startIdxs.shape[0]):
+for idx in range(startIdxs.shape[0]):
     print >>open('output.txt','a'), "starting engaged analysis, chunk %d" % (idx+1)
     startIdx = startIdxs[idx]
 
