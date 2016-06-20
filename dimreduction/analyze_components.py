@@ -61,7 +61,7 @@ def get_cutoff(data,type):
     elif type == 'bic':
         return np.argmin(data['bic'])+1
     elif type == 'xval':
-        return data['ps'][np.argmax(data['lltest'])]
+        return data['ps'][np.argmax(data['ll_xval'])]
     elif type == '90percent':
         sv_totals=np.array([np.sum(data['svs'][0:k+1]) for k in range(len(data['svs']))])
         return np.argmax(sv_totals>(0.9*sv_totals[-1]))+1
