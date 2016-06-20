@@ -37,7 +37,7 @@ if (n_samples % n_folds) != 0:
 # df.to_pickle(dfpath)
 
 # run engaged analysis
-startIdxs = np.arange(0, num_engaged, num_disengaged, dtype=np.int)
+startIdxs = np.arange(0, num_engaged - num_disengaged + 1, num_disengaged, dtype=np.int)
 for idx in range(startIdxs.shape[0]):
     print >>open('output.txt','a'), "starting engaged analysis, chunk %d" % (idx+1)
     startIdx = startIdxs[idx]
