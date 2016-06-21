@@ -53,5 +53,5 @@ f.close()
 # save the masked detrended movie
 outfile2 = datapath + mouseId + "/" + collectionDate + "/data_detrend_mask.h5"
 f = tb.open_file(outfile2,'w')
-f.create_array(f.root,'data',cut_to_mask(mov_detrend,pushmask).T)
+f.create_array(f.root,'data',cut_to_mask(mov_detrend,pushmask))
 f.close()
