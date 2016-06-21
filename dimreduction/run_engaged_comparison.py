@@ -6,7 +6,7 @@ import pandas as pd
 from widefield.dimreduction.model_selection import pca_select
 
 mouseId = 'm187201'
-collectionDate = '150727'
+collectionDate = '150805'
 basepath = "/gscratch/riekesheabrown/kpchamp/data/"
 datapath = basepath + mouseId + "/" + collectionDate + "/data_detrend_mask.h5"
 dfpath = basepath + "df_engaged_comparison.pkl"
@@ -27,14 +27,14 @@ if (n_samples % n_folds) != 0:
     raise ValueError("number of samples n_samples=%d is not a multiple of n_folds=%d", n_samples, n_folds)
 
 # run disengaged analysis
-# print >>open('output.txt','a'), "starting disengaged analysis"
-# frames = de_idxs[0][0:n_samples]
-# dfrow = {'mouseId': mouseId, 'date': collectionDate, 'sampleSize': n_samples, 'chunkNumber': 1,
-#          'engagement': 'D', 'frames': frames}
-# dfrow['data'], evecs = pca_select(X[frames, :], ps, n_folds=n_folds)
-# pickle.dump(evecs, open(basepath + mouseId + "/" + collectionDate + "/evecs_de/" + "evecs_D.pkl", 'w'))
-# df = df.append(dfrow, ignore_index=True)
-# df.to_pickle(dfpath)
+print >>open('output.txt','a'), "starting disengaged analysis"
+frames = de_idxs[0][0:n_samples]
+dfrow = {'mouseId': mouseId, 'date': collectionDate, 'sampleSize': n_samples, 'chunkNumber': 1,
+         'engagement': 'D', 'frames': frames}
+dfrow['data'], evecs = pca_select(X[frames, :], ps, n_folds=n_folds)
+pickle.dump(evecs, open(basepath + mouseId + "/" + collectionDate + "/evecs_de/" + "evecs_D.pkl", 'w'))
+df = df.append(dfrow, ignore_index=True)
+df.to_pickle(dfpath)
 
 # run engaged analysis
 startIdxs = np.arange(0, num_engaged - num_disengaged + 1, num_disengaged, dtype=np.int)
