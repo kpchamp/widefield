@@ -6,8 +6,8 @@ from widefield.preprocess.detrend import detrend, detrend_nomask
 ## GLOABL VARS
 datapath = '/suppscr/riekesheabrown/kpchamp/data/'
 
-mouseId = "m187201"
-collectionDate = "150727"
+mouseId = "m177931"
+collectionDate = "150731"
 
 infile = datapath + mouseId + "/" + collectionDate + "/data.h5"
 
