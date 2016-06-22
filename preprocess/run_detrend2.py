@@ -32,7 +32,6 @@ maskx = mask.shape[1]
 mask_idx, pullmask, pushmask = mask_to_index(mask)
 maskfile = datapath + mouseId + "/" + collectionDate + "/mask.h5"
 f = tb.open_file(maskfile,'w')
-o
 
 # detrend the movie without masking
 start_time = timeit.default_timer()
