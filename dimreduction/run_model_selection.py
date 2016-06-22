@@ -8,7 +8,7 @@ from widefield.dimreduction.model_selection import pca_select
 
 mouseId = 'm187201'
 collectionDate = '150810'
-basepath = "/gscratch/riekesheabrown/kpchamp/data/"
+basepath = "/suppscr/riekesheabrown/kpchamp/data/"
 datapath = basepath + mouseId + "/" + collectionDate + "/data_detrend_mask.h5"
 dfpath = basepath + "allData_df_new.pkl"
 df = pd.read_pickle(dfpath)

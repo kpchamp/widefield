@@ -4,7 +4,7 @@ import timeit
 from widefield.preprocess.detrend import detrend, detrend_nomask
 
 ## GLOABL VARS
-datapath = '/gscratch/riekesheabrown/kpchamp/data/'
+datapath = '/suppscr/riekesheabrown/kpchamp/data/'
 
 mouseId = "m187201"
 collectionDate = "150727"
@@ -32,10 +32,7 @@ maskx = mask.shape[1]
 mask_idx, pullmask, pushmask = mask_to_index(mask)
 maskfile = datapath + mouseId + "/" + collectionDate + "/mask.h5"
 f = tb.open_file(maskfile,'w')
-f.create_array(f.root,'mask_idx',mask_idx)
-f.create_array(f.root,'pullmask',pullmask)
-f.create_array(f.root,'pushmask',pushmask)
-f.close()
+o
 
 # detrend the movie without masking
 start_time = timeit.default_timer()

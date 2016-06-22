@@ -5,7 +5,7 @@ import pickle
 from widefield.dimreduction.pca import ppca_model
 
 
-basepath = '/gscratch/riekesheabrown/kpchamp/data/'
+basepath = '/suppscr/riekesheabrown/kpchamp/data/'
 datapath = basepath + 'decitranspose_detrend.h5'
 
 
