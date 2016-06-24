@@ -4,14 +4,14 @@ import tables as tb
 from scipy.stats import skew, kurtosis
 
 
-def get_residual_and_moments(n_components):
-    mouseId = 'm187201'
-    collectionDate = '150727'
-    basepath = "/gscratch/riekesheabrown/kpchamp/data/"
-    datapath = basepath + mouseId + "/" + collectionDate + "/data_detrend_mask.h5"
-    f=tb.open_file(datapath,'r')
-    X=np.log(f.root.data[:,:])
-    f.close()
+def get_residual_and_moments(n_components,X):
+    # mouseId = 'm187201'
+    # collectionDate = '150727'
+    # basepath = "/gscratch/riekesheabrown/kpchamp/data/"
+    # datapath = basepath + mouseId + "/" + collectionDate + "/data_detrend_mask.h5"
+    # f=tb.open_file(datapath,'r')
+    # X=np.log(f.root.data[:,:])
+    # f.close()
 
     ppca = ppca_model(X, n_components=n_components)
     print "number of components is %d" % ppca.components.shape[1]
