@@ -1,5 +1,7 @@
 import scipy.io as io
 from widefield.dynamics.lds import *
+import matplotlib.pyplot as plt
+from pykalman import KalmanFilter
 
 ss = 4
 os = 2
@@ -15,6 +17,8 @@ x = data['x']
 y = data['y']
 T = x.shape[1]
 
+#kf = KalmanFilter(n_dim_state=4, n_dim_obs=2)
+#kf.em(y.T)
 lds = lds_model(y, 4, max_iters=25)
 # lds = lds_model(F, H, Q, R, initmu, initV)
 xfilt, Vfilt, LL = lds.kalman_filter(y)
