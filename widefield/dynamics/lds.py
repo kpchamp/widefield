@@ -109,8 +109,7 @@ class lds_model:
             print >>open('progress.txt','a'), "filtering time %d" % t
             e = Y[:,t] - self.C.dot(mu_predict)
             S = self.C.dot(V_predict).dot(self.C.T) + self.R
-            u,s,v = la.svd(S, full_matrices=False)
-            K = V_predict.dot(self.C.T).dot(v*(s**(-1))).dot(u.T)   # note: temporarily trying out Cholesky factorization
+            K = V_predict.dot(self.C.T).dot(la.lapack.flapack.dpotri(la.lapack.flapack.dpotrf(S)[0])[0])
             mu_filter[:,t] = mu_predict + K.dot(e)
             V_filter[t] = V_predict - K.dot(self.C).dot(V_predict)
             #LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=S)
