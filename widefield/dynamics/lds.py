@@ -33,7 +33,7 @@ class lds_model:
             if 'max_iters' in kwargs:
                 max_iters = kwargs['max_iters']
             else:
-                max_iters = 1000
+                max_iters = 10
 
             self.fit_em(Y, max_iters)
         else:
