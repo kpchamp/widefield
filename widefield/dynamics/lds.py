@@ -30,17 +30,16 @@ class lds_model:
             self.mu0 = np.zeros(self.n_dim_state)
             self.V0 = np.eye(self.n_dim_state)
 
-            if 'max_iters' in kwargs:
-                max_iters = kwargs['max_iters']
-            else:
-                max_iters = 10
-
-            #self.fit_em(Y, max_iters)
+            # if 'max_iters' in kwargs:
+            #     max_iters = kwargs['max_iters']
+            # else:
+            #     max_iters = 10
+            # self.fit_em(Y, max_iters)
         else:
             raise TypeError('Wrong number of arguments')
 
     # Fit the parameters of the LDS model using EM
-    def fit_em(self, Y, max_iters):
+    def fit_em(self, Y, max_iters=1000):
         n_samples = Y.shape[1]
 
         # NOTE: Changed initialization so it happens in init()

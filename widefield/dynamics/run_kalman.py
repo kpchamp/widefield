@@ -17,5 +17,6 @@ Tmax, n_features = X.shape
 Tmax = 347904
 Twin = Tmax/8
 
-lds = lds_model(X[0:500,:].T, 25, max_iters=1)    # do only one iteration of EM for timing purposes
+lds = lds_model(X[0:500,:].T, 25)    # do only one iteration of EM for timing purposes
+lds.fit_em(X[0:500,:].T, max_iters=1)
 pickle.dump(lds, open('/suppscr/riekesheabrown/kpchamp/lds_model_test.pkl','w'))
