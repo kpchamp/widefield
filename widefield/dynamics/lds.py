@@ -23,19 +23,19 @@ class lds_model:
             self.n_dim_obs = Y.shape[0]
             self.n_dim_state = args[1]
 
-            self.A = None
-            self.C = None
-            self.Q = None
-            self.R = None
-            self.mu0 = None
-            self.V0 = None
+            self.A = np.eye(self.n_dim_state)
+            self.C = np.eye(self.n_dim_obs, self.n_dim_state)
+            self.Q = np.eye(self.n_dim_state)
+            self.R = np.eye(self.n_dim_obs)
+            self.mu0 = np.zeros(self.n_dim_state)
+            self.V0 = np.eye(self.n_dim_state)
 
             if 'max_iters' in kwargs:
                 max_iters = kwargs['max_iters']
             else:
                 max_iters = 10
 
-            self.fit_em(Y, max_iters)
+            #self.fit_em(Y, max_iters)
         else:
             raise TypeError('Wrong number of arguments')
 
@@ -43,13 +43,14 @@ class lds_model:
     def fit_em(self, Y, max_iters):
         n_samples = Y.shape[1]
 
+        # NOTE: Changed initialization so it happens in init()
         # initialize parameters
-        self.A = np.eye(self.n_dim_state)
-        self.C = np.eye(self.n_dim_obs, self.n_dim_state)
-        self.Q = np.eye(self.n_dim_state)
-        self.R = np.eye(self.n_dim_obs)
-        self.mu0 = np.zeros(self.n_dim_state)
-        self.V0 = np.eye(self.n_dim_state)
+        # self.A = np.eye(self.n_dim_state)
+        # self.C = np.eye(self.n_dim_obs, self.n_dim_state)
+        # self.Q = np.eye(self.n_dim_state)
+        # self.R = np.eye(self.n_dim_obs)
+        # self.mu0 = np.zeros(self.n_dim_state)
+        # self.V0 = np.eye(self.n_dim_state)
 
         # initialize parameters
         # self.mu0 = np.random.rand(self.n_dim_state)
@@ -106,6 +107,7 @@ class lds_model:
         V_predict = self.V0
         LL = 0
         for t in range(n_samples):
+            print >>open('progress.txt','a'), "filtering time %d" % t
             e = Y[:,t] - self.C.dot(mu_predict)
             S = self.C.dot(V_predict).dot(self.C.T) + self.R
             K = V_predict.dot(self.C.T).dot(la.inv(S))
@@ -129,6 +131,7 @@ class lds_model:
         mu_smooth[:,-1] = mu_filter[:,-1]
         V_smooth[-1] = V_filter[-1]
         for t in range(n_samples-2,-1,-1):
+            print >>open('progress.txt','a'), "smoothing time %d" % t
             mu_predict = self.A.dot(mu_filter[:,t])
             V_predict = self.A.dot(V_filter[t]).dot(self.A.T) + self.Q
             J[t] = V_filter[t].dot(self.A.T).dot(la.inv(V_predict))
