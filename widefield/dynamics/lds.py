@@ -39,7 +39,7 @@ class lds_model:
             raise TypeError('Wrong number of arguments')
 
     # Fit the parameters of the LDS model using EM
-    def fit_em(self, Y, max_iters=1000):
+    def fit_em(self, Y, max_iters=10):
         n_samples = Y.shape[1]
 
         # NOTE: Changed initialization so it happens in init()
@@ -109,8 +109,8 @@ class lds_model:
             print >>open('progress.txt','a'), "filtering time %d" % t
             e = Y[:,t] - self.C.dot(mu_predict)
             S = self.C.dot(V_predict).dot(self.C.T) + self.R
-            U = la.cholesky(S)
-            K = V_predict.dot(self.C.T).dot(U.T).dot(U)   # note: temporarily trying out Cholesky factorization
+            u,s,v = la.svd(S, full_matrices=False)
+            K = V_predict.dot(self.C.T).dot(v*(s**(-1))).dot(u.T)   # note: temporarily trying out Cholesky factorization
             mu_filter[:,t] = mu_predict + K.dot(e)
             V_filter[t] = V_predict - K.dot(self.C).dot(V_predict)
             #LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=S)
