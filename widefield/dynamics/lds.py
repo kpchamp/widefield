@@ -109,7 +109,7 @@ class lds_model:
             print >>open('progress.txt','a'), "filtering time %d" % t
             e = Y[:,t] - self.C.dot(mu_predict)
             S = self.C.dot(V_predict).dot(self.C.T) + self.R
-            K = V_predict.dot(self.C.T).dot(la.inv(S))
+            K = V_predict.dot(self.C.T).dot(la.pinv(S))   # note: temporarily trying out pseudoinverse
             mu_filter[:,t] = mu_predict + K.dot(e)
             V_filter[t] = V_predict - K.dot(self.C).dot(V_predict)
             #LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=S)
