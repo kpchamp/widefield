@@ -5,7 +5,7 @@ import pickle
 import pandas as pd
 
 mouseId = 'm187201'
-collectionDate = '150810'
+collectionDate = '150727'
 basepath = "/suppscr/riekesheabrown/kpchamp/data/"
 datapath = basepath + mouseId + "/" + collectionDate + "/data_detrend_mask.h5"
 dfpath = basepath + "allData_df.pkl"
