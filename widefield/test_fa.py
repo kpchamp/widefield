@@ -2,18 +2,28 @@ from sklearn.decomposition import FactorAnalysis
 import tables as tb
 import numpy as np
 import pickle
+import pandas as pd
 
-fname="/gscratch/riekesheabrown/kpchamp/data/m187201_150727_decitranspose_detrend.h5"
-f=tb.open_file(fname,'r')
-X=f.root.data[:,:].T
+mouseId = 'm187201'
+collectionDate = '150810'
+basepath = "/suppscr/riekesheabrown/kpchamp/data/"
+datapath = basepath + mouseId + "/" + collectionDate + "/data_detrend_mask.h5"
+dfpath = basepath + "allData_df_new.pkl"
+df = pd.read_pickle(dfpath)
+f=tb.open_file(datapath,'r')
+X=f.root.data[:,:]
+f.close()
+
 # note: total frames are 347973
-n_features, Tmax = f.root.data.shape
+Tmax, n_features = X.shape
 # actually use only first 347904 = 128*2718 frames
 Tmax = 347904
-winDiv = 2
-Twin = Tmax/winDiv
+Twin = Tmax
+n_samples = Tmax/2
+Tstart = 0
 
+perm = df.loc[(df['sampleSize']==n_samples) & (df['windowLength']==Twin)]
+#perm=np.random.choice(np.arange(Twin),n_samples,replace=False)+Tstart
 fa = FactorAnalysis(n_components=1000)
-fa.fit(X[0:Twin,:])
+fa.fit(X[perm,:])
 pickle.dump(fa, open('factoranalysis_test.pkl','w'))
-f.close()
