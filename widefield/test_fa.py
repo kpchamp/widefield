@@ -22,7 +22,7 @@ Twin = Tmax
 n_samples = Tmax/2
 Tstart = 0
 
-perm = df.loc[(df['sampleSize']==n_samples) & (df['windowLength']==Twin)]['data']['perm']
+perm = df.loc[(df['sampleSize']==n_samples) & (df['windowLength']==Twin) & (df['date']==collectionDate)]['data'].item()['perm']
 #perm=np.random.choice(np.arange(Twin),n_samples,replace=False)+Tstart
 fa = FactorAnalysis(n_components=1000)
 fa.fit(X[perm,:])
