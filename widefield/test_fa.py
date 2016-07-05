@@ -24,6 +24,6 @@ Tstart = 0
 
 perm = df.loc[(df['sampleSize']==n_samples) & (df['windowLength']==Twin) & (df['date']==collectionDate)]['data'].item()['perm']
 #perm=np.random.choice(np.arange(Twin),n_samples,replace=False)+Tstart
-fa = FactorAnalysis(n_components=1000, svd_method='lapack', tol=1e-2)
+fa = FactorAnalysis(n_components=1000, svd_method='lapack', tol=1e-3)
 fa.fit(X[perm,:])
 pickle.dump(fa, open('factoranalysis_test.pkl','w'))
