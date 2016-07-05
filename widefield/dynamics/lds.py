@@ -87,9 +87,9 @@ class lds_model:
             self.V0 = P1 - np.outer(mu_smooth[:,0],mu_smooth[:,0])
             # Ghahramani version of updates
             self.A = Psum_ttm1.dot(la.inv(Psum1))
-            self.Q = (Psum2 - self.A.dot(Psum_ttm1.T))/(n_samples-1)
+            #self.Q = (Psum2 - self.A.dot(Psum_ttm1.T))/(n_samples-1)
             self.C = Y.dot(mu_smooth.T).dot(la.inv(Psum_all))
-            self.R = (Y.dot(Y.T) - self.C.dot(mu_smooth).dot(Y.T))/n_samples
+            self.R = np.diag((Y.dot(Y.T) - self.C.dot(mu_smooth).dot(Y.T))/n_samples)
             # bishop version of updates
             # self.A = Psum_ttm1.dot(la.inv(Psum1))
             # self.Q = (Psum2 - self.A.dot(Psum_ttm1.T) - Psum_ttm1.dot(self.A) + self.A.dot(Psum1).dot(self.A.T))/(n_samples-1)
@@ -108,11 +108,17 @@ class lds_model:
         for t in range(n_samples):
             print >>open('progress.txt','a'), "filtering time %d" % t
             e = Y[:,t] - self.C.dot(mu_predict)
-            S = self.C.dot(V_predict).dot(self.C.T) + self.R
-            K = V_predict.dot(self.C.T).dot(la.lapack.flapack.dpotri(la.lapack.flapack.dpotrf(S)[0])[0])
+            # Invert S using dpotrf
+            # S = self.C.dot(V_predict).dot(self.C.T) + self.R
+            # K = V_predict.dot(self.C.T).dot(la.lapack.flapack.dpotri(la.lapack.flapack.dpotrf(S)[0])[0])
+            # Invert S using matrix inversion lemma
+            Vinv = la.lapack.flapack.dpotrf(V_predict)
+            Rinv = 1/self.R
+            Sinv = np.diag(Rinv) - (self.C*Rinv).dot(la.inv(Vinv + (self.C.T*Rinv).dot(self.C))).dot(self.C.T)*Rinv
+            K = V_predict.dot(self.C.T).dot(Sinv)
             mu_filter[:,t] = mu_predict + K.dot(e)
             V_filter[t] = V_predict - K.dot(self.C).dot(V_predict)
-            #LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=S)
+            # LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=S)
             if t != n_samples:
                 mu_predict = self.A.dot(mu_filter[:,t].T)
                 V_predict = self.A.dot(V_filter[t]).dot(self.A.T) + self.Q
