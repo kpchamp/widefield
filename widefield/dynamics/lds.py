@@ -141,9 +141,9 @@ class lds_model:
             # S = self.C.dot(V_predict).dot(self.C.T) + self.R
             # K = V_predict.dot(self.C.T).dot(la.lapack.flapack.dpotri(la.lapack.flapack.dpotrf(S)[0])[0])
             # Invert S using matrix inversion lemma
-            Vinv = la.lapack.flapack.dpotrf(V_predict)
+            Vinv = la.lapack.flapack.dpotrf(V_predict)[0]
             Rinv = 1/self.R
-            Sinv = np.diag(Rinv) - (self.C*Rinv).dot(la.inv(Vinv + (self.C.T*Rinv).dot(self.C))).dot(self.C.T)*Rinv
+            Sinv = np.diag(Rinv) - (self.C.T*Rinv).T.dot(la.inv(Vinv + (self.C.T*Rinv).dot(self.C))).dot(self.C.T*Rinv)
             K = V_predict.dot(self.C.T).dot(Sinv)
             mu_filter[:,t] = mu_predict + K.dot(e)
             V_filter[t] = V_predict - K.dot(self.C).dot(V_predict)
