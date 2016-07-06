@@ -102,7 +102,7 @@ class lds_model:
         n_samples = Y.shape[1]
 
         C, s, V = la.svd(Y, full_matrices=False)
-        Z = (V*s).T
+        Z = s*V.T
 
         num_conditions = 0
         P = matrix(np.kron(np.eye(n_samples-1),Y[:,0:-1].dot(Y[:,0:-1].T)))
