@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.linalg as la
 from scipy.stats import multivariate_normal
+from cvxopt import matrix, solvers
 
 
 class lds_model:
@@ -26,7 +27,8 @@ class lds_model:
             self.A = np.eye(self.n_dim_state)
             self.C = np.eye(self.n_dim_obs, self.n_dim_state)
             self.Q = np.eye(self.n_dim_state)
-            self.R = np.eye(self.n_dim_obs)
+            #self.R = np.eye(self.n_dim_obs)
+            self.R = np.ones(self.n_dim_obs)
             self.mu0 = np.zeros(self.n_dim_state)
             self.V0 = np.eye(self.n_dim_state)
 
@@ -95,6 +97,33 @@ class lds_model:
             # self.Q = (Psum2 - self.A.dot(Psum_ttm1.T) - Psum_ttm1.dot(self.A) + self.A.dot(Psum1).dot(self.A.T))/(n_samples-1)
             # self.C = Y.dot(Ez.T).dot(la.inv(Psum_all))
             # self.R = (Y.dot(Y.T) - self.C.dot(Ez).dot(Y.T) - Y.dot(Ez.T.dot(self.C.T)) + self.C.dot(Psum_all).dot(self.C.T))/n_samples
+
+    def fit_constrained(self, Y):
+        n_samples = Y.shape[1]
+
+        C, s, V = la.svd(Y, full_matrices=False)
+        Z = (V*s).T
+
+        num_conditions = 0
+        P = matrix(np.kron(np.eye(n_samples-1),Y[:,0:-1].dot(Y[:,0:-1].T)))
+        q = matrix(np.flatten(Y[:,0:-1].dot(Y[:,1:].T)))
+        sol = solvers.qp(P,q)
+        A = np.reshape(sol['x'], (self.n_dim_state,self.n_dim_state))
+        rho = np.max(la.eigvals(A))
+
+        while rho > 1:
+            num_conditions += 1
+            U,s,V = la.svd(A, full_matrices=False)
+            Gold = G
+            G = np.zeros(num_conditions, self.n_dim_state**2)
+            G[0:-1,:] = Gold
+            G[-1,:] = np.dot(U[:,0], V[:,0].T)
+            h = matrix(np.ones(num_conditions))
+
+            sol = solvers.qp(P,q,matrix(G),h)
+            A = np.reshape(sol['x'], (self.n_dim_state,self.n_dim_state))
+            rho = np.max(la.eigvals(A))
+
 
     def kalman_filter(self, Y):
         n_samples = Y.shape[1]
