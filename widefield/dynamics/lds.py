@@ -15,8 +15,7 @@ class lds_model:
             self.mu0 = args[4]
             self.V0 = args[5]
 
-            self.n_dim_state = self.A.shape[0]
-            self.n_dim_obs = self.C.shape[1]
+            self.n_dim_obs, self.n_dim_state = self.C.shape
         elif len(args) == 2:
             # Initialize model where parameters are unknown. In this
             # case, parameters will be fit using EM.
@@ -39,7 +38,7 @@ class lds_model:
 
         for i in range(max_iters):
             # E step - run Kalman smoothing algorithm
-            mu_smooth, V_smooth, J = self.kalman_smoothing(Y)
+            mu_smooth, V_smooth, J, LL = self.kalman_smoothing(Y)
 
             Psum_all = np.zeros((self.n_dim_state, self.n_dim_state))
             Psum1 = np.zeros((self.n_dim_state, self.n_dim_state))
@@ -124,7 +123,7 @@ class lds_model:
             K = V_predict.dot(self.C.T).dot(Sinv)
             mu_filter[:,t] = mu_predict + K.dot(e)
             V_filter[t] = V_predict - K.dot(self.C).dot(V_predict)
-            #LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=self.C.dot(V_predict).dot(self.C.T) + np.diag(self.R))
+            # LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=self.C.dot(V_predict).dot(self.C.T) + np.diag(self.R))
             # LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=S)
             if t != n_samples:
                 mu_predict = self.A.dot(mu_filter[:,t].T)
@@ -150,21 +149,19 @@ class lds_model:
             mu_smooth[:,t] = mu_filter[:,t] + J[t].dot(mu_smooth[:,t+1] - mu_predict)
             V_smooth[t] = V_filter[t] + J[t].dot(V_smooth[t+1] - V_predict).dot(J[t].T)
 
-        return mu_smooth, V_smooth, J
+        return mu_smooth, V_smooth, J, LL
 
+    def sample(self, T):
+        state_noise_samples = np.random.multivariate_normal(np.zeros(self.n_dim_state), self.Q, T).T
+        obs_noise_samples = np.random.multivariate_normal(np.zeros(self.n_dim_obs), np.diag(self.R), T).T
 
-def lds_sample(A, C, Q, R, mu0, T):
-    n_dim_obs, n_dim_state = C.shape
-    state_noise_samples = np.random.multivariate_normal(np.zeros(n_dim_state), Q, T).T
-    obs_noise_samples = np.random.multivariate_normal(np.zeros(n_dim_obs), R, T).T
+        x = np.zeros((self.n_dim_state, T))
+        y = np.zeros((self.n_dim_obs, T))
 
-    x = np.zeros((n_dim_state, T))
-    y = np.zeros((n_dim_obs, T))
+        x[:,0] = self.mu0
+        y[:,0] = self.C.dot(self.mu0) + obs_noise_samples[:,0]
+        for t in range(1,T):
+            x[:,t] = self.A.dot(x[:,t-1]) + state_noise_samples[:,t]
+            y[:,t] = self.C.dot(x[:,t]) + obs_noise_samples[:,t]
 
-    x[:,0] = mu0
-    y[:,0] = C.dot(mu0) + obs_noise_samples[:,0]
-    for t in range(1,T):
-        x[:,t] = A.dot(x[:,t-1]) + state_noise_samples[:,t]
-        y[:,t] = C.dot(x[:,t]) + obs_noise_samples[:,t]
-
-    return x, y
+        return x, y
