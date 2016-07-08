@@ -27,41 +27,15 @@ class lds_model:
             self.A = np.eye(self.n_dim_state)
             self.C = np.eye(self.n_dim_obs, self.n_dim_state)
             self.Q = np.eye(self.n_dim_state)
-            #self.R = np.eye(self.n_dim_obs)
             self.R = np.ones(self.n_dim_obs)
             self.mu0 = np.zeros(self.n_dim_state)
             self.V0 = np.eye(self.n_dim_state)
-
-            # if 'max_iters' in kwargs:
-            #     max_iters = kwargs['max_iters']
-            # else:
-            #     max_iters = 10
-            # self.fit_em(Y, max_iters)
         else:
             raise TypeError('Wrong number of arguments')
 
     # Fit the parameters of the LDS model using EM
     def fit_em(self, Y, max_iters=10):
         n_samples = Y.shape[1]
-
-        # NOTE: Changed initialization so it happens in init()
-        # initialize parameters
-        # self.A = np.eye(self.n_dim_state)
-        # self.C = np.eye(self.n_dim_obs, self.n_dim_state)
-        # self.Q = np.eye(self.n_dim_state)
-        # self.R = np.eye(self.n_dim_obs)
-        # self.mu0 = np.zeros(self.n_dim_state)
-        # self.V0 = np.eye(self.n_dim_state)
-
-        # initialize parameters
-        # self.mu0 = np.random.rand(self.n_dim_state)
-        # self.V0 = np.random.rand(self.n_dim_state, self.n_dim_state)
-        # self.A = np.random.rand(self.n_dim_state, self.n_dim_state)
-        # #tmp = np.random.rand(self.n_dim_state, self.n_dim_state)
-        # self.Q = np.eye(self.n_dim_state)
-        # self.C = np.random.rand(self.n_dim_obs, self.n_dim_state)
-        # tmp = np.eye(self.n_dim_obs)*np.random.rand(self.n_dim_obs)
-        # self.R = tmp**2
 
         for i in range(max_iters):
             # E step - run Kalman smoothing algorithm
@@ -89,23 +63,22 @@ class lds_model:
             self.V0 = P1 - np.outer(mu_smooth[:,0],mu_smooth[:,0])
             # Ghahramani version of updates
             self.A = Psum_ttm1.dot(la.inv(Psum1))
-            #self.Q = (Psum2 - self.A.dot(Psum_ttm1.T))/(n_samples-1)
             self.C = Y.dot(mu_smooth.T).dot(la.inv(Psum_all))
             self.R = np.diag((Y.dot(Y.T) - self.C.dot(mu_smooth).dot(Y.T))/n_samples)
             # bishop version of updates
             # self.A = Psum_ttm1.dot(la.inv(Psum1))
-            # self.Q = (Psum2 - self.A.dot(Psum_ttm1.T) - Psum_ttm1.dot(self.A) + self.A.dot(Psum1).dot(self.A.T))/(n_samples-1)
             # self.C = Y.dot(Ez.T).dot(la.inv(Psum_all))
-            # self.R = (Y.dot(Y.T) - self.C.dot(Ez).dot(Y.T) - Y.dot(Ez.T.dot(self.C.T)) + self.C.dot(Psum_all).dot(self.C.T))/n_samples
+            # self.R = np.diag(Y.dot(Y.T) - self.C.dot(Ez).dot(Y.T) - Y.dot(Ez.T.dot(self.C.T)) + self.C.dot(Psum_all).dot(self.C.T))/n_samples
 
     def fit_constrained(self, Y):
+        # NOTE: this method fails because of a memory error in forming P
         n_samples = Y.shape[1]
 
         C, s, V = la.svd(Y, full_matrices=False)
         Z = s*V.T
 
         num_conditions = 0
-        P = matrix(np.kron(np.eye(n_samples-1),Y[:,0:-1].dot(Y[:,0:-1].T)))
+        P = matrix(np.kron(np.eye(self.n_dim_obs),Y[:,0:-1].dot(Y[:,0:-1].T)))
         q = matrix(np.flatten(Y[:,0:-1].dot(Y[:,1:].T)))
         sol = solvers.qp(P,q)
         A = np.reshape(sol['x'], (self.n_dim_state,self.n_dim_state))
@@ -124,7 +97,6 @@ class lds_model:
             A = np.reshape(sol['x'], (self.n_dim_state,self.n_dim_state))
             rho = np.max(la.eigvals(A))
 
-
     def kalman_filter(self, Y):
         n_samples = Y.shape[1]
 
@@ -137,16 +109,22 @@ class lds_model:
         for t in range(n_samples):
             print >>open('progress.txt','a'), "filtering time %d" % t
             e = Y[:,t] - self.C.dot(mu_predict)
+
             # Invert S using dpotrf
             # S = self.C.dot(V_predict).dot(self.C.T) + self.R
             # K = V_predict.dot(self.C.T).dot(la.lapack.flapack.dpotri(la.lapack.flapack.dpotrf(S)[0])[0])
+
             # Invert S using matrix inversion lemma
-            Vinv = la.lapack.flapack.dpotrf(V_predict)[0]
+            Vinv = la.inv(V_predict)
+            # Vinv = la.lapack.flapack.dpotri(la.lapack.flapack.dpotrf(V_predict)[0])[0]   # incorrect
             Rinv = 1/self.R
             Sinv = np.diag(Rinv) - (self.C.T*Rinv).T.dot(la.inv(Vinv + (self.C.T*Rinv).dot(self.C))).dot(self.C.T*Rinv)
+            # print np.max(Sinv - la.inv(self.C.dot(V_predict).dot(self.C.T) + np.diag(self.R)))
+
             K = V_predict.dot(self.C.T).dot(Sinv)
             mu_filter[:,t] = mu_predict + K.dot(e)
             V_filter[t] = V_predict - K.dot(self.C).dot(V_predict)
+            #LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=self.C.dot(V_predict).dot(self.C.T) + np.diag(self.R))
             # LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=S)
             if t != n_samples:
                 mu_predict = self.A.dot(mu_filter[:,t].T)
@@ -173,3 +151,20 @@ class lds_model:
             V_smooth[t] = V_filter[t] + J[t].dot(V_smooth[t+1] - V_predict).dot(J[t].T)
 
         return mu_smooth, V_smooth, J
+
+
+def lds_sample(A, C, Q, R, mu0, T):
+    n_dim_obs, n_dim_state = C.shape
+    state_noise_samples = np.random.multivariate_normal(np.zeros(n_dim_state), Q, T).T
+    obs_noise_samples = np.random.multivariate_normal(np.zeros(n_dim_obs), R, T).T
+
+    x = np.zeros((n_dim_state, T))
+    y = np.zeros((n_dim_obs, T))
+
+    x[:,0] = mu0
+    y[:,0] = C.dot(mu0) + obs_noise_samples[:,0]
+    for t in range(1,T):
+        x[:,t] = A.dot(x[:,t-1]) + state_noise_samples[:,t]
+        y[:,t] = C.dot(x[:,t]) + obs_noise_samples[:,t]
+
+    return x, y
