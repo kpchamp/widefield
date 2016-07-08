@@ -20,4 +20,4 @@ Twin = Tmax/8
 lds = lds_model(X[0:10000,:].T, 25)
 lds.fit_em(X[0:10000,:].T, max_iters=1)   # do only one iteration of EM for timing purposes
 #lds.fit_constrained(X[0:100,:].T)
-pickle.dump(lds, open('/suppscr/riekesheabrown/kpchamp/lds_model_test_constrained.pkl','w'))
+pickle.dump(lds, open('/suppscr/riekesheabrown/kpchamp/lds_model_test.pkl','w'))
