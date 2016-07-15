@@ -131,7 +131,8 @@ class lds_model:
             Vinv = la.inv(V_predict)
             # Vinv = la.lapack.flapack.dpotri(la.lapack.flapack.dpotrf(V_predict)[0])[0]   # incorrect
             Rinv = 1/self.R
-            Sinv = np.diag(Rinv) - (self.C.T*Rinv).T.dot(la.inv(Vinv + (self.C.T*Rinv).dot(self.C))).dot(self.C.T*Rinv)
+            CRinv = (self.C.T*Rinv)
+            Sinv = np.diag(Rinv) - CRinv.T.dot(la.inv(Vinv + CRinv.dot(self.C))).dot(CRinv)
             # print np.max(Sinv - la.inv(self.C.dot(V_predict).dot(self.C.T) + np.diag(self.R)))
 
             K = V_predict.dot(self.C.T).dot(Sinv)
