@@ -18,15 +18,13 @@ Tmax, n_features = X.shape
 Tmax = 347904
 Twin = Tmax/8
 
-#lds = lds_model(n_dim_obs=n_features, n_dim_state=300)
-#U, _, _ = la.svd(X[0:10000,:].T, full_matrices=False)
-#lds.C = U[:,0:300]
+lds = lds_model(n_dim_obs=n_features, n_dim_state=300)
+U, _, _ = la.svd(X[0:10000,:].T, full_matrices=False)
+lds.C = U[:,0:300]
 #print >>open('progress.txt','a'), "SVD dims %d,%d" % lds.C.shape
-lds2 = pickle.load(open('/suppscr/riekesheabrown/kpchamp/lds_model_startSVD_20iter.pkl','r'))
-lds = lds_model(A=lds2.A, C=lds2.C, Q=lds2.Q, R=lds2.R, mu0=lds2.mu0, V0=lds2.V0)
-lds.fit_em(X[0:10000,:].T, max_iters=1)   # do only one iteration of EM for timing purposes
+lds.fit_em(X[0:10000,:].T, max_iters=10)   # do only one iteration of EM for timing purposes
 #lds.fit_constrained(X[0:100,:].T)
-#pickle.dump(lds, open('/suppscr/riekesheabrown/kpchamp/lds_model_21iter.pkl','w'))
+pickle.dump(lds, open('/suppscr/riekesheabrown/kpchamp/lds_model_startSVD_10iter.pkl','w'))
 #result = {}
 #result['mu'], result['V'], _ = lds.kalman_smoothing(X[10000:11000,:].T)
 #pickle.dump(result, open('kalman_smooth_result.pkl','w'))
