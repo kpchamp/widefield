@@ -42,7 +42,7 @@ def gradient_descent(y, phi, start=None, learning_rate=0.1, tolerance=0.00001):
     gradient = -2./n_samples*(y - phi.dot(beta)).dot(phi)
     while la.norm(gradient, np.inf) >= tolerance:
         gradient = 2./n_samples*(phi.dot(beta) - y).dot(phi)
-        beta = beta + learning_rate*gradient
+        beta = beta - learning_rate*gradient
     return beta
 
 # Note: This function fits a linear regression in the case where you only have one regressor
