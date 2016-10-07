@@ -13,16 +13,20 @@ def create_design_matrix(X, type=None, convolution_length=1):
         for k in range(n_regressors):
             for j in range(convolution_length):
                 phi[j:, k*convolution_length + j] = X[0:n_samples-j, k]
-        phi[:,-1] += 1
+        phi[:,-1] += 1.
     else:
         raise ValueError("type=%s is not a valid type" % type)
     return phi
 
 
-def fit_lr(Y, phi):
+def fit_lr(Y, phi, method='least squares'):
     beta = np.zeros((phi.shape[1], Y.shape[1]))
     for i in range(Y.shape[1]):
-        beta[:,i] = np.squeeze(leastsquares(np.reshape(Y[:,i], (-1,1)), phi))
+        if method == 'least squares':
+            beta[:,i] = np.squeeze(leastsquares(np.reshape(Y[:,i], (-1,1)), phi))
+        elif method == 'gradient descent':
+            beta[:,i] = np.squeeze(gradient_descent(Y[:,i], phi))
+
     return beta
 
 
@@ -30,6 +34,16 @@ def leastsquares(y, phi):
     u,s,v = la.svd(phi, full_matrices=False)
     return (v*1/s).dot(u.T.dot(y))
 
+
+def gradient_descent(y, phi, start=None, learning_rate=0.1, tolerance=0.00001):
+    n_samples = y.size
+    if start is None:
+        beta = np.zeros(phi.shape[1])
+    gradient = -2./n_samples*(y - phi.dot(beta)).dot(phi)
+    while la.norm(gradient, np.inf) >= tolerance:
+        gradient = 2./n_samples*(phi.dot(beta) - y).dot(phi)
+        beta = beta + learning_rate*gradient
+    return beta
 
 # Note: This function fits a linear regression in the case where you only have one regressor
 # and want to find the function G that is convolved with your regressor.
