@@ -1,6 +1,7 @@
 from widefield.regression.linregress import *
 import pandas as pd
 import matplotlib.pyplot as plt
+import pickle
 
 path = "/suppscr/riekesheabrown/kpchamp/data/m187474/150804/SummaryTimeSeries.pkl"
 #path = "/Users/kpchamp/Dropbox (uwamath)/backup/research/python/notebooks/SummaryTimeSeries.pkl"
@@ -25,11 +26,15 @@ for i,key in enumerate(data['ROIs_F'].keys()):
               #data['behavioral_measurables']['pupil_diameter_mm'], data['behavioral_measurables']['pupil_elevation'])).T
 X = np.vstack((data['stimulus'], data['behavioral_measurables']['licking'], data['behavioral_measurables']['rewards'],
                data['behavioral_measurables']['running_speed'])).T
-phi = create_design_matrix(X, type='convolution', convolution_length=100)
+phi = create_design_matrix(X, type='convolution', convolution_length=500)
 G1 = fit_lr(Y, phi, method='least squares')
 #G2 = fit_lr(Y, phi, method='gradient descent')
 
-np.save("/suppscr/riekesheabrown/kpchamp/data/m187474/150804/regress_t500.npy", G1)
+regress = {}
+regress['G'] = G1
+regress['phi'] = phi
+regress['Y'] = Y
+pickle.dump(regress, open("/suppscr/riekesheabrown/kpchamp/data/m187474/150804/regress_t500.pkl"))
 
 # for region in range(5):
 #     plt.subplot(2,5,region+1)
