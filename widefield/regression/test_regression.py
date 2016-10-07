@@ -34,7 +34,7 @@ regress = {}
 regress['G'] = G1
 regress['phi'] = phi
 regress['Y'] = Y
-pickle.dump(regress, open("/suppscr/riekesheabrown/kpchamp/data/m187474/150804/regress_t500.pkl"))
+pickle.dump(regress, open("/suppscr/riekesheabrown/kpchamp/data/m187474/150804/regress_t500.pkl","w"))
 
 # for region in range(5):
 #     plt.subplot(2,5,region+1)
