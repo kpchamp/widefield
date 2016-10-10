@@ -33,5 +33,5 @@ test_data = {'Y': Y[183000:-20000,:], 'X': X[183000:-20000,:], 'X_labels': X_lab
 lr = linear_regression(use_design_matrix=True, convolution_length=500)
 lr.fit(training_data['Y'], training_data['X'])
 pickle.dump(training_data,open(basepath + 'train.pkl', 'w'))
-pickle.dump(test_data,open(basepath + 'test.pkl', 'w'))
-pickle.dump(lr, open(basepath + 'regression_results.pkl','w'))
+pickle.dump(test_data,open(basepath + 'regression/test.pkl', 'w'))
+pickle.dump(lr, open(basepath + 'regression/regression_results.pkl','w'))
