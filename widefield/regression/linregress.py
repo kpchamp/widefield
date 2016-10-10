@@ -2,65 +2,94 @@ import numpy as np
 import scipy.linalg as la
 
 
-def create_design_matrix(X, type=None, convolution_length=1):
-    n_samples, n_regressors = X.shape
-    if type is None:
-        phi = np.hstack([X, np.ones((n_samples,1))])
-    elif type == 'convolution':
-        if convolution_length > n_samples:
-            raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (convolution_length,n_samples))
-        phi = np.zeros((n_samples, n_regressors*convolution_length+1))
-        for k in range(n_regressors):
-            for j in range(convolution_length):
-                phi[j:, k*convolution_length + j] = X[0:n_samples-j, k]
-        phi[:,-1] += 1.
-    else:
-        raise ValueError("type=%s is not a valid type" % type)
-    return phi
+class linear_regression:
+    def __init__(self, fit_offset=True, use_design_matrix=False, design_matrix_type='convolution', convolution_length=1):
+        self.fit_offset = fit_offset
+        self.use_design_matrix = use_design_matrix
+        if fit_offset:
+            self.offset = None
+        if use_design_matrix:
+            self.design_matrix_type = design_matrix_type
+            self.convolution_length = convolution_length
+        self.coefficients = None
+        self.training_loss = None
 
+    def create_design_matrix(self, X):
+        n_samples, n_regressors = X.shape
+        if self.design_matrix_type == 'convolution':
+            if self.convolution_length > n_samples:
+                raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
+            design_matrix = np.zeros((n_samples, n_regressors*self.convolution_length))
+            for k in range(n_regressors):
+                for j in range(self.convolution_length):
+                    design_matrix[j:, k*self.convolution_length + j] = X[0:n_samples-j, k]
+        else:
+            raise ValueError("design_matrix_type=%s is not a valid type" % self.design_matrix_type)
+        return design_matrix
 
-def fit_lr(Y, phi, method='least squares'):
-    beta = np.zeros((phi.shape[1], Y.shape[1]))
-    for i in range(Y.shape[1]):
-        if method == 'least squares':
-            beta[:,i] = np.squeeze(leastsquares(np.reshape(Y[:,i], (-1,1)), phi))
-        elif method == 'gradient descent':
-            beta[:,i] = np.squeeze(gradient_descent(Y[:,i], phi))
+    def fit(self, Y, Xin, method='least squares'):
+        n_samples, n_features = Y.shape
+        if self.use_design_matrix:
+            X = self.create_design_matrix(Xin)
+        else:
+            X = Xin
+        n_regressors = X.shape[1]
+        if self.fit_offset:
+            Y_mean = np.mean(Y, axis=0)
+            X_mean = np.mean(X, axis=0)
+        else:
+            Y_mean = np.zeros(n_features)
+            X_mean = np.zeros(n_regressors)
+        self.coefficients = np.zeros((n_regressors, n_features))
+        for i in range(n_features):
+            if method == 'least squares':
+                #beta[:,i] = np.squeeze(leastsquares(np.reshape(Y[:,i], (-1,1)), X))
+                self.coefficients[:,i] = la.lstsq(X - X_mean, Y[:,i] - Y_mean[i])[0]
+            elif method == 'gradient descent':
+                self.coefficients[:,i] = np.squeeze(self.gradient_descent(X - X_mean, Y[:,i] - Y_mean[i]))
+        if self.fit_offset:
+            self.offset = Y_mean - X_mean.dot(self.coefficients)
+        self.training_loss = np.sum((Y - self.reconstruct(Xin))**2, axis=0)/n_samples
 
-    return beta
+    # def leastsquares(self, y, phi):
+    #     u,s,v = la.svd(phi, full_matrices=False)
+    #     return (v*1/s).dot(u.T.dot(y))
 
+    def gradient_descent(self, X, y, start=None, learning_rate=0.1, tolerance=0.00001):
+        n_samples = y.size
+        if start is None:
+            coefficients = np.zeros(X.shape[1])
+        gradient = -2./n_samples*(y - X.dot(coefficients)).dot(X)
+        while la.norm(gradient, np.inf) >= tolerance:
+            gradient = 2./n_samples*(X.dot(coefficients) - y).dot(X)
+            coefficients -= learning_rate*gradient
+        return coefficients
 
-def leastsquares(y, phi):
-    u,s,v = la.svd(phi, full_matrices=False)
-    return (v*1/s).dot(u.T.dot(y))
+    def reconstruct(self, Xin):
+        if self.use_design_matrix:
+            X = self.create_design_matrix(Xin)
+        else:
+            X = Xin
+        if self.fit_offset:
+            return X.dot(self.coefficients) + self.offset
+        else:
+            return X.dot(self.coefficients)
 
-
-def gradient_descent(y, phi, start=None, learning_rate=0.1, tolerance=0.00001):
-    n_samples = y.size
-    if start is None:
-        beta = np.zeros(phi.shape[1])
-    gradient = -2./n_samples*(y - phi.dot(beta)).dot(phi)
-    while la.norm(gradient, np.inf) >= tolerance:
-        gradient = 2./n_samples*(phi.dot(beta) - y).dot(phi)
-        beta = beta - learning_rate*gradient
-    return beta
-
-# Note: This function fits a linear regression in the case where you only have one regressor
-# and want to find the function G that is convolved with your regressor.
-def fit_lr_analytic(Y, x):
-    Ypad = zeropad(Y, n_zeros=100)
-    Xpad = zeropad(x, n_zeros=100)
-    Yft = np.fft.rfft(Ypad, axis=0)
-    Xft = np.fft.rfft(Xpad)
-    G = np.fft.irfft((Yft.T/Xft).T, axis=0)
-    return G
-
-
-def zeropad(x, n_zeros=1):
-    if len(x.shape) == 1:
-        xout = np.zeros(x.shape[0] + 2*n_zeros)
-        xout[n_zeros:-n_zeros] = x
-    else:
-        xout = np.zeros((x.shape[0] + 2*n_zeros,x.shape[1]))
-        xout[n_zeros:-n_zeros,:] = x
-    return xout
+    # def zeropad(x, n_zeros=1):
+    #     if len(x.shape) == 1:
+    #         xout = np.zeros(x.shape[0] + 2*n_zeros)
+    #         xout[n_zeros:-n_zeros] = x
+    #     else:
+    #         xout = np.zeros((x.shape[0] + 2*n_zeros,x.shape[1]))
+    #         xout[n_zeros:-n_zeros,:] = x
+    #     return xout
+    #
+    # # Note: This function fits a linear regression in the case where you only have one regressor
+    # # and want to find the function G that is convolved with your regressor.
+    # def fit_lr_analytic(self, Y, x):
+    #     Ypad = self.zeropad(Y, n_zeros=100)
+    #     Xpad = self.zeropad(x, n_zeros=100)
+    #     Yft = np.fft.rfft(Ypad, axis=0)
+    #     Xft = np.fft.rfft(Xpad)
+    #     G = np.fft.irfft((Yft.T/Xft).T, axis=0)
+    #     return G
