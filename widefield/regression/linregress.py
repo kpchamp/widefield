@@ -49,7 +49,7 @@ class linear_regression:
                 self.coefficients[:,i] = np.squeeze(self.gradient_descent(X - X_mean, Y[:,i] - Y_mean[i]))
         if self.fit_offset:
             self.offset = Y_mean - X_mean.dot(self.coefficients)
-        self.training_loss = np.sum((Y - self.reconstruct(Xin))**2, axis=0)/n_samples
+        self.training_loss = self.compute_loss_percentage(Y, self.reconstruct(Xin))
 
     # def leastsquares(self, y, phi):
     #     u,s,v = la.svd(phi, full_matrices=False)
@@ -74,6 +74,9 @@ class linear_regression:
             return X.dot(self.coefficients) + self.offset
         else:
             return X.dot(self.coefficients)
+
+    def compute_loss_percentage(self, Y, Y_recon):
+        return np.sum((Y - Y_recon)**2, axis=0)/Y.shape[0]/np.var(Y, axis=0)
 
     # def zeropad(x, n_zeros=1):
     #     if len(x.shape) == 1:
