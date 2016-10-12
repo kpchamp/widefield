@@ -3,28 +3,24 @@ import scipy.linalg as la
 
 
 class linear_regression:
-    def __init__(self, fit_offset=True, use_design_matrix=False, design_matrix_type='convolution', convolution_length=1):
+    def __init__(self, fit_offset=True, use_design_matrix=False, convolution_length=1):
         self.fit_offset = fit_offset
         self.use_design_matrix = use_design_matrix
         if fit_offset:
             self.offset = None
         if use_design_matrix:
-            self.design_matrix_type = design_matrix_type
             self.convolution_length = convolution_length
         self.coefficients = None
         self.training_loss = None
 
     def create_design_matrix(self, X):
         n_samples, n_regressors = X.shape
-        if self.design_matrix_type == 'convolution':
-            if self.convolution_length > n_samples:
-                raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
-            design_matrix = np.zeros((n_samples, n_regressors*self.convolution_length))
-            for k in range(n_regressors):
-                for j in range(self.convolution_length):
-                    design_matrix[j:, k*self.convolution_length + j] = X[0:n_samples-j, k]
-        else:
-            raise ValueError("design_matrix_type=%s is not a valid type" % self.design_matrix_type)
+        if self.convolution_length > n_samples:
+            raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
+        design_matrix = np.zeros((n_samples, n_regressors*self.convolution_length))
+        for k in range(n_regressors):
+            for j in range(self.convolution_length):
+                design_matrix[j:, k*self.convolution_length + j] = X[0:n_samples-j, k]
         return design_matrix
 
     def fit(self, Y, Xin, method='least squares'):
@@ -41,12 +37,14 @@ class linear_regression:
             Y_mean = np.zeros(n_features)
             X_mean = np.zeros(n_regressors)
         self.coefficients = np.zeros((n_regressors, n_features))
+        X_centered = X - X_mean
+        Y_centered = Y - Y_mean
         for i in range(n_features):
             if method == 'least squares':
                 #beta[:,i] = np.squeeze(leastsquares(np.reshape(Y[:,i], (-1,1)), X))
-                self.coefficients[:,i] = la.lstsq(X - X_mean, Y[:,i] - Y_mean[i])[0]
+                self.coefficients[:,i] = la.lstsq(X_centered, Y_centered[:,i])[0]
             elif method == 'gradient descent':
-                self.coefficients[:,i] = np.squeeze(self.gradient_descent(X - X_mean, Y[:,i] - Y_mean[i]))
+                self.coefficients[:,i] = np.squeeze(self.gradient_descent(X_centered, Y_centered[:,i]))
         if self.fit_offset:
             self.offset = Y_mean - X_mean.dot(self.coefficients)
         self.training_loss = self.compute_loss_percentage(Y, self.reconstruct(Xin))
@@ -96,3 +94,63 @@ class linear_regression:
     #     Xft = np.fft.rfft(Xpad)
     #     G = np.fft.irfft((Yft.T/Xft).T, axis=0)
     #     return G
+
+
+class recurrent_regression:
+    def __init__(self, fit_offset=True, use_design_matrix=False, convolution_length=1, recurrent_convolution_length=1):
+        self.fit_offset = fit_offset
+        self.use_design_matrix = use_design_matrix
+        if fit_offset:
+            self.offset = None
+        if use_design_matrix:
+            self.convolution_length = convolution_length
+            self.recurrent_convolution_length = recurrent_convolution_length
+        self.coefficients = None
+        self.training_loss = None
+
+    def create_design_matrix(self, X):
+        n_samples, n_regressors = X.shape
+        if self.convolution_length > n_samples:
+            raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
+        design_matrix = np.zeros((n_samples, n_regressors*self.convolution_length))
+        for k in range(n_regressors):
+            for j in range(self.convolution_length):
+                design_matrix[j:, k*self.convolution_length + j] = X[0:n_samples-j, k]
+        return design_matrix
+
+    def fit(self, Y, Xin, method='least squares'):
+        n_samples, n_features = Y.shape
+        if self.use_design_matrix:
+            X = self.create_design_matrix(np.concatenate(Xin, Y))
+        else:
+            X = np.concatenate(Xin, Y)
+        n_regressors = X.shape[1]
+        if self.fit_offset:
+            Y_mean = np.mean(Y, axis=0)
+            X_mean = np.mean(X, axis=0)
+        else:
+            Y_mean = np.zeros(n_features)
+            X_mean = np.zeros(n_regressors)
+        self.coefficients = np.zeros((n_regressors, n_features))
+        X_centered = X - X_mean
+        Y_centered = Y - Y_mean
+        for i in range(n_features):
+            idxs = np.concatenate((np.arange(self.convolution_length*(Xin.shape[1]+i)), np.arange(self.convolution_length*(Xin.shape[1]+i+1),n_regressors)))
+            if method == 'least squares':
+                self.coefficients[idxs,i] = la.lstsq(X_centered[:,idxs], Y_centered[:,i])[0]
+        if self.fit_offset:
+            self.offset = Y_mean - X_mean.dot(self.coefficients)
+        self.training_loss = self.compute_loss_percentage(Y, self.reconstruct(Xin))
+
+    def reconstruct(self, Y, Xin):
+        if self.use_design_matrix:
+            X = self.create_design_matrix(np.concatenate(Xin, Y))
+        else:
+            X = np.concatenate(Xin, Y)
+        if self.fit_offset:
+            return X.dot(self.coefficients) + self.offset
+        else:
+            return X.dot(self.coefficients)
+
+    def compute_loss_percentage(self, Y, Y_recon):
+        return np.sum((Y - Y_recon)**2, axis=0)/Y.shape[0]/np.var(Y, axis=0)

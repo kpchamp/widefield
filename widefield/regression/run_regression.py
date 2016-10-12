@@ -1,5 +1,4 @@
-from widefield.regression.linregress import linear_regression
-from sklearn.linear_model import LinearRegression
+from widefield.regression.linregress import linear_regression, recurrent_regression
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -21,17 +20,23 @@ for i,key in enumerate(data['ROIs_F'].keys()):
     Y[:,i] = (data['ROIs_F'][key] - data['ROIs_F0'][key])/data['ROIs_F0'][key]
     Y_labels.append(key)
 
+# get stimulus orientations into array
+# stimulus_contrasts = np.squeeze(data['session_dataframe'].as_matrix(columns=['Contrast']))
+# stimulus_orientations = np.zeros(data['stimulus'].shape)
+# stimulus_orientations[np.where(data['stimulus']!=0)[0]] = np.squeeze(data['session_dataframe'].as_matrix(columns=['Ori']))[np.where(stimulus_contrasts!=0)[0]]
+
 # get regressors into format for regression; leave out pupil information for now
-X = np.vstack((data['stimulus'], data['behavioral_measurables']['licking'], data['behavioral_measurables']['rewards'],
-               data['behavioral_measurables']['running_speed'])).T
-X_labels = ['stimulus', 'licking', 'rewards', 'running speed']
+X = np.vstack((data['stimulus'], data['behavioral_measurables']['licking'],
+               data['behavioral_measurables']['rewards'], data['behavioral_measurables']['running_speed'])).T
+X_labels = ['stimulus contrast', 'licking', 'rewards', 'running speed']
 
 training_data = {'Y': Y[20000:183000,:], 'X': X[20000:183000,:], 'X_labels': X_labels, 'Y_labels': Y_labels}
 test_data = {'Y': Y[183000:-20000,:], 'X': X[183000:-20000,:], 'X_labels': X_labels, 'Y_labels': Y_labels}
 
 # based on cross-correlations, convolve over 5 seconds
-lr = linear_regression(use_design_matrix=True, convolution_length=500)
+lr = recurrent_regression(use_design_matrix=True, convolution_length=500)
 lr.fit(training_data['Y'], training_data['X'])
-pickle.dump(training_data,open(basepath + 'regression/train.pkl', 'w'))
-pickle.dump(test_data,open(basepath + 'regression/test.pkl', 'w'))
-pickle.dump(lr, open(basepath + 'regression/regression_results.pkl','w'))
+#pickle.dump(training_data,open(basepath + 'regression/train.pkl', 'w'))
+#pickle.dump(test_data,open(basepath + 'regression/test.pkl', 'w'))
+pickle.dump(lr, open(basepath + 'regression/regression_results_recurrent.pkl','w'))
+
