@@ -1,4 +1,5 @@
-import matplotlib, matplotlib.pyplot as plt
+import matplotlib
+import matplotlib.pyplot as plt
 import pickle
 import numpy as np
 
