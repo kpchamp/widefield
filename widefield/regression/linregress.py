@@ -121,9 +121,9 @@ class recurrent_regression:
     def fit(self, Y, Xin, method='least squares'):
         n_samples, n_features = Y.shape
         if self.use_design_matrix:
-            X = self.create_design_matrix(np.concatenate(Xin, Y))
+            X = self.create_design_matrix(np.concatenate((Xin, Y)))
         else:
-            X = np.concatenate(Xin, Y)
+            X = np.concatenate((Xin, Y))
         n_regressors = X.shape[1]
         if self.fit_offset:
             Y_mean = np.mean(Y, axis=0)
@@ -144,9 +144,9 @@ class recurrent_regression:
 
     def reconstruct(self, Y, Xin):
         if self.use_design_matrix:
-            X = self.create_design_matrix(np.concatenate(Xin, Y))
+            X = self.create_design_matrix(np.concatenate((Xin, Y)))
         else:
-            X = np.concatenate(Xin, Y)
+            X = np.concatenate((Xin, Y))
         if self.fit_offset:
             return X.dot(self.coefficients) + self.offset
         else:
