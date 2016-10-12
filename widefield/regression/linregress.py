@@ -140,7 +140,7 @@ class recurrent_regression:
                 self.coefficients[idxs,i] = la.lstsq(X_centered[:,idxs], Y_centered[:,i])[0]
         if self.fit_offset:
             self.offset = Y_mean - X_mean.dot(self.coefficients)
-        self.training_loss = self.compute_loss_percentage(Y, self.reconstruct(Xin))
+        self.training_loss = self.compute_loss_percentage(Y, self.reconstruct(Y, Xin))
 
     def reconstruct(self, Y, Xin):
         if self.use_design_matrix:
