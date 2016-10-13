@@ -73,6 +73,23 @@ class linear_regression:
         else:
             return X.dot(self.coefficients)
 
+    def reconstruct_selected_regressors(self, Y, Xin, idxs):
+        if self.use_design_matrix:
+            X = self.create_design_matrix(Xin[:,idxs])
+            design_idxs = []
+            for i in idxs:
+                design_idxs.append(range(i*self.convolution_length, (i+1)*self.convolution_length))
+            if self.fit_offset:
+                return X.dot(self.coefficients[design_idxs,:]) + self.offset
+            else:
+                return X.dot(self.coefficients[design_idxs,:])
+        else:
+            X = Xin[:,idxs]
+            if self.fit_offset:
+                return X.dot(self.coefficients[idxs,:]) + self.offset
+            else:
+                return X.dot(self.coefficients[idxs,:])
+
     def compute_loss_percentage(self, Y, Y_recon):
         return np.sum((Y - Y_recon)**2, axis=0)/Y.shape[0]/np.var(Y, axis=0)
 
@@ -151,6 +168,24 @@ class recurrent_regression:
             return X.dot(self.coefficients) + self.offset
         else:
             return X.dot(self.coefficients)
+
+    def reconstruct_selected_regressors(self, Y, Xin, idxs):
+        if self.use_design_matrix:
+            X = self.create_design_matrix(np.concatenate((Xin, Y), axis=1)[:,idxs])
+            design_idxs = []
+            for i in idxs:
+                design_idxs.append(range(i*self.convolution_length, (i+1)*self.convolution_length))
+            if self.fit_offset:
+                return X.dot(self.coefficients[design_idxs,:]) + self.offset
+            else:
+                return X.dot(self.coefficients[design_idxs,:])
+        else:
+            X = np.concatenate((Xin, Y), axis=1)[:,idxs]
+            if self.fit_offset:
+                return X.dot(self.coefficients[idxs,:]) + self.offset
+            else:
+                return X.dot(self.coefficients[idxs,:])
+
 
     def compute_loss_percentage(self, Y, Y_recon):
         return np.sum((Y - Y_recon)**2, axis=0)/Y.shape[0]/np.var(Y, axis=0)
