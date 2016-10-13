@@ -78,7 +78,7 @@ class linear_regression:
             X = self.create_design_matrix(Xin[:,idxs])
             design_idxs = []
             for i in idxs:
-                design_idxs.append(range(i*self.convolution_length, (i+1)*self.convolution_length))
+                design_idxs = design_idxs + range(i*self.convolution_length, (i+1)*self.convolution_length)
             if self.fit_offset:
                 return X.dot(self.coefficients[design_idxs,:]) + self.offset
             else:
@@ -174,7 +174,7 @@ class recurrent_regression:
             X = self.create_design_matrix(np.concatenate((Xin, Y), axis=1)[:,idxs])
             design_idxs = []
             for i in idxs:
-                design_idxs.append(range(i*self.convolution_length, (i+1)*self.convolution_length))
+                design_idxs = design_idxs + range(i*self.convolution_length, (i+1)*self.convolution_length)
             if self.fit_offset:
                 return X.dot(self.coefficients[design_idxs,:]) + self.offset
             else:
