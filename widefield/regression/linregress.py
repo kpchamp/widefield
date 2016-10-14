@@ -91,7 +91,7 @@ class linear_regression:
                 return X.dot(self.coefficients[idxs,:])
 
     def compute_loss_percentage(self, Y, Y_recon):
-        return np.sum((Y - Y_recon)**2, axis=0)/Y.shape[0]/np.var(Y, axis=0)
+        return np.mean((Y - Y_recon)**2, axis=0)/np.var(Y, axis=0)
 
     # def zeropad(x, n_zeros=1):
     #     if len(x.shape) == 1:
@@ -188,4 +188,4 @@ class recurrent_regression:
 
 
     def compute_loss_percentage(self, Y, Y_recon):
-        return np.sum((Y - Y_recon)**2, axis=0)/Y.shape[0]/np.var(Y, axis=0)
+        return np.mean((Y - Y_recon)**2, axis=0)/np.var(Y, axis=0)

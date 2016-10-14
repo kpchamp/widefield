@@ -16,7 +16,7 @@ n_timesteps = data['ROIs_F'][data['ROIs_F'].keys()[0]].size
 n_regions = len(data['ROIs_F'].keys())
 Y = np.zeros((n_timesteps, n_regions))
 Y_labels = []
-for i,key in enumerate(data['ROIs_F'].keys()):
+for i,key in enumerate(sorted(data['ROIs_F'].keys())):
     Y[:,i] = (data['ROIs_F'][key] - data['ROIs_F0'][key])/data['ROIs_F0'][key]
     Y_labels.append(key)
 
@@ -34,9 +34,12 @@ training_data = {'Y': Y[20000:183000,:], 'X': X[20000:183000,:], 'X_labels': X_l
 test_data = {'Y': Y[183000:-20000,:], 'X': X[183000:-20000,:], 'X_labels': X_labels, 'Y_labels': Y_labels}
 
 # based on cross-correlations, convolve over 5 seconds
-lr = recurrent_regression(use_design_matrix=True, convolution_length=500)
-lr.fit(training_data['Y'], training_data['X'])
-#pickle.dump(training_data,open(basepath + 'regression/train.pkl', 'w'))
-#pickle.dump(test_data,open(basepath + 'regression/test.pkl', 'w'))
-pickle.dump(lr, open(basepath + 'regression/regression_results_recurrent.pkl','w'))
+lr1 = linear_regression(use_design_matrix=True, convolution_length=500)
+lr1.fit(training_data['Y'], training_data['X'])
+lr2 = recurrent_regression(use_design_matrix=True, convolution_length=500)
+lr2.fit(training_data['Y'], training_data['X'])
+pickle.dump(training_data,open(basepath + 'regression/train.pkl', 'w'))
+pickle.dump(test_data,open(basepath + 'regression/test.pkl', 'w'))
+pickle.dump(lr1, open(basepath + 'regression/regression_results.pkl','w'))
+pickle.dump(lr2, open(basepath + 'regression/regression_results_recurrent.pkl','w'))
 
