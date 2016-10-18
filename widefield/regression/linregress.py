@@ -135,7 +135,7 @@ class recurrent_regression:
                 design_matrix[j:, k*self.convolution_length + j] = X[0:n_samples-j, k]
         return design_matrix
 
-    def fit(self, Y, Xin, method='least squares'):
+    def fit(self, Y, Xin, method='least squares', excludePairs=None):
         n_samples, n_features = Y.shape
         if self.use_design_matrix:
             X = self.create_design_matrix(np.concatenate((Xin, Y), axis=1))
@@ -152,7 +152,12 @@ class recurrent_regression:
         X_centered = X - X_mean
         Y_centered = Y - Y_mean
         for i in range(n_features):
-            idxs = np.concatenate((np.arange(self.convolution_length*(Xin.shape[1]+i)), np.arange(self.convolution_length*(Xin.shape[1]+i+1),n_regressors)))
+            if excludePairs is None:
+                idxs = np.concatenate((np.arange(self.convolution_length*(Xin.shape[1]+i)),
+                                       np.arange(self.convolution_length*(Xin.shape[1]+i+1),n_regressors)))
+            else:
+                idxs = np.concatenate((np.arange(self.convolution_length*(Xin.shape[1]+min(i,excludePairs[i]))),
+                                       np.arange(self.convolution_length*(Xin.shape[1]+max(i,excludePairs[i])),n_regressors)))
             if method == 'least squares':
                 self.coefficients[idxs,i] = la.lstsq(X_centered[:,idxs], Y_centered[:,i])[0]
         if self.fit_offset:

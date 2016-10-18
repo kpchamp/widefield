@@ -20,6 +20,9 @@ for i,key in enumerate(sorted(data['ROIs_F'].keys())):
     Y[:,i] = (data['ROIs_F'][key] - data['ROIs_F0'][key])/data['ROIs_F0'][key]
     Y_labels.append(key)
 
+# load pairs to exclude - want to run recurrent regression without using paired left/right region
+excludePairs = np.load(basepath + 'regression/excludePairs.npy')
+
 # get stimulus orientations into array
 # stimulus_contrasts = np.squeeze(data['session_dataframe'].as_matrix(columns=['Contrast']))
 # stimulus_orientations = np.zeros(data['stimulus'].shape)
@@ -34,12 +37,12 @@ training_data = {'Y': Y[20000:183000,:], 'X': X[20000:183000,:], 'X_labels': X_l
 test_data = {'Y': Y[183000:-20000,:], 'X': X[183000:-20000,:], 'X_labels': X_labels, 'Y_labels': Y_labels}
 
 # based on cross-correlations, convolve over 5 seconds
-lr1 = linear_regression(use_design_matrix=True, convolution_length=500)
-lr1.fit(training_data['Y'], training_data['X'])
+# lr1 = linear_regression(use_design_matrix=True, convolution_length=500)
+# lr1.fit(training_data['Y'], training_data['X'])
 lr2 = recurrent_regression(use_design_matrix=True, convolution_length=500)
-lr2.fit(training_data['Y'], training_data['X'])
-pickle.dump(training_data,open(basepath + 'regression/train.pkl', 'w'))
-pickle.dump(test_data,open(basepath + 'regression/test.pkl', 'w'))
-pickle.dump(lr1, open(basepath + 'regression/regression_results.pkl','w'))
-pickle.dump(lr2, open(basepath + 'regression/regression_results_recurrent.pkl','w'))
+lr2.fit(training_data['Y'], training_data['X'], excludePairs=excludePairs)
+#pickle.dump(training_data,open(basepath + 'regression/train.pkl', 'w'))
+#pickle.dump(test_data,open(basepath + 'regression/test.pkl', 'w'))
+#pickle.dump(lr1, open(basepath + 'regression/regression_results.pkl','w'))
+pickle.dump(lr2, open(basepath + 'regression/regression_results_recurrent_noPairs.pkl','w'))
 
