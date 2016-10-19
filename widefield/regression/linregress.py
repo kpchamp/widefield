@@ -158,6 +158,9 @@ class recurrent_regression:
             else:
                 idxs = np.concatenate((np.arange(self.convolution_length*(Xin.shape[1]+min(i,excludePairs[i]))),
                                        np.arange(self.convolution_length*(Xin.shape[1]+max(i,excludePairs[i])+1),n_regressors)))
+                print self.convolution_length*(Xin.shape[1]+min(i,excludePairs[i]))
+                print self.convolution_length*(Xin.shape[1]+max(i,excludePairs[i])+1)
+                print idxs.shape
             if method == 'least squares':
                 self.coefficients[idxs,i] = la.lstsq(X_centered[:,idxs], Y_centered[:,i])[0]
         if self.fit_offset:
