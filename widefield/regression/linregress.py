@@ -151,7 +151,7 @@ class recurrent_regression:
         self.coefficients = np.zeros((n_regressors, n_features))
         X_centered = X - X_mean
         Y_centered = Y - Y_mean
-        for i in range(4,n_features):
+        for i in range(n_features):
             if excludePairs is None:
                 idxs = np.concatenate((np.arange(self.convolution_length*(Xin.shape[1]+i)),
                                        np.arange(self.convolution_length*(Xin.shape[1]+i+1),n_regressors)))

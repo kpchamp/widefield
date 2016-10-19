@@ -39,10 +39,10 @@ test_data = {'Y': Y[183000:-20000,:], 'X': X[183000:-20000,:], 'X_labels': X_lab
 # based on cross-correlations, convolve over 5 seconds
 # lr1 = linear_regression(use_design_matrix=True, convolution_length=500)
 # lr1.fit(training_data['Y'], training_data['X'])
-lr2 = recurrent_regression(use_design_matrix=True, convolution_length=500)
+lr2 = recurrent_regression(use_design_matrix=True, convolution_length=400)
 lr2.fit(training_data['Y'], training_data['X'], excludePairs=excludePairs)
 #pickle.dump(training_data,open(basepath + 'regression/train.pkl', 'w'))
 #pickle.dump(test_data,open(basepath + 'regression/test.pkl', 'w'))
 #pickle.dump(lr1, open(basepath + 'regression/regression_results.pkl','w'))
-pickle.dump(lr2, open(basepath + 'regression/regression_results_recurrent_noPairs.pkl','w'))
+pickle.dump(lr2, open(basepath + 'regression/regression_results_recurrent_noPairs_400.pkl','w'))
 
