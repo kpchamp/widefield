@@ -10,6 +10,8 @@ class linear_regression:
             self.offset = None
         if use_design_matrix:
             self.convolution_length = convolution_length
+        else:
+            self.convolution_length = 1
         self.coefficients = None
         self.training_loss = None
 
@@ -73,23 +75,6 @@ class linear_regression:
         else:
             return X.dot(self.coefficients)
 
-    def reconstruct_selected_regressors(self, Y, Xin, idxs):
-        if self.use_design_matrix:
-            X = self.create_design_matrix(Xin[:,idxs])
-            design_idxs = []
-            for i in idxs:
-                design_idxs = design_idxs + range(i*self.convolution_length, (i+1)*self.convolution_length)
-            if self.fit_offset:
-                return X.dot(self.coefficients[design_idxs,:]) + self.offset
-            else:
-                return X.dot(self.coefficients[design_idxs,:])
-        else:
-            X = Xin[:,idxs]
-            if self.fit_offset:
-                return X.dot(self.coefficients[idxs,:]) + self.offset
-            else:
-                return X.dot(self.coefficients[idxs,:])
-
     def compute_loss_percentage(self, Y, Y_recon):
         return np.mean((Y - Y_recon)**2, axis=0)/np.var(Y, axis=0)
 
@@ -114,14 +99,16 @@ class linear_regression:
 
 
 class recurrent_regression:
-    def __init__(self, fit_offset=True, use_design_matrix=False, convolution_length=1, recurrent_convolution_length=1):
+    def __init__(self, fit_offset=True, use_design_matrix=False, convolution_length=1):
         self.fit_offset = fit_offset
         self.use_design_matrix = use_design_matrix
         if fit_offset:
             self.offset = None
         if use_design_matrix:
             self.convolution_length = convolution_length
-            self.recurrent_convolution_length = recurrent_convolution_length
+            # self.recurrent_convolution_length = recurrent_convolution_length
+        else:
+            self.convolution_length = 1
         self.coefficients = None
         self.training_loss = None
 
@@ -158,9 +145,6 @@ class recurrent_regression:
             else:
                 idxs = np.concatenate((np.arange(self.convolution_length*(Xin.shape[1]+min(i,excludePairs[i]))),
                                        np.arange(self.convolution_length*(Xin.shape[1]+max(i,excludePairs[i])+1),n_regressors)))
-                print >>open('output.txt','a'), self.convolution_length*(Xin.shape[1]+min(i,excludePairs[i]))
-                print >>open('output.txt','a'), self.convolution_length*(Xin.shape[1]+max(i,excludePairs[i])+1)
-                print >>open('output.txt','a'), idxs.shape
             if method == 'least squares':
                 self.coefficients[idxs,i] = la.lstsq(X_centered[:,idxs], Y_centered[:,i])[0]
         if self.fit_offset:
@@ -179,3 +163,11 @@ class recurrent_regression:
 
     def compute_loss_percentage(self, Y, Y_recon):
         return np.mean((Y - Y_recon)**2, axis=0)/np.var(Y, axis=0)
+
+    def create_coefficient_convolution_matrix(self, feature_idx, regressor_idx, n_samples):
+        r = np.zeros(n_samples)
+        r[0:self.convolution_length] = self.coefficients[np.arange(self.convolution_length*regressor_idx,
+                                                                   self.convolution_length*(regressor_idx+1)), feature_idx]
+        c = np.zeros(n_samples)
+        c[0] = self.coefficients[self.convolution_length*regressor_idx, feature_idx]
+        return la.toeplitz(c, r=r)
