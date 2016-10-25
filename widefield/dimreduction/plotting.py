@@ -53,7 +53,7 @@ def dim_vs_samples(df):
                 f['p_threshold'].append(data['p_threshold'])
                 f['p_aic'].append(np.argmin(data['aic'])+1)
                 f['p_bic'].append(np.argmin(data['bic'])+1)
-                f['p_xval'].append(data['ps'][np.argmax(data['ll_xval'])])
+                f['p_xval'].append(data['ps'][np.argmax(data['lltest'])])
                 sv_totals=np.array([np.sum(data['svs'][0:k+1]**2) for k in range(len(data['svs']))])
                 f['p_90percent'].append(np.argmax(sv_totals>(0.95*sv_totals[-1]))+1)
             if len(startTimes)>8:
