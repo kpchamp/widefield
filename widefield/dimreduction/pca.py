@@ -85,7 +85,7 @@ class pca_model:
         self.EMerr = np.array(err)
 
     def inferLatent(self,X):
-        return np.dot(X,self.components)
+        return np.dot(X - self.mean,self.components)
 
     def reconstruct(self,X):
         Z = self.inferLatent(X)
