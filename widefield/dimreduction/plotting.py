@@ -54,7 +54,7 @@ def dim_vs_samples(df):
                 f['p_aic'].append(np.argmin(data['aic'])+1)
                 f['p_bic'].append(np.argmin(data['bic'])+1)
                 f['p_xval'].append(data['ps'][np.argmax(data['ll_xval'])])
-                sv_totals=np.array([np.sum(data['svs'][0:k+1]) for k in range(len(data['svs']))])
+                sv_totals=np.array([np.sum(data['svs'][0:k+1]**2) for k in range(len(data['svs']))])
                 f['p_90percent'].append(np.argmax(sv_totals>(0.9*sv_totals[-1]))+1)
             if len(startTimes)>8:
                 f['code'] += 'plt.subplot(4,%d,%d)\n' % (np.int(len(startTimes)/4),i+1)
