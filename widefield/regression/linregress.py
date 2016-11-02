@@ -16,25 +16,26 @@ class linear_regression:
         self.training_loss = None
 
 
-    def create_design_matrix(self, X):
-        n_samples, n_regressors = X.shape
-        if self.convolution_length > n_samples:
-            raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
-        if self.fit_offset:
-            return np.concatenate((np.ones((n_samples-1,1)),
-                                   self.create_convolution_matrix(X[1:], self.convolution_length)))
-        else:
-            return self.create_convolution_matrix(X[1:], self.convolution_length)
-
     # def create_design_matrix(self, X):
     #     n_samples, n_regressors = X.shape
     #     if self.convolution_length > n_samples:
     #         raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
-    #     design_matrix = np.zeros((n_samples, n_regressors*self.convolution_length))
-    #     for k in range(n_regressors):
-    #         for j in range(self.convolution_length):
-    #             design_matrix[j:, k*self.convolution_length + j] = X[0:n_samples-j, k]
-    #     return design_matrix
+    #     if self.fit_offset:
+    #         return np.concatenate((np.ones((n_samples-1,1)),
+    #                                self.create_convolution_matrix(X[1:], self.convolution_length)))
+    #     else:
+    #         return self.create_convolution_matrix(X[1:], self.convolution_length)
+
+    def create_design_matrix(self, X):
+        n_samples, n_regressors = X.shape
+        if self.convolution_length > n_samples:
+            raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
+        design_matrix = np.zeros((n_samples, 1 + n_regressors*self.convolution_length))
+        design_matrix[:,0] += 1.
+        for k in range(n_regressors):
+            for j in range(self.convolution_length):
+                design_matrix[j:, 1 + k*self.convolution_length + j] = X[0:n_samples-j, k]
+        return design_matrix
 
     def fit(self, Y, Xin, method='least squares'):
         n_samples, n_features = Y.shape
@@ -113,20 +114,26 @@ class recurrent_regression:
 
     def create_design_matrix(self, X, Y):
         n_samples, n_regressors = X.shape
+        n_features = Y.shape[1]
         if self.convolution_length > n_samples:
             raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
-        if self.fit_offset:
-            return np.concatenate((np.ones((n_samples-1,1)),
-                                   self.create_convolution_matrix(X[1:], self.convolution_length),
-                                   self.create_convolution_matrix(Y[:-1], self.recurrent_convolution_length)))
-        else:
-            return np.concatenate((self.create_convolution_matrix(X[1:], self.convolution_length),
-                                   self.create_convolution_matrix(Y[:-1], self.recurrent_convolution_length)))
-        # design_matrix = np.zeros((n_samples, n_regressors*self.convolution_length))
-        # for k in range(n_regressors):
-        #     for j in range(self.convolution_length):
-        #         design_matrix[j:, k*self.convolution_length + j] = X[0:n_samples-j, k]
-        # return design_matrix
+        # if self.fit_offset:
+        #     return np.concatenate((np.ones((n_samples-1,1)),
+        #                            self.create_convolution_matrix(X[1:], self.convolution_length),
+        #                            self.create_convolution_matrix(Y[:-1], self.recurrent_convolution_length)))
+        # else:
+        #     return np.concatenate((self.create_convolution_matrix(X[1:], self.convolution_length),
+        #                            self.create_convolution_matrix(Y[:-1], self.recurrent_convolution_length)))
+        design_matrix = np.zeros((n_samples, int(self.fit_offset) + n_regressors*self.convolution_length
+                                  + n_features*self.recurrent_convolution_length))
+        design_matrix[:,0] += 1.
+        for k in range(n_regressors):
+            for j in range(self.convolution_length):
+                design_matrix[j:, 1 + k*self.convolution_length + j] = X[0:n_samples-j, k]
+        for k in range(n_features):
+            for j in range(self.recurrent_convolution_length):
+                design_matrix[j:, 1 + n_regressors*self.convolution_length + k*self.recurrent_convolution_length + j] = Y[0:n_samples-j, k]
+        return design_matrix
 
     def fit(self, Y, Xin, method='least squares', excludePairs=None):
         n_samples, n_features = Y.shape
@@ -184,9 +191,9 @@ class recurrent_regression:
     #     c[0] = self.coefficients[self.convolution_length*regressor_idx, feature_idx]
     #     return la.toeplitz(c, r=r)
 
-    def create_convolution_matrix(self, X, convolution_length):
-        n_samples, n_features = X.shape
-        convolution_matrix = np.zeros((n_samples, n_features*convolution_length))
-        for i in range(convolution_length):
-            convolution_matrix += np.kron(np.eye(n_samples,k=-i).dot(X), np.eye(1,convolution_length,i))
-        return convolution_matrix
+    # def create_convolution_matrix(self, X, convolution_length):
+    #     n_samples, n_features = X.shape
+    #     convolution_matrix = np.zeros((n_samples, n_features*convolution_length))
+    #     for i in range(convolution_length):
+    #         convolution_matrix += np.kron(np.eye(n_samples,k=-i).dot(X), np.eye(1,convolution_length,i))
+    #     return convolution_matrix
