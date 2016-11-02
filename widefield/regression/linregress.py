@@ -129,10 +129,10 @@ class recurrent_regression:
         design_matrix[:,0] += 1.
         for k in range(n_regressors):
             for j in range(self.convolution_length):
-                design_matrix[j:, 1 + k*self.convolution_length + j] = X[0:n_samples-j, k]
+                design_matrix[j:, 1 + k*self.convolution_length + j] = X[1:n_samples-j, k]
         for k in range(n_features):
             for j in range(self.recurrent_convolution_length):
-                design_matrix[j:, 1 + n_regressors*self.convolution_length + k*self.recurrent_convolution_length + j] = Y[0:n_samples-j, k]
+                design_matrix[j:, 1 + n_regressors*self.convolution_length + k*self.recurrent_convolution_length + j] = Y[0:n_samples-j-1, k]
         return design_matrix
 
     def fit(self, Y, Xin, method='least squares', excludePairs=None):
