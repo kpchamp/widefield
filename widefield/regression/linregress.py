@@ -166,7 +166,7 @@ class recurrent_regression:
                                                  +self.recurrent_convolution_length*(max(i,excludePairs[i]))),
                                        np.arange(int(self.fit_offset)+self.convolution_length*(Xin.shape[1])
                                                  +self.recurrent_convolution_length*(max(i,excludePairs[i])+1),
-                                                 int(self.fit_offset)+n_regressors)))
+                                                 n_regressors)))
             if method == 'least squares':
                 self.coefficients[idxs,i] = la.lstsq(X[:,idxs], Y[1:,i])[0]
         if self.fit_offset:
