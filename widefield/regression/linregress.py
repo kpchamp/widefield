@@ -124,7 +124,7 @@ class recurrent_regression:
         # else:
         #     return np.concatenate((self.create_convolution_matrix(X[1:], self.convolution_length),
         #                            self.create_convolution_matrix(Y[:-1], self.recurrent_convolution_length)))
-        design_matrix = np.zeros((n_samples, int(self.fit_offset) + n_regressors*self.convolution_length
+        design_matrix = np.zeros((n_samples-1, int(self.fit_offset) + n_regressors*self.convolution_length
                                   + n_features*self.recurrent_convolution_length))
         design_matrix[:,0] += 1.
         for k in range(n_regressors):
