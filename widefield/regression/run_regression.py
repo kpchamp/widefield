@@ -35,9 +35,9 @@ else:
 
 
 # -------------- REGIONAL REGRESSION --------------
-run_regional_regression = False
+run_regional_regression = True
 save_region_files = True
-load_region_files = True
+load_region_files = False
 
 if run_regional_regression:
     # Get fluorescence data into df/f format and matrix for regression
@@ -61,7 +61,7 @@ if run_regional_regression:
     lr1_regions = LinearRegression(use_design_matrix=True, convolution_length=400)
     lr1_regions.fit(region_data_train['Y'], region_data_train['X'])
     lr2_regions = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
-    lr2_regions.fit(region_data_train['Y'], region_data_train['X'], exclude_pairs=excludePairs)
+    lr2_regions.fit(region_data_train['Y'], region_data_train['X'])
 
     if save_region_files:
         pickle.dump(region_data_train, open(basepath + "regression/regions/train.pkl",'w'))
@@ -98,9 +98,9 @@ plt.tight_layout()
 
 
 # -------------- PCA Regression --------------
-run_pca_regression = False
+run_pca_regression = True
 save_pca_files = True
-load_pca_files = True
+load_pca_files = False
 
 if run_pca_regression:
     # Load data
@@ -154,8 +154,8 @@ plt.tight_layout()
 
 # -------------- Factor Analysis Regression --------------
 run_fa_regression = False
-save_fa_files = True
-load_fa_files = True
+save_fa_files = False
+load_fa_files = False
 
 if run_fa_regression:
     if not run_pca_regression:

@@ -120,23 +120,25 @@ class RecurrentRegression:
         n_regressors = X.shape[1]
         self.coefficients = np.zeros((n_regressors, n_features))
         for i in range(n_features):
-            if exclude_pairs is None:
-                idxs = np.concatenate((np.arange(int(self.fit_offset)+self.convolution_length*(Xin.shape[1]) +
-                                                 self.recurrent_convolution_length*i),
-                                       np.arange(int(self.fit_offset)+self.convolution_length*(Xin.shape[1]) +
-                                                 self.recurrent_convolution_length*(i+1),n_regressors)))
-            else:
-                idxs = np.concatenate((np.arange(int(self.fit_offset)+self.convolution_length*(Xin.shape[1]) +
-                                                 self.recurrent_convolution_length*min(i,exclude_pairs[i])),
-                                       np.arange(int(self.fit_offset)+self.convolution_length*(Xin.shape[1]) +
-                                                 self.recurrent_convolution_length*(min(i,exclude_pairs[i])+1),
-                                                 int(self.fit_offset)+self.convolution_length*(Xin.shape[1]) +
-                                                 self.recurrent_convolution_length*(max(i,exclude_pairs[i]))),
-                                       np.arange(int(self.fit_offset)+self.convolution_length*(Xin.shape[1]) +
-                                                 self.recurrent_convolution_length*(max(i,exclude_pairs[i])+1),
-                                                 n_regressors)))
+            # if exclude_pairs is None:
+            #     idxs = np.concatenate((np.arange(int(self.fit_offset)+self.convolution_length*(Xin.shape[1]) +
+            #                                      self.recurrent_convolution_length*i),
+            #                            np.arange(int(self.fit_offset)+self.convolution_length*(Xin.shape[1]) +
+            #                                      self.recurrent_convolution_length*(i+1),n_regressors)))
+            # else:
+            #     idxs = np.concatenate((np.arange(int(self.fit_offset)+self.convolution_length*(Xin.shape[1]) +
+            #                                      self.recurrent_convolution_length*min(i,exclude_pairs[i])),
+            #                            np.arange(int(self.fit_offset)+self.convolution_length*(Xin.shape[1]) +
+            #                                      self.recurrent_convolution_length*(min(i,exclude_pairs[i])+1),
+            #                                      int(self.fit_offset)+self.convolution_length*(Xin.shape[1]) +
+            #                                      self.recurrent_convolution_length*(max(i,exclude_pairs[i]))),
+            #                            np.arange(int(self.fit_offset)+self.convolution_length*(Xin.shape[1]) +
+            #                                      self.recurrent_convolution_length*(max(i,exclude_pairs[i])+1),
+            #                                      n_regressors)))
+            # if method == 'least squares':
+            #     self.coefficients[idxs,i] = la.lstsq(X[:,idxs], Y[1:,i])[0]
             if method == 'least squares':
-                self.coefficients[idxs,i] = la.lstsq(X[:,idxs], Y[1:,i])[0]
+                self.coefficients[:,i] = la.lstsq(X[:,:], Y[1:,i])[0]
         if self.fit_offset:
             self.offset = self.coefficients[0]
         self.training_loss = self.compute_loss_percentage(Y, Xin)
