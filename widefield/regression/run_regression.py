@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 import tables as tb
-from sklearn.decomposition import PCA, FactorAnalysis
+from sklearn.decomposition import PCA, FactorAnalysis, FastICA
 
 
 # Import
@@ -35,9 +35,9 @@ else:
 
 
 # -------------- REGIONAL REGRESSION --------------
-run_regional_regression = True
+run_regional_regression = False
 save_region_files = True
-load_region_files = False
+load_region_files = True
 
 if run_regional_regression:
     # Get fluorescence data into df/f format and matrix for regression
@@ -98,9 +98,9 @@ plt.tight_layout()
 
 
 # -------------- PCA Regression --------------
-run_pca_regression = True
+run_pca_regression = False
 save_pca_files = True
-load_pca_files = False
+load_pca_files = True
 
 if run_pca_regression:
     # Load data
@@ -153,9 +153,9 @@ plt.tight_layout()
     return f
 
 # -------------- Factor Analysis Regression --------------
-run_fa_regression = True
+run_fa_regression = False
 save_fa_files = True
-load_fa_files = False
+load_fa_files = True
 
 if run_fa_regression:
     if not run_pca_regression:
@@ -207,3 +207,23 @@ plt.legend()
 plt.tight_layout()
 """
     return f
+
+
+# -------------- ICA --------------
+run_ica = False
+plot_ica_components = False
+
+if run_ica:
+    pca_data_train_whiten = pca_data_train['Y']/np.sqrt(pca_model.explained_variance_)
+    pca_data_test_whiten = pca_data_test['Y']/np.sqrt(pca_model.explained_variance_)
+
+    ica_model = FastICA()
+    ica_data_train = {'Y': ica_model.fit_transform(pca_data_train_whiten)}
+    ica_data_test = {'Y': ica_model.transform(pca_data_test_whiten)}
+
+# if plot_ica_components:
+#     for i in range(10):
+#         plt.subplot(2,5,i+1)
+#         plt.imshow(pca_components[:,i].reshape(128,128),interpolation='none')
+#         plt.clim([-0.02,0.02])
+#         plt.axis('off')
