@@ -47,7 +47,7 @@ if run_regional_regression:
         region_labels.append(key)
 
     # load pairs to exclude - want to run recurrent regression without using paired left/right region
-    excludePairs = np.load(basepath + 'regression/excludePairs.npy')
+    excludePairs = np.load(basepath + 'regression/regions/excludePairs.npy')
 
     # Construct training and test sets
     region_data_train = {'Y': region_data[20000:183000, :], 'X': regressor_data[20000:183000, :], 'X_labels': X_labels, 'Y_labels': region_labels}
