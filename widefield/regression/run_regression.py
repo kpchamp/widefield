@@ -35,9 +35,9 @@ else:
 
 
 # -------------- REGIONAL REGRESSION --------------
-run_regional_regression = False
+run_regional_regression = True
 save_region_files = True
-load_region_files = True
+load_region_files = False
 
 if run_regional_regression:
     # Get fluorescence data into df/f format and matrix for regression
@@ -61,7 +61,7 @@ if run_regional_regression:
     lr1_regions = LinearRegression(use_design_matrix=True, convolution_length=400)
     lr1_regions.fit(region_data_train['Y'], region_data_train['X'])
     lr2_regions = RecurrentRegression(use_design_matrix=True, convolution_length=400)
-    lr2_regions.fit(region_data_train['Y'], region_data_train['X'])
+    lr2_regions.fit(region_data_train['Y'], region_data_train['X'], exclude_pairs=excludePairs)
 
     if save_region_files:
         pickle.dump(region_data_train, open(basepath + "regression/regions/train.pkl",'w'))
@@ -86,14 +86,14 @@ def create_region_plot():
     f['category_labels'] = ['nonrecurrent', 'recurrent']
     f['region_labels'] = region_data_test['Y_labels']
     f['code'] = """
-    plt.figure()
-    plt.bar(f['idxs'], f['percent_error'][:,0], f['bar_width'], color='r',label=f['category_labels'][0])
-    plt.bar(f['idxs']+f['bar_width'], f['percent_error'][:,1], f['bar_width'], color='b', label=f['category_labels'][1])
-    plt.title('error as percentage of variance')
-    plt.xticks(f['idxs']+f['bar_width'], f['region_labels'], rotation='vertical')
-    plt.legend()
-    plt.tight_layout()
-    """
+plt.figure()
+plt.bar(f['idxs'], f['percent_error'][0], f['bar_width'], color='r',label=f['category_labels'][0])
+plt.bar(f['idxs']+f['bar_width'], f['percent_error'][1], f['bar_width'], color='b', label=f['category_labels'][1])
+plt.title('error as percentage of variance - regression on regions')
+plt.xticks(f['idxs']+f['bar_width'], f['region_labels'], rotation='vertical')
+plt.legend()
+plt.tight_layout()
+"""
     return f
 
 
@@ -143,13 +143,13 @@ def create_pca_plot():
     f['idxs'] = np.arange(len(pca_data_test['Y_labels']))
     f['category_labels'] = ['nonrecurrent', 'recurrent']
     f['code'] = """
-    plt.figure()
-    plt.bar(f['idxs'], f['percent_error'][:,0], f['bar_width'], color='r',label=f['category_labels'][0])
-    plt.bar(f['idxs']+f['bar_width'], f['percent_error'][:,1], f['bar_width'], color='b', label=f['category_labels'][1])
-    plt.title('error as percentage of variance')
-    plt.legend()
-    plt.tight_layout()
-    """
+plt.figure()
+plt.bar(f['idxs'], f['percent_error'][0], f['bar_width'], color='r',label=f['category_labels'][0])
+plt.bar(f['idxs']+f['bar_width'], f['percent_error'][1], f['bar_width'], color='b', label=f['category_labels'][1])
+plt.title('error as percentage of variance - regression on 20 PCA components')
+plt.legend()
+plt.tight_layout()
+"""
     return f
 
 # -------------- Factor Analysis Regression --------------
@@ -199,11 +199,11 @@ def create_fa_plot():
     f['idxs'] = np.arange(len(fa_data_test['Y_labels']))
     f['category_labels'] = ['nonrecurrent', 'recurrent']
     f['code'] = """
-    plt.figure()
-    plt.bar(f['idxs'], f['percent_error'][:,0], f['bar_width'], color='r',label=f['category_labels'][0])
-    plt.bar(f['idxs']+f['bar_width'], f['percent_error'][:,1], f['bar_width'], color='b', label=f['category_labels'][1])
-    plt.title('error as percentage of variance')
-    plt.legend()
-    plt.tight_layout()
-    """
+plt.figure()
+plt.bar(f['idxs'], f['percent_error'][0], f['bar_width'], color='r',label=f['category_labels'][0])
+plt.bar(f['idxs']+f['bar_width'], f['percent_error'][1], f['bar_width'], color='b', label=f['category_labels'][1])
+plt.title('error as percentage of variance - regression on 20 FA components')
+plt.legend()
+plt.tight_layout()
+"""
     return f
