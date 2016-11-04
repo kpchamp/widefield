@@ -35,9 +35,9 @@ else:
 
 
 # -------------- REGIONAL REGRESSION --------------
-run_regional_regression = True
+run_regional_regression = False
 save_region_files = True
-load_region_files = False
+load_region_files = True
 
 if run_regional_regression:
     # Get fluorescence data into df/f format and matrix for regression
@@ -77,9 +77,9 @@ if load_region_files:
 
 
 # -------------- PCA Regression --------------
-run_pca_regression = True
+run_pca_regression = False
 save_pca_files = True
-load_pca_files = False
+load_pca_files = True
 
 if run_pca_regression:
     # Load data
@@ -115,9 +115,9 @@ if load_pca_files:
 
 
 # -------------- Factor Analysis Regression --------------
-run_fa_regression = True
+run_fa_regression = False
 save_fa_files = True
-load_fa_files = False
+load_fa_files = True
 
 if run_fa_regression:
     if not run_pca_regression:
