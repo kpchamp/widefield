@@ -76,6 +76,27 @@ if load_region_files:
     lr2_regions = pickle.load(open(basepath + "regression/regions/results_recurrent.pkl", 'r'))
 
 
+def create_region_plot():
+    f = {}
+    f['percent_error'] = np.zeros((2,len(region_data_test['Y_labels'])))
+    f['percent_error'][0] = lr1_regions.compute_loss_percentage(region_data_test['Y'], region_data_test['X'])
+    f['percent_error'][1] = lr2_regions.compute_loss_percentage(region_data_test['Y'], region_data_test['X'])
+    f['bar_width'] = 0.4
+    f['idxs'] = np.arange(len(region_data_test['Y_labels']))
+    f['category_labels'] = ['nonrecurrent', 'recurrent']
+    f['region_labels'] = region_data_test['Y_labels']
+    f['code'] = """
+    plt.figure()
+    plt.bar(f['idxs'], f['percent_error'][:,0], f['bar_width'], color='r',label=f['category_labels'][0])
+    plt.bar(f['idxs']+f['bar_width'], f['percent_error'][:,1], f['bar_width'], color='b', label=f['category_labels'][1])
+    plt.title('error as percentage of variance')
+    plt.xticks(f['idxs']+f['bar_width'], f['region_labels'], rotation='vertical')
+    plt.legend()
+    plt.tight_layout()
+    """
+    return f
+
+
 # -------------- PCA Regression --------------
 run_pca_regression = False
 save_pca_files = True
@@ -113,6 +134,23 @@ if load_pca_files:
     lr1_pca = pickle.load(open(basepath + "regression/pca/results_nonrecurrent.pkl", 'r'))
     lr2_pca = pickle.load(open(basepath + "regression/pca/results_recurrent.pkl", 'r'))
 
+def create_pca_plot():
+    f = {}
+    f['percent_error'] = np.zeros((2,len(pca_data_test['Y_labels'])))
+    f['percent_error'][0] = lr1_fa.compute_loss_percentage(pca_data_test['Y'], pca_data_test['X'])
+    f['percent_error'][1] = lr2_fa.compute_loss_percentage(pca_data_test['Y'], pca_data_test['X'])
+    f['bar_width'] = 0.4
+    f['idxs'] = np.arange(len(pca_data_test['Y_labels']))
+    f['category_labels'] = ['nonrecurrent', 'recurrent']
+    f['code'] = """
+    plt.figure()
+    plt.bar(f['idxs'], f['percent_error'][:,0], f['bar_width'], color='r',label=f['category_labels'][0])
+    plt.bar(f['idxs']+f['bar_width'], f['percent_error'][:,1], f['bar_width'], color='b', label=f['category_labels'][1])
+    plt.title('error as percentage of variance')
+    plt.legend()
+    plt.tight_layout()
+    """
+    return f
 
 # -------------- Factor Analysis Regression --------------
 run_fa_regression = False
@@ -151,3 +189,21 @@ if load_fa_files:
     fa_data_test = pickle.load(open(basepath + "regression/fa/test.pkl",'r'))
     lr1_fa = pickle.load(open(basepath + "regression/fa/results_nonrecurrent.pkl", 'r'))
     lr2_fa = pickle.load(open(basepath + "regression/fa/results_recurrent.pkl", 'r'))
+
+def create_fa_plot():
+    f = {}
+    f['percent_error'] = np.zeros((2,len(fa_data_test['Y_labels'])))
+    f['percent_error'][0] = lr1_fa.compute_loss_percentage(fa_data_test['Y'], fa_data_test['X'])
+    f['percent_error'][1] = lr2_fa.compute_loss_percentage(fa_data_test['Y'], fa_data_test['X'])
+    f['bar_width'] = 0.4
+    f['idxs'] = np.arange(len(fa_data_test['Y_labels']))
+    f['category_labels'] = ['nonrecurrent', 'recurrent']
+    f['code'] = """
+    plt.figure()
+    plt.bar(f['idxs'], f['percent_error'][:,0], f['bar_width'], color='r',label=f['category_labels'][0])
+    plt.bar(f['idxs']+f['bar_width'], f['percent_error'][:,1], f['bar_width'], color='b', label=f['category_labels'][1])
+    plt.title('error as percentage of variance')
+    plt.legend()
+    plt.tight_layout()
+    """
+    return f
