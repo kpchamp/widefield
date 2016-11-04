@@ -41,7 +41,7 @@ class LinearRegression:
                 self.coefficients[:,i] = np.squeeze(self.gradient_descent(X, Y[:,i]))
         if self.fit_offset:
             self.offset = self.coefficients[0]
-        self.training_loss = self.compute_loss_percentage(Y, self.reconstruct(Xin))
+        self.training_loss = self.compute_loss_percentage(Y, Xin)
 
     def gradient_descent(self, X, y, start=None, learning_rate=0.1, tolerance=0.00001):
         raise NotImplementedError("haven't suffieciently tested this implementation")
@@ -139,7 +139,7 @@ class RecurrentRegression:
                 self.coefficients[idxs,i] = la.lstsq(X[:,idxs], Y[1:,i])[0]
         if self.fit_offset:
             self.offset = self.coefficients[0]
-        self.training_loss = self.compute_loss_percentage(Y[1:], self.reconstruct(Y, Xin))
+        self.training_loss = self.compute_loss_percentage(Y[1:], Xin)
 
     def reconstruct(self, Y, Xin):
         if self.use_design_matrix:
