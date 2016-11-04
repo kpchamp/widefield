@@ -72,8 +72,8 @@ if run_regional_regression:
 if load_region_files:
     region_data_train = pickle.load(open(basepath + "regression/regions/train.pkl",'r'))
     region_data_test = pickle.load(open(basepath + "regression/regions/test.pkl",'r'))
-    lr1_region = pickle.load(open(basepath + "regression/regions/results_nonrecurrent.pkl", 'r'))
-    lr2_region = pickle.load(open(basepath + "regression/regions/results_recurrent.pkl", 'r'))
+    lr1_regions = pickle.load(open(basepath + "regression/regions/results_nonrecurrent.pkl", 'r'))
+    lr2_regions = pickle.load(open(basepath + "regression/regions/results_recurrent.pkl", 'r'))
 
 
 # -------------- PCA Regression --------------
