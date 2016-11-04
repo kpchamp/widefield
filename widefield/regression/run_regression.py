@@ -60,7 +60,7 @@ if run_regional_regression:
     # based on cross-correlations, convolve over 4 seconds
     lr1_regions = LinearRegression(use_design_matrix=True, convolution_length=400)
     lr1_regions.fit(region_data_train['Y'], region_data_train['X'])
-    lr2_regions = RecurrentRegression(use_design_matrix=True, convolution_length=400)
+    lr2_regions = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
     lr2_regions.fit(region_data_train['Y'], region_data_train['X'], exclude_pairs=excludePairs)
 
     if save_region_files:
@@ -117,7 +117,7 @@ if run_pca_regression:
 
     lr1_pca = LinearRegression(use_design_matrix=True, convolution_length=400)
     lr1_pca.fit(pca_data_train['Y'], pca_data_train['X'])
-    lr2_pca = RecurrentRegression(use_design_matrix=True, convolution_length=400)
+    lr2_pca = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
     lr2_pca.fit(pca_data_test['Y'], pca_data_test['X'])
 
     if save_pca_files:
@@ -136,11 +136,11 @@ if load_pca_files:
 
 def create_pca_plot():
     f = {}
-    f['percent_error'] = np.zeros((2,len(pca_data_test['Y_labels'])))
-    f['percent_error'][0] = lr1_fa.compute_loss_percentage(pca_data_test['Y'], pca_data_test['X'])
-    f['percent_error'][1] = lr2_fa.compute_loss_percentage(pca_data_test['Y'], pca_data_test['X'])
+    f['percent_error'] = np.zeros((2,pca_data_test['Y'].shape[1]))
+    f['percent_error'][0] = lr1_pca.compute_loss_percentage(pca_data_test['Y'], pca_data_test['X'])
+    f['percent_error'][1] = lr2_pca.compute_loss_percentage(pca_data_test['Y'], pca_data_test['X'])
     f['bar_width'] = 0.4
-    f['idxs'] = np.arange(len(pca_data_test['Y_labels']))
+    f['idxs'] = np.arange(pca_data_test['Y'].shape[1])
     f['category_labels'] = ['nonrecurrent', 'recurrent']
     f['code'] = """
 plt.figure()
@@ -173,7 +173,7 @@ if run_fa_regression:
 
     lr1_fa = LinearRegression(use_design_matrix=True, convolution_length=400)
     lr1_fa.fit(fa_data_train['Y'], fa_data_train['X'])
-    lr2_fa = RecurrentRegression(use_design_matrix=True, convolution_length=400)
+    lr2_fa = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
     lr2_fa.fit(fa_data_test['Y'], fa_data_test['X'])
 
     if save_fa_files:
@@ -192,11 +192,11 @@ if load_fa_files:
 
 def create_fa_plot():
     f = {}
-    f['percent_error'] = np.zeros((2,len(fa_data_test['Y_labels'])))
+    f['percent_error'] = np.zeros((2,fa_data_test['Y'].shape[1]))
     f['percent_error'][0] = lr1_fa.compute_loss_percentage(fa_data_test['Y'], fa_data_test['X'])
     f['percent_error'][1] = lr2_fa.compute_loss_percentage(fa_data_test['Y'], fa_data_test['X'])
     f['bar_width'] = 0.4
-    f['idxs'] = np.arange(len(fa_data_test['Y_labels']))
+    f['idxs'] = np.arange(fa_data_test['Y'].shape[1])
     f['category_labels'] = ['nonrecurrent', 'recurrent']
     f['code'] = """
 plt.figure()
