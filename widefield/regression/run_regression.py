@@ -98,9 +98,9 @@ plt.tight_layout()
 
 
 # -------------- PCA Regression --------------
-run_pca_regression = False
+run_pca_regression = True
 save_pca_files = True
-load_pca_files = True
+load_pca_files = False
 
 if run_pca_regression:
     # Load data
@@ -118,7 +118,9 @@ if run_pca_regression:
     lr1_pca = LinearRegression(use_design_matrix=True, convolution_length=400)
     lr1_pca.fit(pca_data_train['Y'], pca_data_train['X'])
     lr2_pca = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
-    lr2_pca.fit(pca_data_test['Y'], pca_data_test['X'])
+    lr2_pca.fit(pca_data_train['Y'], pca_data_train['X'])
+    lr3_pca = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=1)
+    lr3_pca.fit(pca_data_train['Y'], pca_data_train['X'])
 
     if save_pca_files:
         pickle.dump(pca_model, open(basepath + "regression/pca/pca_model.pkl",'w'))
@@ -126,6 +128,7 @@ if run_pca_regression:
         pickle.dump(pca_data_test, open(basepath + "regression/pca/test.pkl",'w'))
         pickle.dump(lr1_pca, open(basepath + "regression/pca/results_nonrecurrent.pkl", 'w'))
         pickle.dump(lr2_pca, open(basepath + "regression/pca/results_recurrent.pkl", 'w'))
+        pickle.dump(lr3_pca, open(basepath + "regression/pca/results_halfrecurrent.pkl", 'w'))
 
 if load_pca_files:
     pca_model = pickle.load(open(basepath + "regression/pca/pca_model.pkl",'r'))
@@ -133,6 +136,7 @@ if load_pca_files:
     pca_data_test = pickle.load(open(basepath + "regression/pca/test.pkl",'r'))
     lr1_pca = pickle.load(open(basepath + "regression/pca/results_nonrecurrent.pkl", 'r'))
     lr2_pca = pickle.load(open(basepath + "regression/pca/results_recurrent.pkl", 'r'))
+    lr3_ica = pickle.load(open(basepath + "regression/pca/results_halfrecurrent.pkl", 'r'))
 
 def create_pca_plot():
     f = {}
@@ -174,7 +178,7 @@ if run_fa_regression:
     lr1_fa = LinearRegression(use_design_matrix=True, convolution_length=400)
     lr1_fa.fit(fa_data_train['Y'], fa_data_train['X'])
     lr2_fa = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
-    lr2_fa.fit(fa_data_test['Y'], fa_data_test['X'])
+    lr2_fa.fit(fa_data_train['Y'], fa_data_train['X'])
 
     if save_fa_files:
         pickle.dump(fa_model, open(basepath + "regression/fa/fa_model.pkl",'w'))
@@ -210,9 +214,9 @@ plt.tight_layout()
 
 
 # -------------- ICA --------------
-run_ica = False
+run_ica = True
 save_ica_files = True
-load_ica_files = True
+load_ica_files = False
 plot_ica_components = False
 
 if run_ica:
@@ -226,7 +230,9 @@ if run_ica:
     lr1_ica = LinearRegression(use_design_matrix=True, convolution_length=400)
     lr1_ica.fit(ica_data_train['Y'], ica_data_train['X'])
     lr2_ica = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
-    lr2_ica.fit(ica_data_test['Y'], ica_data_test['X'])
+    lr2_ica.fit(ica_data_train['Y'], ica_data_train['X'])
+    lr3_ica = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=1)
+    lr3_ica.fit(ica_data_train['Y'], ica_data_train['X'])
 
     if save_ica_files:
         pickle.dump(ica_model, open(basepath + "regression/ica/ica_model.pkl",'w'))
@@ -234,6 +240,7 @@ if run_ica:
         pickle.dump(ica_data_test, open(basepath + "regression/ica/test.pkl",'w'))
         pickle.dump(lr1_ica, open(basepath + "regression/ica/results_nonrecurrent.pkl", 'w'))
         pickle.dump(lr2_ica, open(basepath + "regression/ica/results_recurrent.pkl", 'w'))
+        pickle.dump(lr3_ica, open(basepath + "regression/ica/results_halfrecurrent.pkl", 'w'))
 
 if load_ica_files:
     ica_model = pickle.load(open(basepath + "regression/ica/ica_model.pkl",'r'))
@@ -241,6 +248,7 @@ if load_ica_files:
     ica_data_test = pickle.load(open(basepath + "regression/ica/test.pkl",'r'))
     lr1_ica = pickle.load(open(basepath + "regression/ica/results_nonrecurrent.pkl", 'r'))
     lr2_ica = pickle.load(open(basepath + "regression/ica/results_recurrent.pkl", 'r'))
+    lr3_ica = pickle.load(open(basepath + "regression/ica/results_halfrecurrent.pkl", 'r'))
 
 def create_ica_plot():
     f = {}
