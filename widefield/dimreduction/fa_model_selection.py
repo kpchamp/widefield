@@ -17,4 +17,4 @@ for n_components in np.arange(0,201,10):
     fa_model.fit(image_data_train)
     ll.append(fa_model.score(image_data_test))
 
-np.save(np.array(ll), basepath + 'fa_loglikelihoods')
+np.save(basepath + 'fa_loglikelihoods', np.array(ll))
