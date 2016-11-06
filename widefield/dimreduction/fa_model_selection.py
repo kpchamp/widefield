@@ -11,8 +11,8 @@ image_data_test = tb_open.root.data[:,183000:-20000].T
 tb_open.close()
 
 # Do model selection for Factor Analysis model
-ll = []
-for n_components in np.arange(0,201,10):
+ll = np.load(basepath + 'fa_loglikelihoods.npy')
+for n_components in np.arange(210,1001,10):
     fa_model = FactorAnalysis(n_components=n_components+1)
     fa_model.fit(image_data_train)
     ll.append(fa_model.score(image_data_test))
