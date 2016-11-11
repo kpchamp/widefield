@@ -35,7 +35,7 @@ else:
 
 
 # -------------- REGIONAL REGRESSION --------------
-run_regional_regression = Tre
+run_regional_regression = False
 save_region_files = True
 load_region_files = True
 
@@ -82,17 +82,19 @@ if load_region_files:
 
 def create_region_plot():
     f = {}
-    f['percent_error'] = np.zeros((2,len(region_data_test['Y_labels'])))
+    f['percent_error'] = np.zeros((3,len(region_data_test['Y_labels'])))
     f['percent_error'][0] = lr1_regions.compute_loss_percentage(region_data_test['Y'], region_data_test['X'])
     f['percent_error'][1] = lr2_regions.compute_loss_percentage(region_data_test['Y'], region_data_test['X'])
-    f['bar_width'] = 0.4
+    f['percent_error'][2] = lr3_regions.compute_loss_percentage(region_data_test['Y'], region_data_test['X'])
+    f['bar_width'] = 0.3
     f['idxs'] = np.arange(len(region_data_test['Y_labels']))
-    f['category_labels'] = ['nonrecurrent', 'recurrent']
+    f['category_labels'] = ['regression', 'dynamics', 'dynamics-filter']
     f['region_labels'] = region_data_test['Y_labels']
     f['code'] = """
 plt.figure()
 plt.bar(f['idxs'], f['percent_error'][0], f['bar_width'], color='r',label=f['category_labels'][0])
 plt.bar(f['idxs']+f['bar_width'], f['percent_error'][1], f['bar_width'], color='b', label=f['category_labels'][1])
+plt.bar(f['idxs']+2*f['bar_width'], f['percent_error'][2], f['bar_width'], color='g', label=f['category_labels'][2])
 plt.title('error as percentage of variance - regression on regions')
 plt.xticks(f['idxs']+f['bar_width'], f['region_labels'], rotation='vertical')
 plt.legend()
