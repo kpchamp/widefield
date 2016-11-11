@@ -35,7 +35,7 @@ else:
 
 
 # -------------- REGIONAL REGRESSION --------------
-run_regional_regression = False
+run_regional_regression = Tre
 save_region_files = True
 load_region_files = True
 
@@ -62,18 +62,22 @@ if run_regional_regression:
     lr1_regions.fit(region_data_train['Y'], region_data_train['X'])
     lr2_regions = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
     lr2_regions.fit(region_data_train['Y'], region_data_train['X'])
+    lr3_regions = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=1)
+    lr3_regions.fit(region_data_train['Y'], region_data_train['X'])
 
     if save_region_files:
         pickle.dump(region_data_train, open(basepath + "regression/regions/train.pkl",'w'))
         pickle.dump(region_data_test, open(basepath + "regression/regions/test.pkl",'w'))
         pickle.dump(lr1_regions, open(basepath + "regression/regions/results_nonrecurrent.pkl",'w'))
         pickle.dump(lr2_regions, open(basepath + "regression/regions/results_recurrent.pkl", 'w'))
+        pickle.dump(lr3_regions, open(basepath + "regression/regions/results_halfrecurrent.pkl", 'w'))
 
 if load_region_files:
     region_data_train = pickle.load(open(basepath + "regression/regions/train.pkl",'r'))
     region_data_test = pickle.load(open(basepath + "regression/regions/test.pkl",'r'))
     lr1_regions = pickle.load(open(basepath + "regression/regions/results_nonrecurrent.pkl", 'r'))
     lr2_regions = pickle.load(open(basepath + "regression/regions/results_recurrent.pkl", 'r'))
+    lr3_regions = pickle.load(open(basepath + "regression/regions/results_halfrecurrent.pkl", 'r'))
 
 
 def create_region_plot():
