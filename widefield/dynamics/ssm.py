@@ -111,15 +111,21 @@ class LinearGaussianSSM:
                 self.V0 = P1 - np.outer(mu_smooth[:,0],mu_smooth[:,0])
             if 'C' not in exclude_list:
                 self.C = Y.dot(mu_smooth.T).dot(la.inv(Psum_all))
-            if 'R' not in exclude_list:
-                self.R = (Y.dot(Y.T) - self.C.dot(mu_smooth).dot(Y.T))/n_samples
+                if 'R' not in exclude_list:
+                    self.R = (Y.dot(Y.T) - self.C.dot(mu_smooth).dot(Y.T))/n_samples
+            else:
+                if 'R' not in exclude_list:
+                    self.R = (Y.dot(Y.T) - 2.*self.C.dot(mu_smooth.dot(Y.T)) + self.C.dot(Psum_all).dot(self.C.T))/n_samples
                 # self.R = np.diag(np.diag((Y.dot(Y.T) - self.C.dot(mu_smooth).dot(Y.T))/n_samples))
             if self.B is None:
                 # Ghahramani version of updates
                 if 'A' not in exclude_list:
                     self.A = Psum_ttm1.dot(la.inv(Psum1))
-                if 'Q' not in exclude_list:
-                    self.Q = (Psum2 - self.A.dot(Psum_ttm1.T))/(n_samples-1.)
+                    if 'Q' not in exclude_list:
+                        self.Q = (Psum2 - self.A.dot(Psum_ttm1.T))/(n_samples-1.)
+                else:
+                    if 'Q' not in exclude_list:
+                        self.Q = (Psum2 - self.A.dot(Psum_ttm1.T) - Psum_ttm1.dot(self.A) + self.A.dot(Psum1.dot(self.A.T)))/(n_samples-1.)
                     # self.Q = np.diag(np.diag((Psum2 - self.A.dot(Psum_ttm1.T))/(n_samples-1.)))
                 # bishop version of updates
                 # self.A = Psum_ttm1.dot(la.inv(Psum1))
@@ -129,12 +135,19 @@ class LinearGaussianSSM:
                 if U is None:
                     raise ValueError('control term U must not be None')
                 Atmp = (Psum_ttm1 - self.B.dot(UXsum.T)).dot(la.inv(Psum1))
-                if 'B' not in exclude_list:
-                    self.B = (UXsum_ttm1 - self.A.dot(UXsum)).dot(la.inv(Usum))
+                Btmp = (UXsum_ttm1 - self.A.dot(UXsum)).dot(la.inv(Usum))
                 if 'A' not in exclude_list:
                     self.A = Atmp
-                if 'Q' not in exclude_list:
-                    self.Q = np.diag(np.diag((Psum2 - self.A.dot(Psum_ttm1) - self.B.dot(UXsum_ttm1.T))/(n_samples-1.)))
+                if 'B' not in exclude_list:
+                    self.B = Btmp
+                if 'A' not in exclude_list and 'B' not in exclude_list:
+                    if 'Q' not in exclude_list:
+                        self.Q = (Psum2 - self.A.dot(Psum_ttm1.T) - self.B.dot(UXsum_ttm1.T))/(n_samples-1.)
+                else:
+                    if 'Q' not in exclude_list:
+                        self.Q = (Psum2 - self.A.dot(Psum_ttm1.T) - Psum_ttm1.dot(self.A.T) + self.A.dot(Psum1).dot(self.A.T)
+                                  - self.B.dot(UXsum_ttm1.T) - UXsum_ttm1.dot(self.B.T) + self.B.dot(UXsum.T).dot(self.A.T)
+                                  + self.A.dot(UXsum).dot(self.B.T) + self.B.dot(Usum).dot(self.B.T))
 
     def kalman_filter(self, Y, U=None):
         n_samples = Y.shape[1]
