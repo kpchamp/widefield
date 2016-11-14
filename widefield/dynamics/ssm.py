@@ -2,6 +2,7 @@ import numpy as np
 import scipy.linalg as la
 from scipy.stats import multivariate_normal
 from cvxopt import matrix, solvers
+import warnings
 
 class LinearGaussianSSM:
     # Linear Gaussian state space model with optional control
@@ -67,7 +68,7 @@ class LinearGaussianSSM:
             LL_diff = self.LL[i] - self.LL[i-1]
             if i>0:
                 if LL_diff < 0:
-                    raise RuntimeWarning("log likelihood increased on iteration %d - numerical instability or bug detected" % i)
+                    warnings.warn("log likelihood increased on iteration %d - numerical instability or bug detected" % i, RuntimeWarning)
                     break
                 if LL_diff < tol:
                     break
