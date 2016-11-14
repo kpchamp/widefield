@@ -60,8 +60,8 @@ model.fit_em(pca_data_train.T, max_iters=1000, exclude_list=['C'])
 pickle.dump(model,open(basepath + "ml_project/lgssm.pkl",'w'))
 # model = pickle.load(open(basepath + "ml_project/lgssm.pkl",'r'))
 
-# model_kf = KalmanFilter(transition_matrices=np.copy(lr.coefficients), observation_matrices=np.eye(10))
-# model_kf.em(pca_data_train, em_vars={'transition_matrices', 'transition_covariance', 'observation_covariance',
-#                     'initial_state_mean', 'initial_state_covariance'}, n_iter=np.where(model.LL==0)[0][0])
-# pickle.dump(model_kf,open(basepath + "ml_project/kf.pkl",'w'))
+model_kf = KalmanFilter(transition_matrices=np.copy(lr.coefficients), observation_matrices=np.eye(10))
+model_kf.em(pca_data_train, em_vars={'transition_matrices', 'transition_covariance', 'observation_covariance',
+                    'initial_state_mean', 'initial_state_covariance'}, n_iter=np.where(model.LL==0)[0][0])
+pickle.dump(model_kf,open(basepath + "ml_project/kf.pkl",'w'))
 # model_kf = pickle.load(open(basepath + "ml_project/kf.pkl",'r'))
