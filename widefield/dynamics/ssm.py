@@ -67,7 +67,8 @@ class LinearGaussianSSM:
             LL_diff = self.LL[i] - self.LL[i-1]
             if i>0:
                 if LL_diff < 0:
-                    raise RuntimeError("log likelihood increased - numerical instability or bug detected")
+                    raise RuntimeWarning("log likelihood increased on iteration %d - numerical instability or bug detected" % i)
+                    break
                 if LL_diff < tol:
                     break
 
