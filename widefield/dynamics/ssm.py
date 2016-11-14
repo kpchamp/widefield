@@ -115,7 +115,7 @@ class LinearGaussianSSM:
                     self.R = (Y.dot(Y.T) - self.C.dot(mu_smooth).dot(Y.T))/n_samples
             else:
                 if 'R' not in exclude_list:
-                    self.R = (Y.dot(Y.T) - 2.*self.C.dot(mu_smooth.dot(Y.T)) + self.C.dot(Psum_all).dot(self.C.T))/n_samples
+                    self.R = (Y.dot(Y.T) - np.dot(self.C,mu_smooth).dot(Y.T) - np.dot(Y,np.dot(self.C,mu_smooth).T) + self.C.dot(Psum_all).dot(self.C.T))/n_samples
                 # self.R = np.diag(np.diag((Y.dot(Y.T) - self.C.dot(mu_smooth).dot(Y.T))/n_samples))
             if self.B is None:
                 # Ghahramani version of updates
