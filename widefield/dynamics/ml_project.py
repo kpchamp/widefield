@@ -39,19 +39,21 @@ image_data_train = tb_open.root.data[:,20000:21000].T
 image_data_test = tb_open.root.data[:,31000:32000].T
 tb_open.close()
 
-pca_model = PCA(n_components=10)
-pca_model.fit(image_data_all)
-pickle.dump(pca_model,open(basepath + "ml_project/pca.pkl",'w'))
+# pca_model = PCA(n_components=10)
+# pca_model.fit(image_data_all)
+# pickle.dump(pca_model,open(basepath + "ml_project/pca.pkl",'w'))
+pca_model = pickle.load(open(basepath + "ml_project/pca.pkl",'r'))
 pca_data_train = pca_model.transform(image_data_train)
 pca_data_test = pca_model.transform(image_data_test)
 
 print "Doing linear regression"
-lr = LinearRegression(use_design_matrix=False)
-lr.fit(pca_data_train[1:], pca_data_train[:-1])
-pickle.dump(lr,open(basepath + "ml_project/lr.pkl",'w'))
+# lr = LinearRegression(use_design_matrix=False)
+# lr.fit(pca_data_train[1:], pca_data_train[:-1])
+# pickle.dump(lr,open(basepath + "ml_project/lr.pkl",'w'))
+lr = pickle.load(open(basepath + "ml_project/lr.pkl",'r'))
 
 print "Fitting LGSSM"
 # Fit EM parameters for the model, based on the sampled data
 model = LinearGaussianSSM(A=np.copy(lr.coefficients), C=np.eye(10))
-model.fit_em(pca_data_train, max_iters=1000, exclude_list=['C'])
+model.fit_em(pca_data_train.T, max_iters=1000, exclude_list=['C'])
 pickle.dump(model,open(basepath + "ml_project/lgssm.pkl",'w'))
