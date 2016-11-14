@@ -1,5 +1,5 @@
 from widefield.dynamics.ssm import LinearGaussianSSM
-from widefield.regression.linregress import LinearRegression
+from widefield.regression.linregress import LinearRegression, RecurrentRegression
 import pickle
 import tables as tb
 from sklearn.decomposition import PCA
@@ -46,21 +46,28 @@ region_data_train = {'Y': region_data[20000:25000, :], 'X': regressor_data[20000
 region_data_test = {'Y': region_data[183000:-20000, :], 'X': regressor_data[183000:-20000, :], 'X_labels': X_labels, 'Y_labels': region_labels}
 
 
-print "Doing linear regression"
-lr = LinearRegression(use_design_matrix=False)
-lr.fit(region_data_train['Y'][1:], region_data_train['Y'][:-1])
-pickle.dump(lr,open(basepath + "ml_project/lr.pkl",'w'))
-# lr = pickle.load(open(basepath + "ml_project/lr.pkl",'r'))
+# print "Doing linear regression"
+# lr = LinearRegression(use_design_matrix=False)
+# lr.fit(region_data_train['Y'][1:], region_data_train['Y'][:-1])
+# pickle.dump(lr,open(basepath + "ml_project/lr.pkl",'w'))
+lr = pickle.load(open(basepath + "ml_project/lr.pkl",'r'))
 
-print "Fitting LGSSM"
-# Fit EM parameters for the model, based on the sampled data
-model = LinearGaussianSSM(A=np.copy(lr.coefficients), C=np.eye(21))
-model.fit_em(region_data_train['Y'].T, max_iters=1000, exclude_list=['C'])
-pickle.dump(model,open(basepath + "ml_project/lgssm.pkl",'w'))
+# print "Fitting LGSSM"
+# # Fit EM parameters for the model, based on the sampled data
+# model = LinearGaussianSSM(A=np.copy(lr.coefficients.T), C=np.eye(21))
+# model.fit_em(region_data_train['Y'].T, max_iters=1000, exclude_list=['C'])
+# pickle.dump(model,open(basepath + "ml_project/lgssm.pkl",'w'))
 # model = pickle.load(open(basepath + "ml_project/lgssm.pkl",'r'))
 
-model_kf = KalmanFilter(transition_matrices=np.copy(lr.coefficients), observation_matrices=np.eye(21))
-model_kf.em(region_data_train['Y'], em_vars={'transition_matrices', 'transition_covariance', 'observation_covariance',
-                    'initial_state_mean', 'initial_state_covariance'}, n_iter=np.where(model.LL==0)[0][0])
-pickle.dump(model_kf,open(basepath + "ml_project/kf.pkl",'w'))
-# model_kf = pickle.load(open(basepath + "ml_project/kf.pkl",'r'))
+print "Doing linear regression - supervised case"
+lr2 = RecurrentRegression(use_design_matrix=False)
+lr2.fit(region_data_train['Y'], region_data_train['X'])
+pickle.dump(lr2,open(basepath + "ml_project/lr_supervised.pkl",'w'))
+# lr2 = pickle.load(open(basepath + "ml_project/lr_supervised.pkl",'r'))
+
+print "Fitting LGSSM - supervised case"
+# Fit EM parameters for the model, based on the sampled data
+model = LinearGaussianSSM(A=np.copy(lr.coefficients[region_data_train['X'].shape[1]:].T), B=np.copy(lr.coefficients[0:region_data_train['X'].shape[1]].T), C=np.eye(21))
+model.fit_em(region_data_train['Y'].T, max_iters=1000, exclude_list=['C'])
+pickle.dump(model,open(basepath + "ml_project/lgssm_supervised.pkl",'w'))
+# model = pickle.load(open(basepath + "ml_project/lgssm_supervised.pkl",'r'))
