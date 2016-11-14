@@ -64,8 +64,12 @@ class LinearGaussianSSM:
             mu_smooth, V_smooth, J = self.kalman_smoothing(Y,U)
 
             self.LL[i] = self.complete_log_likelihood(Y, mu_smooth, U)
-            if i>0 and (self.LL[i] - self.LL[i-1] < tol):
-                break
+            LL_diff = self.LL[i] - self.LL[i-1]
+            if i>0:
+                if LL_diff < 0:
+                    raise RuntimeError("log likelihood increased - numerical instability or bug detected")
+                if LL_diff < tol:
+                    break
 
             # E step - compute expectations
             # Variables are defined as follows:
@@ -106,13 +110,15 @@ class LinearGaussianSSM:
             if 'C' not in exclude_list:
                 self.C = Y.dot(mu_smooth.T).dot(la.inv(Psum_all))
             if 'R' not in exclude_list:
-                self.R = np.diag(np.diag((Y.dot(Y.T) - self.C.dot(mu_smooth).dot(Y.T))/n_samples))
+                self.R = (Y.dot(Y.T) - self.C.dot(mu_smooth).dot(Y.T))/n_samples
+                # self.R = np.diag(np.diag((Y.dot(Y.T) - self.C.dot(mu_smooth).dot(Y.T))/n_samples))
             if self.B is None:
                 # Ghahramani version of updates
                 if 'A' not in exclude_list:
                     self.A = Psum_ttm1.dot(la.inv(Psum1))
                 if 'Q' not in exclude_list:
-                    self.Q = np.diag(np.diag((Psum2 - self.A.dot(Psum_ttm1.T))/(n_samples-1.)))
+                    self.Q = (Psum2 - self.A.dot(Psum_ttm1.T))/(n_samples-1.)
+                    # self.Q = np.diag(np.diag((Psum2 - self.A.dot(Psum_ttm1.T))/(n_samples-1.)))
                 # bishop version of updates
                 # self.A = Psum_ttm1.dot(la.inv(Psum1))
                 # self.C = Y.dot(Ez.T).dot(la.inv(Psum_all))
