@@ -55,8 +55,8 @@ lr = pickle.load(open(basepath + "ml_project/lr.pkl",'r'))
 print "Fitting LGSSM"
 # # Fit EM parameters for the model, based on the sampled data
 model = LinearGaussianSSM(A=np.copy(lr.coefficients.T), C=np.eye(21))
-model.fit_em(region_data_train['Y'].T, max_iters=5000, exclude_list=['C'])
-pickle.dump(model,open(basepath + "ml_project/lgssm.pkl",'w'))
+model.fit_em(region_data_train['Y'].T, max_iters=5000, exclude_list=['C'], diagonal_covariance=True)
+pickle.dump(model,open(basepath + "ml_project/lgssm_diagonal.pkl",'w'))
 # model = pickle.load(open(basepath + "ml_project/lgssm.pkl",'r'))
 
 print "Doing linear regression - supervised case"
@@ -68,6 +68,6 @@ lr2 = pickle.load(open(basepath + "ml_project/lr_supervised.pkl",'r'))
 print "Fitting LGSSM - supervised case"
 # Fit EM parameters for the model, based on the sampled data
 model2 = LinearGaussianSSM(A=np.copy(lr2.coefficients[4:].T), B=np.copy(lr2.coefficients[0:4].T), C=np.eye(21))
-model2.fit_em(region_data_train['Y'].T, region_data_train['X'].T, max_iters=5000, exclude_list=['C'])
-pickle.dump(model2,open(basepath + "ml_project/lgssm_supervised.pkl",'w'))
+model2.fit_em(region_data_train['Y'].T, region_data_train['X'].T, max_iters=5000, exclude_list=['C'], diagonal_covariance=True)
+pickle.dump(model2,open(basepath + "ml_project/lgssm_supervised_diagonal.pkl",'w'))
 # model2 = pickle.load(open(basepath + "ml_project/lgssm_supervised.pkl",'r'))

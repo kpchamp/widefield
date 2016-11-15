@@ -4,6 +4,7 @@ from scipy.stats import multivariate_normal
 from cvxopt import matrix, solvers
 import warnings
 
+
 class LinearGaussianSSM:
     # Linear Gaussian state space model with optional control
     def __init__(self, *args, **kwargs):
@@ -53,7 +54,7 @@ class LinearGaussianSSM:
         self.LL = None
 
     # Fit the parameters of the LDS model using EM
-    def fit_em(self, Y, U=None, max_iters=10, tol=.01, exclude_list=None):
+    def fit_em(self, Y, U=None, max_iters=10, tol=.01, exclude_list=None, diagonal_covariance=False):
         n_samples = Y.shape[1]
 
         if exclude_list is None:
@@ -148,6 +149,11 @@ class LinearGaussianSSM:
                         self.Q = (Psum2 - self.A.dot(Psum_ttm1.T) - Psum_ttm1.dot(self.A.T) + self.A.dot(Psum1).dot(self.A.T)
                                   - self.B.dot(UXsum_ttm1.T) - UXsum_ttm1.dot(self.B.T) + self.B.dot(UXsum.T).dot(self.A.T)
                                   + self.A.dot(UXsum).dot(self.B.T) + self.B.dot(Usum).dot(self.B.T))
+
+            # optionally diagonalize the covariance matrices
+            if diagonal_covariance:
+                self.Q = self.Q*np.eye(self.Q.shape[0])
+                self.R = self.R*np.eye(self.R.shape[0])
 
     def kalman_filter(self, Y, U=None):
         n_samples = Y.shape[1]
