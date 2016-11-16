@@ -154,6 +154,55 @@ class RecurrentRegression:
         return np.mean((Y[1:] - self.reconstruct(Y, Xin))**2, axis=0)/np.var(Y[1:], axis=0)
 
 
+# This is essentially the DMD model, with optional convolution
+# Commented out because you can fit using regular linear regression
+# class DynamicRegression:
+#     def __init__(self, fit_offset=True, use_design_matrix=False, convolution_length=1):
+#         self.fit_offset = fit_offset
+#         self.use_design_matrix = use_design_matrix
+#         if fit_offset:
+#             self.offset = None
+#         self.convolution_length = convolution_length
+#         self.coefficients = None
+#         self.training_loss = None
+#
+#     def create_design_matrix(self, Y):
+#         n_samples, n_features = Y.shape
+#         if self.convolution_length > n_samples:
+#             raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length, n_samples))
+#         design_matrix = np.zeros((n_samples-1, int(self.fit_offset) + n_features*self.convolution_length))
+#         design_matrix[:,0] += 1.
+#         for k in range(n_features):
+#             for j in range(self.convolution_length):
+#                 design_matrix[j:, 1 + k*self.convolution_length + j] = Y[0:n_samples-j-1, k]
+#         return design_matrix
+#
+#     def fit(self, Y, method='least squares', exclude_pairs=None):
+#         n_samples, n_features = Y.shape
+#         if self.use_design_matrix:
+#             X = self.create_design_matrix(Y)
+#         else:
+#             X = Y[:-1]
+#         n_regressors = X.shape[1]
+#         self.coefficients = np.zeros((n_regressors, n_features))
+#         for i in range(n_features):
+#             if method == 'least squares':
+#                 self.coefficients[:,i] = la.lstsq(X[:,:], Y[1:,i])[0]
+#         if self.fit_offset:
+#             self.offset = self.coefficients[0]
+#         self.training_loss = self.compute_loss_percentage(Y)
+#
+#     def reconstruct(self, Y):
+#         if self.use_design_matrix:
+#             X = self.create_design_matrix(Y)
+#         else:
+#             X = Y[:-1]
+#         return X.dot(self.coefficients)
+#
+#     def compute_loss_percentage(self, Y):
+#         return np.mean((Y[1:] - self.reconstruct(Y))**2, axis=0)/np.var(Y[1:], axis=0)
+
+
 def create_convolution_matrix(X, convolution_length):
     n_samples, n_features = X.shape
     convolution_matrix = np.zeros((n_samples, n_features*convolution_length))
