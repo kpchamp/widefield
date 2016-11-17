@@ -116,6 +116,24 @@ plt.tight_layout()
     return f
 
 
+def plot_region_reconstruction(idxs):
+    plt.subplot(1,2,1)
+    plt.plot(region_data_test['Y'][idxs,-2])
+    plt.plot(lr_Df_regions.reconstruct(region_data_test['Y'][0:])[idxs-1,-2])
+    plt.plot(lr_DfIf_regions.reconstruct(region_data_test['Y'],region_data_test['X'])[idxs-1,-2])
+    plt.plot(region_data_test['X'][idxs,0])
+    plt.plot(region_data_test['X'][idxs,1])
+    plt.plot(region_data_test['X'][idxs,2])
+    plt.subplot(1,2,2)
+    plt.plot(region_data_test['Y'][idxs,-1])
+    plt.plot(lr_Df_regions.reconstruct(region_data_test['Y'][0:])[idxs-1,-1])
+    plt.plot(lr_DfIf_regions.reconstruct(region_data_test['Y'],region_data_test['X'])[idxs-1,-1])
+    plt.plot(region_data_test['X'][idxs,0])
+    plt.plot(region_data_test['X'][idxs,1])
+    plt.plot(region_data_test['X'][idxs,2])
+
+
+
 # -------------- PCA Regression --------------
 run_pca_regression = False
 save_pca_files = True
