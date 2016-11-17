@@ -116,21 +116,58 @@ plt.tight_layout()
     return f
 
 
-def plot_region_reconstruction(idxs):
-    plt.subplot(1,2,1)
-    plt.plot(region_data_test['Y'][idxs,-2])
-    plt.plot(lr_Df_regions.reconstruct(region_data_test['Y'][0:])[idxs-1,-2])
-    plt.plot(lr_DfIf_regions.reconstruct(region_data_test['Y'],region_data_test['X'])[idxs-1,-2])
-    plt.plot(region_data_test['X'][idxs,0])
-    plt.plot(region_data_test['X'][idxs,1])
-    plt.plot(region_data_test['X'][idxs,2])
-    plt.subplot(1,2,2)
-    plt.plot(region_data_test['Y'][idxs,-1])
-    plt.plot(lr_Df_regions.reconstruct(region_data_test['Y'][0:])[idxs-1,-1])
-    plt.plot(lr_DfIf_regions.reconstruct(region_data_test['Y'],region_data_test['X'])[idxs-1,-1])
-    plt.plot(region_data_test['X'][idxs,0])
-    plt.plot(region_data_test['X'][idxs,1])
-    plt.plot(region_data_test['X'][idxs,2])
+def get_reconstructions(idxs):
+    reconstructions = np.empty((6,idxs.size,len(region_data_test['Y_labels'])))
+    reconstructions[0] = region_data_test['Y'][idxs]
+    reconstructions[1] = lr_If_regions.reconstruct(region_data_test['X'])[idxs]
+    reconstructions[2] = lr_D_regions.reconstruct(region_data_test['Y'][:-1])[idxs-1]
+    reconstructions[3] = lr_Df_regions.reconstruct(region_data_test['Y'][:-1])[idxs-1]
+    reconstructions[4] = lr_DIf_regions.reconstruct(region_data_test['Y'],region_data_test['X'])[idxs-1]
+    reconstructions[5] = lr_DfIf_regions.reconstruct(region_data_test['Y'],region_data_test['X'])[idxs-1]
+    recon_labels = ['data', 'If', 'D', 'Df', 'DIf', 'DfIf']
+    return reconstructions, recon_labels
+
+def make_regressor_plot_values(data,time):
+    nonzeros = np.where(data != 0)[0]
+    n = nonzeros.size
+    values = np.empty((n,4))
+    for i in range(n):
+        values[i,0:2] = time[nonzeros[i]]
+        values[i,2] = 0
+        values[i,3] = data[nonzeros[i]]
+    return values
+
+
+def create_region_reconstruction_plot(idxs):
+    f = {}
+    f['time'] = np.arange(idxs)*0.01
+    f['reconstructions'], f['recon_labels'] = get_reconstructions(idxs)
+    f['stim'] = make_regressor_plot_values(region_data_test['X'][idxs,0],f['time'])
+    f['lick'] = make_regressor_plot_values(region_data_test['X'][idxs,1],f['time'])
+    f['reward'] = make_regressor_plot_values(region_data_test['X'][idxs,2],f['time'])
+    f['region_labels'] = region_data_test['Y_labels']
+    f['xlim'] = [f['time'][0],f['time'][-1]]
+    f['ylim'] = [1.2*np.min(f['reconstructions']), 1.2*np.max(f['reconstructions'])]
+    f['color'] = np.random.permutation(plt.cm.rainbow(np.linspace(0,1,9)))
+    f['code'] = """
+plt.figure()
+for i in range(len(f['region_labels'])):
+    plt.subplot(5,5,i+1)
+    for j in range(f['reconstructions'].shape[0]):
+        plt.plot(f['time'],f['reconstructions'][j,:,i],c=f['color'][j],label=f['recon_labels'][j])
+    plt.ylim(f['ylim'])
+    plt.xlim(f['xlim'])
+    plt.title(f['region_labels'][i],fontsize=8)
+    for j in range(f['stim'].shape[0]):
+        plt.plot(f['stim'][j,0:2],f['stim'][j,2:],c=f['color'][f['reconstructions'].shape[0]])
+    for j in range(f['lick'].shape[0]):
+        plt.plot(f['lick'][j,0:2],f['lick'][j,2:],c=f['color'][1+f['reconstructions'].shape[0]])
+    for j in range(f['reward'].shape[0]):
+        plt.plot(f['reward'][j,0:2],f['reward'][j,2:],c=f['color'][2+f['reconstructions'].shape[0]])
+    if i==17:
+        plt.legend()
+plt.tight_layout()
+"""
 
 
 
