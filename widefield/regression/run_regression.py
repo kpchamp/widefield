@@ -150,23 +150,25 @@ def create_region_reconstruction_plot(idxs):
     f['ylim'] = [1.2*np.min(f['reconstructions']), 1.2*np.max(f['reconstructions'])]
     f['color'] = np.random.permutation(plt.cm.rainbow(np.linspace(0,1,9)))
     f['code'] = """
-plt.figure()
+fig = plt.figure()
 for i in range(len(f['region_labels'])):
-    plt.subplot(5,5,i+1)
+    ax = fig.add_subplot(5,5,i+1)
     for j in range(f['reconstructions'].shape[0]):
-        plt.plot(f['time'],f['reconstructions'][j,:,i],c=f['color'][j],label=f['recon_labels'][j])
-    plt.ylim(f['ylim'])
-    plt.xlim(f['xlim'])
-    plt.title(f['region_labels'][i],fontsize=8)
+        ax.plot(f['time'],f['reconstructions'][j,:,i],c=f['color'][j],label=f['recon_labels'][j])
+    ax.set_ylim(f['ylim'])
+    ax.set_xlim(f['xlim'])
+    ax.set_title(f['region_labels'][i],fontsize=8)
     for j in range(f['stim'].shape[0]):
-        plt.plot(f['stim'][j,0:2],f['stim'][j,2:],c=f['color'][f['reconstructions'].shape[0]])
+        ax.plot(f['stim'][j,0:2],f['stim'][j,2:],c=f['color'][f['reconstructions'].shape[0]])
     for j in range(f['lick'].shape[0]):
-        plt.plot(f['lick'][j,0:2],f['lick'][j,2:],c=f['color'][1+f['reconstructions'].shape[0]])
+        ax.plot(f['lick'][j,0:2],f['lick'][j,2:],c=f['color'][1+f['reconstructions'].shape[0]])
     for j in range(f['reward'].shape[0]):
-        plt.plot(f['reward'][j,0:2],f['reward'][j,2:],c=f['color'][2+f['reconstructions'].shape[0]])
-    if i==17:
-        plt.legend()
-plt.tight_layout()
+        ax.plot(f['reward'][j,0:2],f['reward'][j,2:],c=f['color'][2+f['reconstructions'].shape[0]])
+    ax.tick_params(axis='x', labelsize=8)
+    ax.tick_params(axis='y', labelsize=8)
+    if i==18:
+        ax.legend(fontsize=8, loc='lower center', bbox_to_anchor=(-0.5,-1.5,1,1))
+plt.tight_layout(pad=0.1)
 """
     return f
 
