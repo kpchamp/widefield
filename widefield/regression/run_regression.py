@@ -140,7 +140,7 @@ def make_regressor_plot_values(data,time):
 
 def create_region_reconstruction_plot(idxs):
     f = {}
-    f['time'] = idxs*0.01
+    f['time'] = np.arange(idxs.size)*0.01
     f['reconstructions'], f['recon_labels'] = get_reconstructions(idxs)
     f['stim'] = make_regressor_plot_values(region_data_test['X'][idxs,0],f['time'])
     f['lick'] = make_regressor_plot_values(region_data_test['X'][idxs,1],f['time'])
