@@ -168,7 +168,7 @@ for i in range(len(f['region_labels'])):
         plt.legend()
 plt.tight_layout()
 """
-
+    return f
 
 
 # -------------- PCA Regression --------------
