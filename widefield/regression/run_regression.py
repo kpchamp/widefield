@@ -35,9 +35,9 @@ else:
 
 
 # -------------- REGIONAL REGRESSION --------------
-run_regional_regression = False
+run_regional_regression = True
 save_region_files = True
-load_region_files = True
+load_region_files = False
 
 if run_regional_regression:
     # Get fluorescence data into df/f format and matrix for regression
@@ -58,15 +58,15 @@ if run_regional_regression:
 
     # Run regular and recurrent regressions.
     # based on cross-correlations, convolve over 4 seconds
-    lr_If_regions = LinearRegression(use_design_matrix=True, convolution_length=200)
+    lr_If_regions = LinearRegression(use_design_matrix=True, convolution_length=400)
     lr_If_regions.fit(region_data_train['Y'], region_data_train['X'])
     lr_D_regions = LinearRegression(use_design_matrix=True, convolution_length=1)
     lr_D_regions.fit(region_data_train['Y'][1:], region_data_train['Y'][:-1])
-    lr_Df_regions = LinearRegression(use_design_matrix=True, convolution_length=200)
+    lr_Df_regions = LinearRegression(use_design_matrix=True, convolution_length=400)
     lr_Df_regions.fit(region_data_train['Y'][1:], region_data_train['Y'][:-1])
-    lr_DIf_regions = RecurrentRegression(use_design_matrix=True, convolution_length=200, recurrent_convolution_length=1)
+    lr_DIf_regions = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=1)
     lr_DIf_regions.fit(region_data_train['Y'], region_data_train['X'])
-    lr_DfIf_regions = RecurrentRegression(use_design_matrix=True, convolution_length=200, recurrent_convolution_length=200)
+    lr_DfIf_regions = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
     lr_DfIf_regions.fit(region_data_train['Y'], region_data_train['X'])
 
 
