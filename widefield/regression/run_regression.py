@@ -174,7 +174,7 @@ plt.tight_layout(pad=0.1)
 
 
 # -------------- PCA Regression --------------
-run_pca_regression = True
+run_pca_regression = False
 save_pca_files = True
 load_pca_files = True
 
@@ -248,9 +248,9 @@ plt.tight_layout()
 
 
 # -------------- ICA --------------
-run_ica = True
+run_ica = False
 save_ica_files = True
-load_ica_files = False
+load_ica_files = True
 plot_ica_components = False
 
 if run_ica:
