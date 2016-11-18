@@ -116,7 +116,7 @@ plt.tight_layout()
     return f
 
 
-def get_reconstructions(idxs):
+def get_region_reconstructions(idxs):
     reconstructions = np.empty((6,idxs.size,len(region_data_test['Y_labels'])))
     reconstructions[0] = region_data_test['Y'][idxs]
     reconstructions[1] = lr_If_regions.reconstruct(region_data_test['X'])[idxs]
@@ -141,7 +141,7 @@ def make_regressor_plot_values(data,time):
 def create_region_reconstruction_plot(idxs):
     f = {}
     f['time'] = np.arange(idxs.size)*0.01
-    f['reconstructions'], f['recon_labels'] = get_reconstructions(idxs)
+    f['reconstructions'], f['recon_labels'] = get_region_reconstructions(idxs)
     f['stim'] = make_regressor_plot_values(region_data_test['X'][idxs,0],f['time'])
     f['lick'] = make_regressor_plot_values(region_data_test['X'][idxs,1],f['time'])
     f['reward'] = make_regressor_plot_values(region_data_test['X'][idxs,2],f['time'])
@@ -247,6 +247,51 @@ plt.tight_layout()
     return f
 
 
+def get_pca_reconstructions(idxs):
+    reconstructions = np.empty((6,idxs.size,pca_data_test['Y'].shape[1]))
+    reconstructions[0] = pca_data_test['Y'][idxs]
+    reconstructions[1] = lr_If_pca.reconstruct(pca_data_test['X'])[idxs]
+    reconstructions[2] = lr_D_pca.reconstruct(pca_data_test['Y'][:-1])[idxs-1]
+    reconstructions[3] = lr_Df_pca.reconstruct(pca_data_test['Y'][:-1])[idxs-1]
+    reconstructions[4] = lr_DIf_pca.reconstruct(pca_data_test['Y'],pca_data_test['X'])[idxs-1]
+    reconstructions[5] = lr_DfIf_pca.reconstruct(pca_data_test['Y'],pca_data_test['X'])[idxs-1]
+    recon_labels = ['data', 'If', 'D', 'Df', 'DIf', 'DfIf']
+    return reconstructions, recon_labels
+
+
+def create_pca_reconstruction_plot(idxs):
+    f = {}
+    f['time'] = np.arange(idxs.size)*0.01
+    f['reconstructions'], f['recon_labels'] = get_pca_reconstructions(idxs)
+    f['stim'] = make_regressor_plot_values(pca_data_test['X'][idxs,0],f['time'])
+    f['lick'] = make_regressor_plot_values(pca_data_test['X'][idxs,1],f['time'])
+    f['reward'] = make_regressor_plot_values(pca_data_test['X'][idxs,2],f['time'])
+    f['xlim'] = [f['time'][0],f['time'][-1]]
+    f['ylim'] = [1.2*np.min(f['reconstructions']), 1.2*np.max(f['reconstructions'])]
+    f['color'] = np.random.permutation(plt.cm.rainbow(np.linspace(0,1,9)))
+    f['code'] = """
+fig = plt.figure()
+for i in range(f['reconstructions'].shape[2]):
+    ax = fig.add_subplot(5,5,i+1)
+    for j in range(f['reconstructions'].shape[0]):
+        ax.plot(f['time'],f['reconstructions'][j,:,i],c=f['color'][j],label=f['recon_labels'][j])
+    ax.set_ylim(f['ylim'])
+    ax.set_xlim(f['xlim'])
+    for j in range(f['stim'].shape[0]):
+        ax.plot(f['stim'][j,0:2],f['stim'][j,2:],c=f['color'][f['reconstructions'].shape[0]])
+    for j in range(f['lick'].shape[0]):
+        ax.plot(f['lick'][j,0:2],f['lick'][j,2:],c=f['color'][1+f['reconstructions'].shape[0]])
+    for j in range(f['reward'].shape[0]):
+        ax.plot(f['reward'][j,0:2],f['reward'][j,2:],c=f['color'][2+f['reconstructions'].shape[0]])
+    ax.tick_params(axis='x', labelsize=8)
+    ax.tick_params(axis='y', labelsize=8)
+    if i==18:
+        ax.legend(fontsize=8, loc='lower center', bbox_to_anchor=(-0.5,-1.5,1,1))
+plt.tight_layout(pad=0.1)
+"""
+    return f
+
+
 # -------------- ICA --------------
 run_ica = False
 save_ica_files = True
@@ -316,6 +361,52 @@ plt.legend()
 plt.tight_layout()
 """
     return f
+
+
+def get_ica_reconstructions(idxs):
+    reconstructions = np.empty((6,idxs.size,ica_data_test['Y'].shape[1]))
+    reconstructions[0] = ica_data_test['Y'][idxs]
+    reconstructions[1] = lr_If_ica.reconstruct(ica_data_test['X'])[idxs]
+    reconstructions[2] = lr_D_ica.reconstruct(ica_data_test['Y'][:-1])[idxs-1]
+    reconstructions[3] = lr_Df_ica.reconstruct(ica_data_test['Y'][:-1])[idxs-1]
+    reconstructions[4] = lr_DIf_ica.reconstruct(ica_data_test['Y'],ica_data_test['X'])[idxs-1]
+    reconstructions[5] = lr_DfIf_ica.reconstruct(ica_data_test['Y'],ica_data_test['X'])[idxs-1]
+    recon_labels = ['data', 'If', 'D', 'Df', 'DIf', 'DfIf']
+    return reconstructions, recon_labels
+
+
+def create_ica_reconstruction_plot(idxs):
+    f = {}
+    f['time'] = np.arange(idxs.size)*0.01
+    f['reconstructions'], f['recon_labels'] = get_ica_reconstructions(idxs)
+    f['stim'] = make_regressor_plot_values(ica_data_test['X'][idxs,0],f['time'])
+    f['lick'] = make_regressor_plot_values(ica_data_test['X'][idxs,1],f['time'])
+    f['reward'] = make_regressor_plot_values(ica_data_test['X'][idxs,2],f['time'])
+    f['xlim'] = [f['time'][0],f['time'][-1]]
+    f['ylim'] = [1.2*np.min(f['reconstructions']), 1.2*np.max(f['reconstructions'])]
+    f['color'] = np.random.permutation(plt.cm.rainbow(np.linspace(0,1,9)))
+    f['code'] = """
+fig = plt.figure()
+for i in range(f['reconstructions'].shape[2]):
+    ax = fig.add_subplot(5,5,i+1)
+    for j in range(f['reconstructions'].shape[0]):
+        ax.plot(f['time'],f['reconstructions'][j,:,i],c=f['color'][j],label=f['recon_labels'][j])
+    ax.set_ylim(f['ylim'])
+    ax.set_xlim(f['xlim'])
+    for j in range(f['stim'].shape[0]):
+        ax.plot(f['stim'][j,0:2],f['stim'][j,2:],c=f['color'][f['reconstructions'].shape[0]])
+    for j in range(f['lick'].shape[0]):
+        ax.plot(f['lick'][j,0:2],f['lick'][j,2:],c=f['color'][1+f['reconstructions'].shape[0]])
+    for j in range(f['reward'].shape[0]):
+        ax.plot(f['reward'][j,0:2],f['reward'][j,2:],c=f['color'][2+f['reconstructions'].shape[0]])
+    ax.tick_params(axis='x', labelsize=8)
+    ax.tick_params(axis='y', labelsize=8)
+    if i==18:
+        ax.legend(fontsize=8, loc='lower center', bbox_to_anchor=(-0.5,-1.5,1,1))
+plt.tight_layout(pad=0.1)
+"""
+    return f
+
 
 # if plot_ica_components:
 #     for i in range(10):
