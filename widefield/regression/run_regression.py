@@ -272,7 +272,7 @@ def create_pca_reconstruction_plot(idxs):
     f['code'] = """
 fig = plt.figure()
 for i in range(f['reconstructions'].shape[2]):
-    ax = fig.add_subplot(5,5,i+1)
+    ax = fig.add_subplot(2,5,i+1)
     for j in range(f['reconstructions'].shape[0]):
         ax.plot(f['time'],f['reconstructions'][j,:,i],c=f['color'][j],label=f['recon_labels'][j])
     ax.set_ylim(f['ylim'])
@@ -285,8 +285,8 @@ for i in range(f['reconstructions'].shape[2]):
         ax.plot(f['reward'][j,0:2],f['reward'][j,2:],c=f['color'][2+f['reconstructions'].shape[0]])
     ax.tick_params(axis='x', labelsize=8)
     ax.tick_params(axis='y', labelsize=8)
-    if i==18:
-        ax.legend(fontsize=8, loc='lower center', bbox_to_anchor=(-0.5,-1.5,1,1))
+    if i==9:
+        ax.legend(fontsize=8, loc='lower right')
 plt.tight_layout(pad=0.1)
 """
     return f
@@ -388,7 +388,7 @@ def create_ica_reconstruction_plot(idxs):
     f['code'] = """
 fig = plt.figure()
 for i in range(f['reconstructions'].shape[2]):
-    ax = fig.add_subplot(5,5,i+1)
+    ax = fig.add_subplot(2,5,i+1)
     for j in range(f['reconstructions'].shape[0]):
         ax.plot(f['time'],f['reconstructions'][j,:,i],c=f['color'][j],label=f['recon_labels'][j])
     ax.set_ylim(f['ylim'])
@@ -401,8 +401,8 @@ for i in range(f['reconstructions'].shape[2]):
         ax.plot(f['reward'][j,0:2],f['reward'][j,2:],c=f['color'][2+f['reconstructions'].shape[0]])
     ax.tick_params(axis='x', labelsize=8)
     ax.tick_params(axis='y', labelsize=8)
-    if i==18:
-        ax.legend(fontsize=8, loc='lower center', bbox_to_anchor=(-0.5,-1.5,1,1))
+    if i==9:
+        ax.legend(fontsize=8, loc='lower right')
 plt.tight_layout(pad=0.1)
 """
     return f
