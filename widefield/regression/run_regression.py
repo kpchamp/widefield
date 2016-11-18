@@ -99,7 +99,7 @@ def create_region_plot():
     f['percent_error'][4] = lr_DfIf_regions.compute_loss_percentage(region_data_test['Y'], region_data_test['X'])
     f['bar_width'] = 0.15
     f['idxs'] = np.arange(len(region_data_test['Y_labels']))
-    f['category_labels'] = ['input only', 'dynamics only', 'dynamics w/ filter', 'input + dynamics', 'input + dynamics w/ filter']
+    f['category_labels'] = ['If', 'D', 'Df', 'DIf', 'DfIf']
     f['region_labels'] = region_data_test['Y_labels']
     f['code'] = """
 plt.figure()
@@ -174,7 +174,7 @@ plt.tight_layout(pad=0.1)
 
 
 # -------------- PCA Regression --------------
-run_pca_regression = False
+run_pca_regression = True
 save_pca_files = True
 load_pca_files = True
 
@@ -185,7 +185,7 @@ if run_pca_regression:
     image_data_test = tb_open.root.data[:,183000:-20000].T
     tb_open.close()
 
-    pca_model = PCA(n_components=20)
+    pca_model = PCA(n_components=10)
     pca_model.fit(image_data_train)
 
     pca_data_train = {'Y': pca_model.transform(image_data_train), 'X': regressor_data[20000:183000, :], 'X_labels': X_labels}
@@ -232,7 +232,7 @@ def create_pca_plot():
     f['percent_error'][4] = lr_DfIf_pca.compute_loss_percentage(pca_data_test['Y'], pca_data_test['X'])
     f['bar_width'] = 0.15
     f['idxs'] = np.arange(pca_data_test['Y'].shape[1])
-    f['category_labels'] = ['input only', 'dynamics only', 'dynamics w/ filter', 'input + dynamics', 'input + dynamics w/ filter']
+    f['category_labels'] = ['If', 'D', 'Df', 'DIf', 'DfIf']
     f['code'] = """
 plt.figure()
 plt.bar(f['idxs'], f['percent_error'][0], f['bar_width'], color='r',label=f['category_labels'][0])
@@ -240,63 +240,7 @@ plt.bar(f['idxs']+f['bar_width'], f['percent_error'][1], f['bar_width'], color='
 plt.bar(f['idxs']+2*f['bar_width'], f['percent_error'][2], f['bar_width'], color='g', label=f['category_labels'][2])
 plt.bar(f['idxs']+3*f['bar_width'], f['percent_error'][3], f['bar_width'], color='y', label=f['category_labels'][3])
 plt.bar(f['idxs']+4*f['bar_width'], f['percent_error'][4], f['bar_width'], color='k', label=f['category_labels'][4])
-plt.title('error as percentage of variance - regression on 20 PCA components')
-plt.legend()
-plt.tight_layout()
-"""
-    return f
-
-# -------------- Factor Analysis Regression --------------
-run_fa_regression = False
-save_fa_files = False
-load_fa_files = False
-
-if run_fa_regression:
-    if not run_pca_regression:
-        # Load data
-        tb_open = tb.open_file(image_data_path, 'r')
-        image_data_train = tb_open.root.data[:,20000:183000].T
-        image_data_test = tb_open.root.data[:,183000:-20000].T
-        tb_open.close()
-
-    fa_model = FactorAnalysis(n_components=20)
-    fa_model.fit(image_data_train)
-
-    fa_data_train = {'Y': fa_model.transform(image_data_train), 'X': regressor_data[20000:183000, :], 'X_labels': X_labels}
-    fa_data_test = {'Y': fa_model.transform(image_data_test), 'X': regressor_data[183000:-20000, :], 'X_labels': X_labels}
-
-    lr1_fa = LinearRegression(use_design_matrix=True, convolution_length=400)
-    lr1_fa.fit(fa_data_train['Y'], fa_data_train['X'])
-    lr2_fa = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
-    lr2_fa.fit(fa_data_train['Y'], fa_data_train['X'])
-
-    if save_fa_files:
-        pickle.dump(fa_model, open(basepath + "regression/fa/fa_model.pkl",'w'))
-        pickle.dump(fa_data_train, open(basepath + "regression/fa/train.pkl",'w'))
-        pickle.dump(fa_data_test, open(basepath + "regression/fa/test.pkl",'w'))
-        pickle.dump(lr1_fa, open(basepath + "regression/fa/results_nonrecurrent.pkl", 'w'))
-        pickle.dump(lr2_fa, open(basepath + "regression/fa/results_recurrent.pkl", 'w'))
-
-if load_fa_files:
-    fa_model = pickle.load(open(basepath + "regression/fa/fa_model.pkl",'r'))
-    fa_data_train = pickle.load(open(basepath + "regression/fa/train.pkl",'r'))
-    fa_data_test = pickle.load(open(basepath + "regression/fa/test.pkl",'r'))
-    lr1_fa = pickle.load(open(basepath + "regression/fa/results_nonrecurrent.pkl", 'r'))
-    lr2_fa = pickle.load(open(basepath + "regression/fa/results_recurrent.pkl", 'r'))
-
-def create_fa_plot():
-    f = {}
-    f['percent_error'] = np.zeros((2,fa_data_test['Y'].shape[1]))
-    f['percent_error'][0] = lr1_fa.compute_loss_percentage(fa_data_test['Y'], fa_data_test['X'])
-    f['percent_error'][1] = lr2_fa.compute_loss_percentage(fa_data_test['Y'], fa_data_test['X'])
-    f['bar_width'] = 0.4
-    f['idxs'] = np.arange(fa_data_test['Y'].shape[1])
-    f['category_labels'] = ['nonrecurrent', 'recurrent']
-    f['code'] = """
-plt.figure()
-plt.bar(f['idxs'], f['percent_error'][0], f['bar_width'], color='r',label=f['category_labels'][0])
-plt.bar(f['idxs']+f['bar_width'], f['percent_error'][1], f['bar_width'], color='b', label=f['category_labels'][1])
-plt.title('error as percentage of variance - regression on 20 FA components')
+plt.title('error as percentage of variance - regression on 10 PCA components')
 plt.legend()
 plt.tight_layout()
 """
@@ -304,56 +248,69 @@ plt.tight_layout()
 
 
 # -------------- ICA --------------
-run_ica = False
+run_ica = True
 save_ica_files = True
 load_ica_files = False
 plot_ica_components = False
 
 if run_ica:
-    pca_data_train_whiten = pca_data_train['Y'][:,0:10]/np.sqrt(pca_model.explained_variance_[0:10])
-    pca_data_test_whiten = pca_data_test['Y'][:,0:10]/np.sqrt(pca_model.explained_variance_[0:10])
+    pca_data_train_whiten = pca_data_train['Y']/np.sqrt(pca_model.explained_variance_)
+    pca_data_test_whiten = pca_data_test['Y']/np.sqrt(pca_model.explained_variance_)
 
     ica_model = FastICA(whiten=False)
     ica_data_train = {'Y': ica_model.fit_transform(pca_data_train_whiten), 'X': regressor_data[20000:183000, :], 'X_labels': X_labels}
     ica_data_test = {'Y': ica_model.transform(pca_data_test_whiten), 'X': regressor_data[183000:-20000, :], 'X_labels': X_labels}
 
-    lr1_ica = LinearRegression(use_design_matrix=True, convolution_length=400)
-    lr1_ica.fit(ica_data_train['Y'], ica_data_train['X'])
-    lr2_ica = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
-    lr2_ica.fit(ica_data_train['Y'], ica_data_train['X'])
-    lr3_ica = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=1)
-    lr3_ica.fit(ica_data_train['Y'], ica_data_train['X'])
+    lr_If_ica = LinearRegression(use_design_matrix=True, convolution_length=400)
+    lr_If_ica.fit(ica_data_train['Y'], ica_data_train['X'])
+    lr_D_ica = LinearRegression(use_design_matrix=True, convolution_length=1)
+    lr_D_ica.fit(ica_data_train['Y'][1:], ica_data_train['Y'][:-1])
+    lr_Df_ica = LinearRegression(use_design_matrix=True, convolution_length=400)
+    lr_Df_ica.fit(ica_data_train['Y'][1:], ica_data_train['Y'][:-1])
+    lr_DIf_ica = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=1)
+    lr_DIf_ica.fit(ica_data_train['Y'], ica_data_train['X'])
+    lr_DfIf_ica = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
+    lr_DfIf_ica.fit(ica_data_train['Y'], ica_data_train['X'])
 
     if save_ica_files:
         pickle.dump(ica_model, open(basepath + "regression/ica/ica_model.pkl",'w'))
         pickle.dump(ica_data_train, open(basepath + "regression/ica/train.pkl",'w'))
         pickle.dump(ica_data_test, open(basepath + "regression/ica/test.pkl",'w'))
-        pickle.dump(lr1_ica, open(basepath + "regression/ica/results_nonrecurrent.pkl", 'w'))
-        pickle.dump(lr2_ica, open(basepath + "regression/ica/results_recurrent.pkl", 'w'))
-        pickle.dump(lr3_ica, open(basepath + "regression/ica/results_halfrecurrent.pkl", 'w'))
+        pickle.dump(lr_If_ica, open(basepath + "regression/ica/lr_If_ica.pkl", 'w'))
+        pickle.dump(lr_D_ica, open(basepath + "regression/ica/lr_D_ica.pkl", 'w'))
+        pickle.dump(lr_Df_ica, open(basepath + "regression/ica/lr_Df_ica.pkl", 'w'))
+        pickle.dump(lr_DIf_ica, open(basepath + "regression/ica/lr_DIf_ica.pkl", 'w'))
+        pickle.dump(lr_DfIf_ica, open(basepath + "regression/ica/lr_DfIf_ica.pkl", 'w'))
 
 if load_ica_files:
     ica_model = pickle.load(open(basepath + "regression/ica/ica_model.pkl",'r'))
     ica_data_train = pickle.load(open(basepath + "regression/ica/train.pkl",'r'))
     ica_data_test = pickle.load(open(basepath + "regression/ica/test.pkl",'r'))
-    lr1_ica = pickle.load(open(basepath + "regression/ica/results_nonrecurrent.pkl", 'r'))
-    lr2_ica = pickle.load(open(basepath + "regression/ica/results_recurrent.pkl", 'r'))
-    lr3_ica = pickle.load(open(basepath + "regression/ica/results_halfrecurrent.pkl", 'r'))
+    lr_If_ica = pickle.load(open(basepath + "regression/ica/lr_If_ica.pkl", 'r'))
+    lr_D_ica = pickle.load(open(basepath + "regression/ica/lr_D_ica.pkl", 'r'))
+    lr_Df_ica = pickle.load(open(basepath + "regression/ica/lr_Df_ica.pkl", 'r'))
+    lr_DIf_ica = pickle.load(open(basepath + "regression/ica/lr_DIf_ica.pkl", 'r'))
+    lr_DfIf_ica = pickle.load(open(basepath + "regression/ica/lr_DfIf_ica.pkl", 'r'))
+
 
 def create_ica_plot():
     f = {}
-    f['percent_error'] = np.zeros((3,ica_data_test['Y'].shape[1]))
-    f['percent_error'][0] = lr1_ica.compute_loss_percentage(ica_data_test['Y'], ica_data_test['X'])
-    f['percent_error'][1] = lr3_ica.compute_loss_percentage(ica_data_test['Y'], ica_data_test['X'])
-    f['percent_error'][2] = lr2_ica.compute_loss_percentage(ica_data_test['Y'], ica_data_test['X'])
-    f['bar_width'] = 0.3
+    f['percent_error'] = np.zeros((5,ica_data_test['Y'].shape[1]))
+    f['percent_error'][0] = lr_If_ica.compute_loss_percentage(ica_data_test['Y'], ica_data_test['X'])
+    f['percent_error'][1] = lr_D_ica.compute_loss_percentage(ica_data_test['Y'][1:], ica_data_test['X'][:-1])
+    f['percent_error'][2] = lr_Df_ica.compute_loss_percentage(ica_data_test['Y'][1:], ica_data_test['X'][:-1])
+    f['percent_error'][3] = lr_DIf_ica.compute_loss_percentage(ica_data_test['Y'], ica_data_test['X'])
+    f['percent_error'][4] = lr_DfIf_ica.compute_loss_percentage(ica_data_test['Y'], ica_data_test['X'])
+    f['bar_width'] = 0.15
     f['idxs'] = np.arange(ica_data_test['Y'].shape[1])
-    f['category_labels'] = ['regression', 'dynamics', 'dynamics-filter']
+    f['category_labels'] = ['If', 'D', 'Df', 'DIf', 'DfIf']
     f['code'] = """
 plt.figure()
 plt.bar(f['idxs'], f['percent_error'][0], f['bar_width'], color='r',label=f['category_labels'][0])
 plt.bar(f['idxs']+f['bar_width'], f['percent_error'][1], f['bar_width'], color='b', label=f['category_labels'][1])
 plt.bar(f['idxs']+2*f['bar_width'], f['percent_error'][2], f['bar_width'], color='g', label=f['category_labels'][2])
+plt.bar(f['idxs']+3*f['bar_width'], f['percent_error'][3], f['bar_width'], color='y', label=f['category_labels'][3])
+plt.bar(f['idxs']+4*f['bar_width'], f['percent_error'][4], f['bar_width'], color='k', label=f['category_labels'][4])
 plt.title('error as percentage of variance - regression on 10 ICA components')
 plt.legend()
 plt.tight_layout()
