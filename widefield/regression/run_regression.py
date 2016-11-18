@@ -342,8 +342,8 @@ def create_ica_plot():
     f = {}
     f['percent_error'] = np.zeros((5,ica_data_test['Y'].shape[1]))
     f['percent_error'][0] = lr_If_ica.compute_loss_percentage(ica_data_test['Y'], ica_data_test['X'])
-    f['percent_error'][1] = lr_D_ica.compute_loss_percentage(ica_data_test['Y'][1:], ica_data_test['X'][:-1])
-    f['percent_error'][2] = lr_Df_ica.compute_loss_percentage(ica_data_test['Y'][1:], ica_data_test['X'][:-1])
+    f['percent_error'][1] = lr_D_ica.compute_loss_percentage(ica_data_test['Y'][1:], ica_data_test['Y'][:-1])
+    f['percent_error'][2] = lr_Df_ica.compute_loss_percentage(ica_data_test['Y'][1:], ica_data_test['Y'][:-1])
     f['percent_error'][3] = lr_DIf_ica.compute_loss_percentage(ica_data_test['Y'], ica_data_test['X'])
     f['percent_error'][4] = lr_DfIf_ica.compute_loss_percentage(ica_data_test['Y'], ica_data_test['X'])
     f['bar_width'] = 0.15
