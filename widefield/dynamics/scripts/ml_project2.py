@@ -54,10 +54,10 @@ lr = pickle.load(open(basepath + "ml_project/lr.pkl",'r'))
 
 print "Fitting LGSSM"
 # # Fit EM parameters for the model, based on the sampled data
-model = LinearGaussianSSM(A=np.copy(lr.coefficients.T), C=np.eye(21))
-model.fit_em(region_data_train['Y'].T, max_iters=5000, exclude_list=['C'], diagonal_covariance=True)
-pickle.dump(model,open(basepath + "ml_project/lgssm_diagonal.pkl",'w'))
-# model = pickle.load(open(basepath + "ml_project/lgssm.pkl",'r'))
+# model = LinearGaussianSSM(A=np.copy(lr.coefficients.T), C=np.eye(21))
+# model.fit_em(region_data_train['Y'].T, max_iters=5000, exclude_list=['C'], diagonal_covariance=True)
+# pickle.dump(model,open(basepath + "ml_project/lgssm_diagonal.pkl",'w'))
+model = pickle.load(open(basepath + "ml_project/lgssm.pkl",'r'))
 
 print "Doing linear regression - supervised case"
 # lr2 = RecurrentRegression(use_design_matrix=False)
