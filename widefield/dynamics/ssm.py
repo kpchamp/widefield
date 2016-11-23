@@ -162,10 +162,10 @@ class LinearGaussianSSM:
         V_filter = np.zeros((n_samples, self.n_dim_states, self.n_dim_states))
 
         mu_predict = self.mu0
-        # if self.B is not None:
-        #     if U is None:
-        #         raise ValueError('control term U must not be None')
-        #     mu_predict += self.B.dot(U[:,0])
+        if self.B is not None:
+            if U is None:
+                raise ValueError('control term U must not be None')
+            mu_predict += self.B.dot(U[:,0])
         V_predict = self.V0
         #LL = 0
         for t in range(n_samples):
@@ -186,7 +186,7 @@ class LinearGaussianSSM:
                 if self.B is not None:
                     if U is None:
                         raise ValueError('control term U must not be None')
-                    mu_predict += self.B.dot(U[:,t])
+                    mu_predict += self.B.dot(U[:,t+1])
                 V_predict = self.A.dot(V_filter[t]).dot(self.A.T) + self.Q
 
         return mu_filter, V_filter
@@ -207,8 +207,7 @@ class LinearGaussianSSM:
             if self.B is not None:
                 if U is None:
                     raise ValueError('control term U must not be None')
-                if t != 0:
-                    mu_predict += self.B.dot(U[:,t-1])
+                mu_predict += self.B.dot(U[:,t])
             V_predict = self.A.dot(V_filter[t]).dot(self.A.T) + self.Q
             J[t] = V_filter[t].dot(self.A.T).dot(la.inv(V_predict))
             mu_smooth[:,t] = mu_filter[:,t] + J[t].dot(mu_smooth[:,t+1] - mu_predict)
@@ -227,17 +226,17 @@ class LinearGaussianSSM:
         y = np.zeros((self.n_dim_observations, T))
 
         x[:,0] = self.mu0
-        if self.B is not None:
-            if U is None:
-                raise ValueError('control term U must not be None')
-            x[:,0] += self.B.dot(U[:,0])
+        # if self.B is not None:
+        #     if U is None:
+        #         raise ValueError('control term U must not be None')
+        #     x[:,0] += self.B.dot(U[:,0])
         y[:,0] = self.C.dot(self.mu0) + obs_noise_samples[:,0]
         for t in range(1,T):
             x[:,t] = self.A.dot(x[:,t-1]) + state_noise_samples[:,t]
             if self.B is not None:
                 if U is None:
                     raise ValueError('control term U must not be None')
-                x[:,t] += self.B.dot(U[:,t])
+                x[:,t] += self.B.dot(U[:,t-1])
             y[:,t] = self.C.dot(x[:,t]) + obs_noise_samples[:,t]
 
         return x, y
