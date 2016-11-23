@@ -181,7 +181,7 @@ class LinearGaussianSSM:
             V_filter[t] = V_predict - K.dot(self.C).dot(V_predict)
             # LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=self.C.dot(V_predict).dot(self.C.T) + np.diag(self.R))
             # LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=S)
-            if t != n_samples:
+            if t != n_samples-1:
                 mu_predict = self.A.dot(mu_filter[:,t])
                 if self.B is not None:
                     if U is None:
