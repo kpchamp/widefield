@@ -162,10 +162,10 @@ class LinearGaussianSSM:
         V_filter = np.zeros((n_samples, self.n_dim_states, self.n_dim_states))
 
         mu_predict = self.mu0
-        if self.B is not None:
-            if U is None:
-                raise ValueError('control term U must not be None')
-            mu_predict += self.B.dot(U[:,0])
+        # if self.B is not None:
+        #     if U is None:
+        #         raise ValueError('control term U must not be None')
+        #     mu_predict += self.B.dot(U[:,0])
         V_predict = self.V0
         #LL = 0
         for t in range(n_samples):
@@ -186,7 +186,7 @@ class LinearGaussianSSM:
                 if self.B is not None:
                     if U is None:
                         raise ValueError('control term U must not be None')
-                    mu_predict += self.B.dot(U[:,t+1])                       # JUST CHANGED
+                    mu_predict += self.B.dot(U[:,t])                       # JUST CHANGED
                 V_predict = self.A.dot(V_filter[t]).dot(self.A.T) + self.Q
 
         return mu_filter, V_filter
