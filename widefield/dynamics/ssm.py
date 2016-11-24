@@ -46,7 +46,7 @@ class LinearGaussianSSM:
             self.B = kwargs['B']
             self.n_dim_control = kwargs['B'].shape[0]
         elif 'n_dim_control' in kwargs:
-            self.B = np.zeros((self.n_dim_states, kwargs['n_dim_control']))
+            self.B = np.ones((self.n_dim_states, kwargs['n_dim_control']))
             self.n_dim_control = kwargs['n_dim_control']
         else:
             self.B = None
@@ -104,12 +104,16 @@ class LinearGaussianSSM:
                 UXsum = np.dot(mu_smooth[:,:-1], U[:,:-1].T)
                 UXsum_ttm1 = np.dot(mu_smooth[:,1:], U[:,:-1].T)
                 Usum = np.dot(U[:,:-1], U[:,:-1].T)
+                # Murphy version???
+                # UXsum = np.dot(mu_smooth[:,:-1], U[:,1:].T)
+                # UXsum_ttm1 = np.dot(mu_smooth[:,1:], U[:,1:].T)
+                # Usum = np.dot(U[:,1:], U[:,1:].T)
 
             # M step - update parameters
             if 'mu0' not in exclude_list:
                 self.mu0 = mu_smooth[:,0]
             if 'V0' not in exclude_list:
-                self.V0 = P1 - np.outer(mu_smooth[:,0],mu_smooth[:,0])
+                self.V0 = P1 - np.outer(mu_smooth[:,0],mu_smooth[:,0])   # NOTE: different from Ghamahrani code but seems consistent with paper
             if 'C' not in exclude_list:
                 self.C = Y.dot(mu_smooth.T).dot(la.inv(Psum_all))
                 if 'R' not in exclude_list:
@@ -135,12 +139,15 @@ class LinearGaussianSSM:
             else:
                 if U is None:
                     raise ValueError('control term U must not be None')
-                Atmp = (Psum_ttm1 - self.B.dot(UXsum.T)).dot(la.inv(Psum1))
-                Btmp = (UXsum_ttm1 - self.A.dot(UXsum)).dot(la.inv(Usum))
+                T1 = np.concatenate((np.concatenate((Psum1, UXsum), axis=1), np.concatenate((UXsum.T, Usum), axis=1)), axis=0)
+                T2 = np.concatenate((Psum_ttm1, UXsum_ttm1), axis=1)
+                T3 = np.dot(T2, la.inv(T1))
+                # Atmp = (Psum_ttm1 - self.B.dot(UXsum.T)).dot(la.inv(Psum1))
+                # Btmp = (UXsum_ttm1 - self.A.dot(UXsum)).dot(la.inv(Usum))
                 if 'A' not in exclude_list:
-                    self.A = Atmp
+                    self.A = T3[:,:self.n_dim_states]
                 if 'B' not in exclude_list:
-                    self.B = Btmp
+                    self.B = T3[:,self.n_dim_states:]
                 if 'A' not in exclude_list and 'B' not in exclude_list:
                     if 'Q' not in exclude_list:
                         self.Q = (Psum2 - self.A.dot(Psum_ttm1.T) - self.B.dot(UXsum_ttm1.T))/(n_samples-1.)
@@ -162,10 +169,11 @@ class LinearGaussianSSM:
         V_filter = np.zeros((n_samples, self.n_dim_states, self.n_dim_states))
 
         mu_predict = self.mu0
-        if self.B is not None:
-            if U is None:
-                raise ValueError('control term U must not be None')
-            mu_predict += self.B.dot(U[:,0])
+        # Murphy version - I don't think this is what I want
+        # if self.B is not None:
+        #     if U is None:
+        #         raise ValueError('control term U must not be None')
+        #     mu_predict += self.B.dot(U[:,0])
         V_predict = self.V0
         #LL = 0
         for t in range(n_samples):
@@ -186,7 +194,8 @@ class LinearGaussianSSM:
                 if self.B is not None:
                     if U is None:
                         raise ValueError('control term U must not be None')
-                    mu_predict += self.B.dot(U[:,t+1])
+                    mu_predict += self.B.dot(U[:,t])
+                    # mu_predict += self.B.dot(U[:,t+1 ])   # Murphy version
                 V_predict = self.A.dot(V_filter[t]).dot(self.A.T) + self.Q
 
         return mu_filter, V_filter
