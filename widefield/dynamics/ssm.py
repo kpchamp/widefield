@@ -80,6 +80,7 @@ class LinearGaussianSSM:
                 LL_diff = self.LL[i] - self.LL[i-1]
                 if LL_diff < 0:
                     warnings.warn("log likelihood increased on iteration %d - numerical instability or bug detected" % i, RuntimeWarning)
+                    break
                 if np.abs(LL_diff) < tol:
                     break
 
