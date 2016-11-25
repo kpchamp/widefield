@@ -51,11 +51,18 @@ class LinearGaussianSSM:
         else:
             self.B = None
 
+        self.mean_observation = None
+        self.mean_input = None
         self.LL = None
 
     # Fit the parameters of the LDS model using EM
-    def fit_em(self, Y, U=None, max_iters=10, tol=.01, exclude_list=None, diagonal_covariance=False):
-        n_samples = Y.shape[1]
+    def fit_em(self, Yin, Uin=None, max_iters=10, tol=.01, exclude_list=None, diagonal_covariance=False):
+        n_samples = Yin.shape[1]
+        self.mean_observation = np.mean(Yin, axis=1)
+        if Uin is not None:
+            self.mean_input = np.mean(Uin, axis=1)
+        Y = (np.copy(Yin).T - self.mean_observation).T
+        U = (np.copy(Uin).T - self.mean_input).T
 
         if exclude_list is None:
             exclude_list = []
@@ -94,7 +101,10 @@ class LinearGaussianSSM:
                 if t != 0:
                     Psum2 += P_t
                 else:
-                    P1 = P_t
+                    # P1 = P_t
+                    tmp_mean = np.mean(mu_smooth[:,t])
+                    P1 = V_smooth[t] + np.outer(mu_smooth[:,t] - tmp_mean, mu_smooth[:,t] - tmp_mean)
+                    # modified to match Gharahmani code
                 if t != n_samples-1:
                     Psum1 += P_t
                     # not sure why but needed to transpose first term to match with other code:
@@ -113,7 +123,8 @@ class LinearGaussianSSM:
             if 'mu0' not in exclude_list:
                 self.mu0 = mu_smooth[:,0]
             if 'V0' not in exclude_list:
-                self.V0 = P1 - np.outer(mu_smooth[:,0],mu_smooth[:,0])   # NOTE: different from Ghamahrani code but seems consistent with paper
+                # self.V0 = P1 - np.outer(mu_smooth[:,0],mu_smooth[:,0])   # NOTE: different from Ghamahrani code but seems consistent with paper
+                self.V0 = P1   # modified to match Ghamahrani code
             if 'C' not in exclude_list:
                 self.C = Y.dot(mu_smooth.T).dot(la.inv(Psum_all))
                 if 'R' not in exclude_list:
