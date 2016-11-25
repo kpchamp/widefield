@@ -54,9 +54,11 @@ class LinearGaussianSSM:
         self.mean_observation = None
         self.mean_input = None
         self.LL = None
+        self.fitting_em = False
 
     # Fit the parameters of the LDS model using EM
     def fit_em(self, Yin, Uin=None, max_iters=10, tol=.01, exclude_list=None, diagonal_covariance=False):
+        self.fitting_em = True
         n_samples = Yin.shape[1]
         self.mean_observation = np.mean(Yin, axis=1)
         if Uin is not None:
@@ -67,18 +69,18 @@ class LinearGaussianSSM:
         if exclude_list is None:
             exclude_list = []
 
-        self.LL = np.zeros(max_iters)
+        self.LL = []
         for i in range(max_iters):
             # E step - run Kalman smoothing algorithm
             mu_smooth, V_smooth, J = self.kalman_smoothing(Y,U)
 
-            self.LL[i] = self.complete_log_likelihood(Y, mu_smooth, U)
-            LL_diff = self.LL[i] - self.LL[i-1]
+            # self.LL[i] = self.complete_log_likelihood(Y, mu_smooth, U)
+            # print self.LL[i]
             if i>0:
+                LL_diff = self.LL[i] - self.LL[i-1]
                 if LL_diff < 0:
                     warnings.warn("log likelihood increased on iteration %d - numerical instability or bug detected" % i, RuntimeWarning)
-                    break
-                if LL_diff < tol:
+                if np.abs(LL_diff) < tol:
                     break
 
             # E step - compute expectations
@@ -101,9 +103,9 @@ class LinearGaussianSSM:
                 if t != 0:
                     Psum2 += P_t
                 else:
-                    # P1 = P_t
-                    tmp_mean = np.mean(mu_smooth[:,t])
-                    P1 = V_smooth[t] + np.outer(mu_smooth[:,t] - tmp_mean, mu_smooth[:,t] - tmp_mean)
+                    P1 = P_t
+                    # tmp_mean = np.mean(mu_smooth[:,t])
+                    # P1 = V_smooth[t] + np.outer(mu_smooth[:,t] - tmp_mean, mu_smooth[:,t] - tmp_mean)
                     # modified to match Gharahmani code
                 if t != n_samples-1:
                     Psum1 += P_t
@@ -123,8 +125,8 @@ class LinearGaussianSSM:
             if 'mu0' not in exclude_list:
                 self.mu0 = mu_smooth[:,0]
             if 'V0' not in exclude_list:
-                # self.V0 = P1 - np.outer(mu_smooth[:,0],mu_smooth[:,0])   # NOTE: different from Ghamahrani code but seems consistent with paper
-                self.V0 = P1   # modified to match Ghamahrani code
+                self.V0 = P1 - np.outer(mu_smooth[:,0],mu_smooth[:,0])   # NOTE: different from Ghamahrani code but seems consistent with paper
+                # self.V0 = P1   # modified to match Ghamahrani code
             if 'C' not in exclude_list:
                 self.C = Y.dot(mu_smooth.T).dot(la.inv(Psum_all))
                 if 'R' not in exclude_list:
@@ -173,6 +175,8 @@ class LinearGaussianSSM:
                 self.Q = self.Q*np.eye(self.Q.shape[0])
                 self.R = self.R*np.eye(self.R.shape[0])
 
+        self.fitting_em = False
+
     def kalman_filter(self, Y, U=None):
         n_samples = Y.shape[1]
 
@@ -186,7 +190,8 @@ class LinearGaussianSSM:
         #         raise ValueError('control term U must not be None')
         #     mu_predict += self.B.dot(U[:,0])
         V_predict = self.V0
-        #LL = 0
+        LL = 0
+        const = (2.*np.pi)**(-self.n_dim_observations/2.)
         for t in range(n_samples):
             print >>open('progress.txt','a'), "filtering time %d" % t
             e = Y[:,t] - self.C.dot(mu_predict)
@@ -198,8 +203,8 @@ class LinearGaussianSSM:
             K = V_predict.dot(self.C.T).dot(la.inv(S))
             mu_filter[:,t] = mu_predict + K.dot(e)
             V_filter[t] = V_predict - K.dot(self.C).dot(V_predict)
-            # LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=self.C.dot(V_predict).dot(self.C.T) + np.diag(self.R))
-            # LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=S)
+            #LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=self.C.dot(V_predict).dot(self.C.T) + self.R)
+            LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=S)
             if t != n_samples-1:
                 mu_predict = self.A.dot(mu_filter[:,t])
                 if self.B is not None:
@@ -209,6 +214,9 @@ class LinearGaussianSSM:
                     # mu_predict += self.B.dot(U[:,t+1 ])   # Murphy version
                 V_predict = self.A.dot(V_filter[t]).dot(self.A.T) + self.Q
 
+        LL += n_samples*const
+        if self.fitting_em:
+            self.LL.append(LL)
         return mu_filter, V_filter
 
     def kalman_smoothing(self, Y, U=None):
