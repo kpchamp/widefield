@@ -192,7 +192,7 @@ class LinearGaussianSSM:
         #     mu_predict += self.B.dot(U[:,0])
         V_predict = self.V0
         LL = 0
-        const = (2.*np.pi)**(-self.n_dim_observations/2.)
+        const = -self.n_dim_observations*np.log(2.*np.pi)/2.
         for t in range(n_samples):
             print >>open('progress.txt','a'), "filtering time %d" % t
             e = Y[:,t] - self.C.dot(mu_predict)
@@ -201,11 +201,13 @@ class LinearGaussianSSM:
             S = self.C.dot(V_predict).dot(self.C.T) + self.R
             # K = V_predict.dot(self.C.T).dot(la.lapack.flapack.dpotri(la.lapack.flapack.dpotrf(S)[0])[0])
 
-            K = V_predict.dot(self.C.T).dot(la.inv(S))
+            Sinv = la.inv(S)
+            K = V_predict.dot(self.C.T).dot(Sinv)
             mu_filter[:,t] = mu_predict + K.dot(e)
             V_filter[t] = V_predict - K.dot(self.C).dot(V_predict)
             #LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=self.C.dot(V_predict).dot(self.C.T) + self.R)
-            LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=S)
+            # LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=S)
+            LL += np.linalg.slogdet(Sinv)[1]/2. - np.sum(e*np.dot(Sinv,e))/2.
             if t != n_samples-1:
                 mu_predict = self.A.dot(mu_filter[:,t])
                 if self.B is not None:
