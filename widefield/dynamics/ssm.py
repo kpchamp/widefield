@@ -60,11 +60,13 @@ class LinearGaussianSSM:
     def fit_em(self, Yin, Uin=None, max_iters=10, tol=.01, exclude_list=None, diagonal_covariance=False):
         self.fitting_em = True
         n_samples = Yin.shape[1]
-        self.mean_observation = np.mean(Yin, axis=1)
-        if Uin is not None:
-            self.mean_input = np.mean(Uin, axis=1)
-        Y = (np.copy(Yin).T - self.mean_observation).T
-        U = (np.copy(Uin).T - self.mean_input).T
+        Y = np.copy(Yin)
+        U = np.copy(Uin)
+        # self.mean_observation = np.mean(Yin, axis=1)
+        # if Uin is not None:
+        #     self.mean_input = np.mean(Uin, axis=1)
+        # Y = (np.copy(Yin).T - self.mean_observation).T
+        # U = (np.copy(Uin).T - self.mean_input).T
 
         if exclude_list is None:
             exclude_list = []
