@@ -403,10 +403,10 @@ class BilinearGaussianSSM:
             Psum1 = np.zeros((self.n_dim_states, self.n_dim_states))
             Psum2 = np.zeros((self.n_dim_states, self.n_dim_states))
             Psum_ttm1 = np.zeros((self.n_dim_states, self.n_dim_states))
-            UPsums1 = np.zeros((self.n_dim_control*self.n_dim_states, self.n_dim_states))
-            UPsums_ttm1 = np.zeros((self.n_dim_control*self.n_dim_states, self.n_dim_states))
+            UPsums1 = np.zeros((self.n_dim_states, self.n_dim_control*self.n_dim_states))
+            UPsums_ttm1 = np.zeros((self.n_dim_states, self.n_dim_control*self.n_dim_states))
             UPsums_bigmatrix = np.zeros((self.n_dim_control*self.n_dim_states, self.n_dim_control*self.n_dim_states))
-            UUXsums = np.zeros((self.n_dim_control*self.n_dim_control, self.n_dim_states))
+            UUXsums = np.zeros((self.n_dim_control, self.n_dim_control*self.n_dim_states))
             for t in range(n_samples):
                 P_t = V_smooth[t] + np.outer(mu_smooth[:,t],mu_smooth[:,t])
                 Psum_all += P_t
