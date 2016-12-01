@@ -58,15 +58,15 @@ if run_regional_regression:
 
     # Run regular and recurrent regressions.
     # based on cross-correlations, convolve over 4 seconds
-    lr_If_regions = LinearRegression(use_design_matrix=True, convolution_length=400)
+    lr_If_regions = LinearRegression(convolution_length=400)
     lr_If_regions.fit(region_data_train['Y'], region_data_train['X'])
-    lr_D_regions = DynamicRegression(use_design_matrix=True, dynamic_convolution_length=1)
+    lr_D_regions = DynamicRegression(dynamic_convolution_length=1)
     lr_D_regions.fit(region_data_train['Y'])
-    lr_Df_regions = DynamicRegression(use_design_matrix=True, dynamic_convolution_length=400)
+    lr_Df_regions = DynamicRegression(dynamic_convolution_length=400)
     lr_Df_regions.fit(region_data_train['Y'])
-    lr_DIf_regions = DynamicRegression(use_design_matrix=True, convolution_length=400, dynamic_convolution_length=1)
+    lr_DIf_regions = DynamicRegression(convolution_length=400, dynamic_convolution_length=1)
     lr_DIf_regions.fit(region_data_train['Y'], region_data_train['X'])
-    lr_DfIf_regions = DynamicRegression(use_design_matrix=True, convolution_length=400, dynamic_convolution_length=400)
+    lr_DfIf_regions = DynamicRegression(convolution_length=400, dynamic_convolution_length=400)
     lr_DfIf_regions.fit(region_data_train['Y'], region_data_train['X'])
 
 
@@ -191,15 +191,15 @@ if run_pca_regression:
     pca_data_train = {'Y': pca_model.transform(image_data_train), 'X': regressor_data[20000:183000, :], 'X_labels': X_labels}
     pca_data_test = {'Y': pca_model.transform(image_data_test), 'X': regressor_data[183000:-20000, :], 'X_labels': X_labels}
 
-    lr_If_pca = LinearRegression(use_design_matrix=True, convolution_length=400)
+    lr_If_pca = LinearRegression(convolution_length=400)
     lr_If_pca.fit(pca_data_train['Y'], pca_data_train['X'])
-    lr_D_pca = DynamicRegression(use_design_matrix=True, dynamic_convolution_length=1)
+    lr_D_pca = DynamicRegression(dynamic_convolution_length=1)
     lr_D_pca.fit(pca_data_train['Y'])
-    lr_Df_pca = DynamicRegression(use_design_matrix=True, dynamic_convolution_length=400)
+    lr_Df_pca = DynamicRegression(dynamic_convolution_length=400)
     lr_Df_pca.fit(pca_data_train['Y'])
-    lr_DIf_pca = DynamicRegression(use_design_matrix=True, convolution_length=400, dynamic_convolution_length=1)
+    lr_DIf_pca = DynamicRegression(convolution_length=400, dynamic_convolution_length=1)
     lr_DIf_pca.fit(pca_data_train['Y'], pca_data_train['X'])
-    lr_DfIf_pca = DynamicRegression(use_design_matrix=True, convolution_length=400, dynamic_convolution_length=400)
+    lr_DfIf_pca = DynamicRegression(convolution_length=400, dynamic_convolution_length=400)
     lr_DfIf_pca.fit(pca_data_train['Y'], pca_data_train['X'])
 
     if save_pca_files:
@@ -306,15 +306,15 @@ if run_ica:
     ica_data_train = {'Y': ica_model.fit_transform(pca_data_train_whiten), 'X': regressor_data[20000:183000, :], 'X_labels': X_labels}
     ica_data_test = {'Y': ica_model.transform(pca_data_test_whiten), 'X': regressor_data[183000:-20000, :], 'X_labels': X_labels}
 
-    lr_If_ica = LinearRegression(use_design_matrix=True, convolution_length=400)
+    lr_If_ica = LinearRegression(convolution_length=400)
     lr_If_ica.fit(ica_data_train['Y'], ica_data_train['X'])
-    lr_D_ica = DynamicRegression(use_design_matrix=True, dynamic_convolution_length=1)
+    lr_D_ica = DynamicRegression(dynamic_convolution_length=1)
     lr_D_ica.fit(ica_data_train['Y'])
-    lr_Df_ica = DynamicRegression(use_design_matrix=True, dynamic_convolution_length=400)
+    lr_Df_ica = DynamicRegression(dynamic_convolution_length=400)
     lr_Df_ica.fit(ica_data_train['Y'])
-    lr_DIf_ica = DynamicRegression(use_design_matrix=True, convolution_length=400, dynamic_convolution_length=1)
+    lr_DIf_ica = DynamicRegression(convolution_length=400, dynamic_convolution_length=1)
     lr_DIf_ica.fit(ica_data_train['Y'], ica_data_train['X'])
-    lr_DfIf_ica = DynamicRegression(use_design_matrix=True, convolution_length=400, dynamic_convolution_length=400)
+    lr_DfIf_ica = DynamicRegression(convolution_length=400, dynamic_convolution_length=400)
     lr_DfIf_ica.fit(ica_data_train['Y'], ica_data_train['X'])
 
     if save_ica_files:

@@ -3,15 +3,11 @@ import scipy.linalg as la
 
 
 class LinearRegression:
-    def __init__(self, fit_offset=True, use_design_matrix=False, convolution_length=1):
+    def __init__(self, fit_offset=True, convolution_length=1):
         self.fit_offset = fit_offset
-        self.use_design_matrix = use_design_matrix
         if fit_offset:
             self.offset = None
-        if use_design_matrix:
-            self.convolution_length = convolution_length
-        else:
-            self.convolution_length = 1
+        self.convolution_length = convolution_length
         self.coefficients = None
         self.training_loss = None
 
@@ -19,19 +15,16 @@ class LinearRegression:
         n_samples, n_regressors = X.shape
         if self.convolution_length > n_samples:
             raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
-        design_matrix = np.zeros((n_samples, 1 + n_regressors*self.convolution_length))
+        design_matrix = np.zeros((n_samples, int(self.fit_offset) + n_regressors*self.convolution_length))
         design_matrix[:,0] += 1.
         for k in range(n_regressors):
             for j in range(self.convolution_length):
-                design_matrix[j:, 1 + k*self.convolution_length + j] = X[0:n_samples-j, k]
+                design_matrix[j:, int(self.fit_offset) + k*self.convolution_length + j] = X[0:n_samples-j, k]
         return design_matrix
 
     def fit(self, Y, Xin, method='least squares'):
         n_samples, n_features = Y.shape
-        if self.use_design_matrix:
-            X = self.create_design_matrix(Xin)
-        else:
-            X = Xin
+        X = self.create_design_matrix(Xin)
         n_regressors = X.shape[1]
         self.coefficients = np.zeros((n_regressors, n_features))
         for i in range(n_features):
@@ -55,10 +48,7 @@ class LinearRegression:
         return coefficients
 
     def reconstruct(self, Xin):
-        if self.use_design_matrix:
-            X = self.create_design_matrix(Xin)
-        else:
-            X = Xin
+        X = self.create_design_matrix(Xin)
         return X.dot(self.coefficients)
 
     def compute_loss_percentage(self, Y, Xin):
@@ -85,9 +75,8 @@ class LinearRegression:
 
 
 class DynamicRegression:
-    def __init__(self, fit_offset=True, use_design_matrix=False, convolution_length=1, dynamic_convolution_length=1):
+    def __init__(self, fit_offset=True, convolution_length=1, dynamic_convolution_length=1):
         self.fit_offset = fit_offset
-        self.use_design_matrix = use_design_matrix
         if fit_offset:
             self.offset = None
         self.convolution_length = convolution_length
@@ -108,24 +97,18 @@ class DynamicRegression:
         design_matrix[:,0] += 1.
         for k in range(n_inputs):
             for j in range(self.convolution_length):
-                design_matrix[j:, 1 + k*self.convolution_length + j] = X[0:n_samples-j-1, k]
+                design_matrix[j:, int(self.fit_offset) + k*self.convolution_length + j] = X[0:n_samples-j-1, k]
         for k in range(n_features):
             for j in range(self.dynamic_convolution_length):
-                design_matrix[j:, 1 + n_inputs*self.convolution_length + k*self.dynamic_convolution_length + j] = Y[0:n_samples - j - 1, k]
+                design_matrix[j:, int(self.fit_offset) + n_inputs*self.convolution_length + k*self.dynamic_convolution_length + j] = Y[0:n_samples - j - 1, k]
         return design_matrix
 
     def fit(self, Y, Xin=None, method='least squares'):
         n_samples, n_features = Y.shape
         if Xin is not None:
-            if self.use_design_matrix:
-                X = self.create_design_matrix(Y, X=Xin)
-            else:
-                X = np.concatenate((Xin[:-1], Y[:-1]), axis=1)
+            X = self.create_design_matrix(Y, X=Xin)
         else:
-            if self.use_design_matrix:
-                X = self.create_design_matrix(Y)
-            else:
-                X = Y[:,-1]
+            X = self.create_design_matrix(Y)
         n_regressors = X.shape[1]
         self.coefficients = np.zeros((n_regressors, n_features))
         for i in range(n_features):
@@ -137,15 +120,9 @@ class DynamicRegression:
 
     def reconstruct(self, Y, Xin=None):
         if Xin is not None:
-            if self.use_design_matrix:
-                X = self.create_design_matrix(Y, X=Xin)
-            else:
-                X = np.concatenate((Xin[:-1], Y[:-1]), axis=1)
+            X = self.create_design_matrix(Y, X=Xin)
         else:
-            if self.use_design_matrix:
-                X = self.create_design_matrix(Y)
-            else:
-                X = Y[:-1]
+            X = self.create_design_matrix(Y)
         return X.dot(self.coefficients)
 
     def compute_loss_percentage(self, Y, Xin=None):
@@ -153,10 +130,9 @@ class DynamicRegression:
 
 
 class BilinearRegression:
-    def __init__(self, fit_offset=True, use_design_matrix=False, convolution_length=1, dynamic_convolution_length=1,
+    def __init__(self, fit_offset=True, convolution_length=1, dynamic_convolution_length=1,
                  bilinear_convolution_length=1):
         self.fit_offset = fit_offset
-        self.use_design_matrix = use_design_matrix
         if fit_offset:
             self.offset = None
         self.convolution_length = convolution_length
@@ -179,15 +155,15 @@ class BilinearRegression:
         design_matrix[:,0] += 1.
         for k in range(n_inputs):
             for j in range(self.convolution_length):
-                design_matrix[j:, 1 + k*self.convolution_length + j] = X[0:n_samples-j-1, k]
+                design_matrix[j:, int(self.fit_offset) + k*self.convolution_length + j] = X[0:n_samples-j-1, k]
         for k in range(n_features):
             for j in range(self.dynamic_convolution_length):
-                design_matrix[j:, 1 + n_inputs*self.convolution_length +
+                design_matrix[j:, int(self.fit_offset) + n_inputs*self.convolution_length +
                                   k*self.dynamic_convolution_length + j] = Y[0:n_samples - j - 1, k]
         for k in range(n_inputs):
             for j in range(n_features):
                 for i in range(self.bilinear_convolution_length):
-                    design_matrix[i:, 1 + n_inputs*self.convolution_length +
+                    design_matrix[i:, int(self.fit_offset) + n_inputs*self.convolution_length +
                                       n_features*self.dynamic_convolution_length +
                                       k*j*self.bilinear_convolution_length +
                                       i] = X[0:n_samples-i-1, k] * Y[0:n_samples-i-1, j]
@@ -196,15 +172,9 @@ class BilinearRegression:
     def fit(self, Y, Xin=None, method='least squares'):
         n_samples, n_features = Y.shape
         if Xin is not None:
-            if self.use_design_matrix:
-                X = self.create_design_matrix(Y, X=Xin)
-            else:
-                X = np.concatenate((Xin[:-1], Y[:-1]), axis=1)
+            X = self.create_design_matrix(Y, X=Xin)
         else:
-            if self.use_design_matrix:
-                X = self.create_design_matrix(Y)
-            else:
-                X = Y[:,-1]
+            X = self.create_design_matrix(Y)
         n_regressors = X.shape[1]
         self.coefficients = np.zeros((n_regressors, n_features))
         for i in range(n_features):
@@ -216,15 +186,9 @@ class BilinearRegression:
 
     def reconstruct(self, Y, Xin=None):
         if Xin is not None:
-            if self.use_design_matrix:
-                X = self.create_design_matrix(Y, X=Xin)
-            else:
-                X = np.concatenate((Xin[:-1], Y[:-1]), axis=1)
+            X = self.create_design_matrix(Y, X=Xin)
         else:
-            if self.use_design_matrix:
-                X = self.create_design_matrix(Y)
-            else:
-                X = Y[:-1]
+            X = self.create_design_matrix(Y)
         return X.dot(self.coefficients)
 
     def compute_loss_percentage(self, Y, Xin=None):
