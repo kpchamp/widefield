@@ -375,11 +375,13 @@ class BilinearGaussianSSM:
 
         self.LL = []
         for i in range(max_iters):
+            print >>open('progress.txt','a'), "EM iteration %d" % i
             # E step - run Kalman smoothing algorithm
             mu_smooth, V_smooth, J = self.kalman_smoothing(Y,U)
 
             if i>0:
                 LL_diff = self.LL[i] - self.LL[i-1]
+                print >>open('progress.txt','a'), "LL difference: %f" % LL_diff
                 if LL_diff < 0:
                     warnings.warn("log likelihood increased on iteration %d - numerical instability or bug detected" % i, RuntimeWarning)
                     break
