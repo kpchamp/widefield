@@ -1,5 +1,5 @@
 from widefield.dynamics.ssm import LinearGaussianSSM, BilinearGaussianSSM
-from widefield.regression.linregress import LinearRegression, RecurrentRegression
+from widefield.regression.linregress import LinearRegression, DynamicRegression, BilinearRegression
 import pickle
 import tables as tb
 from sklearn.decomposition import PCA
@@ -42,39 +42,66 @@ for i,key in enumerate(sorted(summary_data['ROIs_F'].keys())):
     region_labels.append(key)
 
 # Construct training and test sets
-region_data_train = {'Y': region_data[20000:25000, :], 'X': regressor_data[20000:25000, :], 'X_labels': X_labels, 'Y_labels': region_labels}
-region_data_test = {'Y': region_data[183000:-20000, :], 'X': regressor_data[183000:-20000, :], 'X_labels': X_labels, 'Y_labels': region_labels}
+train = {'Y': region_data[20000:70000, :], 'X': regressor_data[20000:70000, :], 'X_labels': X_labels, 'Y_labels': region_labels}
+test = {'Y': region_data[70000:-20000, :], 'X': regressor_data[70000:-20000, :], 'X_labels': X_labels, 'Y_labels': region_labels}
+pickle.dump(train, open(basepath + "ml_project/train.pkl",'w'))
+pickle.dump(test, open(basepath + "ml_project/test.pkl",'w'))
 
+fit_original_model = False
+fit_original_LR = True
 
-# print "Doing linear regression"
-# lr = LinearRegression(use_design_matrix=False)
-# lr.fit(region_data_train['Y'][1:], region_data_train['Y'][:-1])
-# pickle.dump(lr,open(basepath + "ml_project/lr.pkl",'w'))
-lr = pickle.load(open(basepath + "ml_project/lr.pkl",'r'))
+if fit_original_LR:
+    print >>open('progress.txt','a'), "Doing linear regression - basic model"
+    lr1 = DynamicRegression(fit_offset=False)
+    lr1.fit(train['Y'])
+    pickle.dump(lr1,open(basepath + "ml_project/lr.pkl",'w'))
+else:
+    lr1 = pickle.load(open(basepath + "ml_project/lr.pkl",'r'))
 
-print "Fitting LGSSM"
-# # Fit EM parameters for the model, based on the sampled data
-# model = LinearGaussianSSM(A=np.copy(lr.coefficients.T), C=np.eye(21))
-# model.fit_em(region_data_train['Y'].T, max_iters=5000, exclude_list=['C'], diagonal_covariance=True)
-# pickle.dump(model,open(basepath + "ml_project/lgssm_diagonal.pkl",'w'))
-# model = pickle.load(open(basepath + "ml_project/lgssm_diagonal.pkl",'r'))
+if fit_original_model:
+    print >>open('progress.txt','a'), "Fitting SSM - basic model"
+    # Fit EM parameters for the model, based on the sampled data
+    model1 = LinearGaussianSSM(A=np.copy(lr1.coefficients.T), C=np.eye(21))
+    model1.fit_em(train['Y'].T, max_iters=5000, exclude_list=['C'], diagonal_covariance=True)
+    pickle.dump(model1,open(basepath + "ml_project/ssm_diagonal.pkl",'w'))
+#else:
+#    model1 = pickle.load(open(basepath + "ml_project/ssm_diagonal.pkl",'r'))
 
-print "Doing linear regression - supervised case"
-# lr2 = RecurrentRegression(use_design_matrix=False)
-# lr2.fit(region_data_train['Y'], region_data_train['X'])
-# pickle.dump(lr2,open(basepath + "ml_project/lr_supervised.pkl",'w'))
-lr2 = pickle.load(open(basepath + "ml_project/lr_supervised.pkl",'r'))
+fit_input_model = False
+fit_input_LR = True
+if fit_input_LR:
+    print >>open('progress.txt','a'), "Doing linear regression - input model"
+    lr2 = DynamicRegression(fit_offset=False)
+    lr2.fit(train['Y'], train['X'])
+    pickle.dump(lr2,open(basepath + "ml_project/lr_input.pkl",'w'))
+else:
+    lr2 = pickle.load(open(basepath + "ml_project/lr_input.pkl",'r'))
 
-print "Fitting LGSSM - supervised case"
-# Fit EM parameters for the model, based on the sampled data
-# model2 = LinearGaussianSSM(A=np.copy(lr2.coefficients[4:].T), B=np.copy(lr2.coefficients[0:4].T), C=np.eye(21))
-# model2.fit_em(region_data_train['Y'].T, region_data_train['X'].T, max_iters=5000, exclude_list=['C'], diagonal_covariance=True)
-# pickle.dump(model2,open(basepath + "ml_project/lgssm_supervised_diagonal.pkl",'w'))
-#model2 = pickle.load(open(basepath + "ml_project/lgssm_supervised_diagonal.pkl",'r'))
+if fit_input_model:
+    print >>open('progress.txt','a'), "Fitting SSM - input model"
+    # Fit EM parameters for the model, based on the sampled data
+    model2 = LinearGaussianSSM(A=np.copy(lr2.coefficients[4:].T), B=np.copy(lr2.coefficients[0:4].T), C=np.eye(21))
+    model2.fit_em(train['Y'].T, train['X'].T, max_iters=5000, exclude_list=['C'], diagonal_covariance=True)
+    pickle.dump(model2,open(basepath + "ml_project/ssm_input_diagonal.pkl",'w'))
+#else:
+#    model2 = pickle.load(open(basepath + "ml_project/ssm_input_diagonal.pkl",'r'))
 
-print "Fitting LGSSM - bilinear case"
-# Fit EM parameters for the model, based on the sampled data
-model3 = BilinearGaussianSSM(A=np.copy(lr2.coefficients[4:].T), B=np.copy(lr2.coefficients[0:4].T), C=np.eye(21))
-model3.fit_em(region_data_train['Y'].T, region_data_train['X'].T, max_iters=5000, exclude_list=['C'], diagonal_covariance=True)
-pickle.dump(model3,open(basepath + "ml_project/lgssm_bilinear_diagonal.pkl",'w'))
-#model3 = pickle.load(open(basepath + "ml_project/lgssm_bilinear_diagonal.pkl",'r'))
+fit_bilinear_model = True
+fit_bilinear_LR = True
+if fit_input_LR:
+    print >>open('progress.txt','a'), "Doing linear regression - bilinear model"
+    lr3 = BilinearRegression(fit_offset=False)
+    lr3.fit(train['Y'], train['X'])
+    pickle.dump(lr3,open(basepath + "ml_project/lr_bilinear.pkl",'w'))
+else:
+    lr3 = pickle.load(open(basepath + "ml_project/lr_bilinear.pkl",'w'))
+
+if fit_bilinear_model:
+    print >>open('progress.txt','a'), "Fitting SSM - bilinear model"
+    # Fit EM parameters for the model, based on the sampled data
+    model3 = BilinearGaussianSSM(A=np.copy(lr3.coefficients[4:25].T), B=np.copy(lr3.coefficients[0:4].T),
+                                 D=np.copy(np.stack(np.split(lr3.coefficients[25:].T,4,axis=1),axis=0)), C=np.eye(21))
+    model3.fit_em(train['Y'].T, train['X'].T, max_iters=5000, exclude_list=['C'], diagonal_covariance=True)
+    pickle.dump(model3,open(basepath + "ml_project/ssm_bilinear_diagonal.pkl",'w'))
+#else:
+#    model3 = pickle.load(open(basepath + "ml_project/ssm_bilinear_diagonal.pkl",'r'))
