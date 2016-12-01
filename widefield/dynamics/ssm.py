@@ -388,18 +388,25 @@ class BilinearGaussianSSM:
 
             # E step - compute expectations
             # Variables are defined as follows:
-            #   Psum_all   = \sum_{t=1}^T P_t
-            #   Psum1      = \sum_{t=1}^{T-1} P_t
-            #   Psum2      = \sum_{t=2}^T P_t
-            #   Psum_ttm1  = \sum_{t=2}^T P_{t,t-1}
-            #   UXsum      = \sum_{t=1}^{T-1} \hat{x}_t u_t'
-            #   UXsum_ttm1 = \sum_{t=2}^T \hat{x}_t u_{t-1}'
-            #   Usum       = \sum_{t=1}^{T-1} u_t u_t'
+            #   Psum_all    = \sum_{t=1}^T P_t
+            #   Psum1       = \sum_{t=1}^{T-1} P_t
+            #   Psum2       = \sum_{t=2}^T P_t
+            #   Psum_ttm1   = \sum_{t=2}^T P_{t,t-1}
+            #   UPsums1     = \sum_{t=1}^{T-1} u^k_t P_{t}
+            #   UPsums_ttm1 = \sum_{t=2}^{T} u^k_{t-1} P_{t,t-1}
+            #   UXsum       = \sum_{t=1}^{T-1} \hat{x}_t u_t'
+            #   UXsum_ttm1  = \sum_{t=2}^T \hat{x}_t u_{t-1}'
+            #   Usum        = \sum_{t=1}^{T-1} u_t u_t'
+            #   UUXsums     = \sum_{t=1}^{T-1} u^k_t u_t x_t'
             # P_t and P_{t,t-1} are as defined in Ghahramani - Parameter Estimation for LDSs
             Psum_all = np.zeros((self.n_dim_states, self.n_dim_states))
             Psum1 = np.zeros((self.n_dim_states, self.n_dim_states))
             Psum2 = np.zeros((self.n_dim_states, self.n_dim_states))
             Psum_ttm1 = np.zeros((self.n_dim_states, self.n_dim_states))
+            UPsums1 = np.zeros((self.n_dim_control*self.n_dim_states, self.n_dim_states))
+            UPsums_ttm1 = np.zeros((self.n_dim_control*self.n_dim_states, self.n_dim_states))
+            UPsums_bigmatrix = np.zeros((self.n_dim_control*self.n_dim_states, self.n_dim_control*self.n_dim_states))
+            UUXsums = np.zeros((self.n_dim_control*self.n_dim_control, self.n_dim_states))
             for t in range(n_samples):
                 P_t = V_smooth[t] + np.outer(mu_smooth[:,t],mu_smooth[:,t])
                 Psum_all += P_t
@@ -409,12 +416,17 @@ class BilinearGaussianSSM:
                     P1 = P_t
                 if t != n_samples-1:
                     Psum1 += P_t
+                    UPsums1 += np.kron(U[:,t],P_t)
+                    UPsums_bigmatrix += np.kron(np.outer(U[:,t],U[:,t]),P_t)
                     # not sure why but needed to transpose first term to match with other code:
-                    Psum_ttm1 += J[t].dot(V_smooth[t+1]).T + np.outer(mu_smooth[:,t+1],mu_smooth[:,t])
-            if self.B is not None:
-                UXsum = np.dot(mu_smooth[:,:-1], U[:,:-1].T)
-                UXsum_ttm1 = np.dot(mu_smooth[:,1:], U[:,:-1].T)
-                Usum = np.dot(U[:,:-1], U[:,:-1].T)
+                    Pttm1 = J[t].dot(V_smooth[t+1]).T + np.outer(mu_smooth[:,t+1],mu_smooth[:,t])
+                    Psum_ttm1 += Pttm1
+                    # UPsums_ttm1 += np.stack(np.split(np.kron(U[:,t],Pttm1),U[:,t].size,axis=1),axis=0)
+                    UPsums_ttm1 += np.kron(U[:,t],Pttm1)
+                    UUXsums += np.kron(U[:,t],np.outer(U[:,t],mu_smooth[:,t]))
+            UXsum = np.dot(mu_smooth[:,:-1], U[:,:-1].T)
+            UXsum_ttm1 = np.dot(mu_smooth[:,1:], U[:,:-1].T)
+            Usum = np.dot(U[:,:-1], U[:,:-1].T)
 
 
             # M step - update parameters
@@ -431,31 +443,29 @@ class BilinearGaussianSSM:
                 if 'R' not in exclude_list:
                     self.R = (Y.dot(Y.T) - np.dot(self.C,mu_smooth).dot(Y.T) - np.dot(Y,np.dot(self.C,mu_smooth).T) + self.C.dot(Psum_all).dot(self.C.T))/n_samples
                 # self.R = np.diag(np.diag((Y.dot(Y.T) - self.C.dot(mu_smooth).dot(Y.T))/n_samples))
-            if self.B is None:
-                # Ghahramani version of updates
-                if 'A' not in exclude_list:
-                    self.A = Psum_ttm1.dot(la.inv(Psum1))
-                    if 'Q' not in exclude_list:
-                        self.Q = (Psum2 - self.A.dot(Psum_ttm1.T))/(n_samples-1.)
-                else:
-                    if 'Q' not in exclude_list:
-                        self.Q = (Psum2 - self.A.dot(Psum_ttm1.T) - Psum_ttm1.dot(self.A) + self.A.dot(Psum1.dot(self.A.T)))/(n_samples-1.)
+            # First column of big matrix you invert
+            tmp1 = np.concatenate((Psum1, UPsums1.T, UXsum.T), axis=0)
+            # Middle columns of big matrix you invert
+            tmp2 = np.concatenate((UPsums1, UPsums_bigmatrix, UUXsums), axis=0)
+            # Last column of big matrix you invert
+            tmp3 = np.concatenate((UXsum, UUXsums.T, Usum), axis=0)
+            E_upsups = np.concatenate((tmp1, tmp2, tmp3), axis=1)    # \sum_{T=1}^{T-1} E[\Upsilon_{t-1}\Upsilon_{t-1}^T]
+
+            E_xups = np.concatenate((Psum_ttm1, UPsums_ttm1, UXsum_ttm1), axis=1) # \sum_{T=1}^{T-1} E[x_t\Upsilon_{t-1}^T]
+            omega = np.dot(E_xups, la.inv(E_upsups))
+            if 'A' not in exclude_list:
+                self.A = omega[:,:self.n_dim_states]
+            if 'D' not in exclude_list:
+                self.D = np.stack(np.split(omega[:,self.n_dim_states:-self.n_dim_control],U.shape[0],axis=1),axis=0)
+            if 'B' not in exclude_list:
+                self.B = omega[:,-self.n_dim_control:]
+            if 'A' not in exclude_list and 'B' not in exclude_list and 'D' not in exclude_list:
+                if 'Q' not in exclude_list:
+                    # self.Q = (Psum2 - self.A.dot(Psum_ttm1.T) - self.B.dot(UXsum_ttm1.T))/(n_samples-1.)
+                    self.Q = (Psum2 - omega.dot(E_xups.T))/(n_samples-1.)
             else:
-                tmp1 = np.concatenate((np.concatenate((Psum1, UXsum), axis=1), np.concatenate((UXsum.T, Usum), axis=1)), axis=0)
-                tmp2 = np.concatenate((Psum_ttm1, UXsum_ttm1), axis=1)
-                tmp3 = np.dot(tmp2, la.inv(tmp1))
-                if 'A' not in exclude_list:
-                    self.A = tmp3[:,:self.n_dim_states]
-                if 'B' not in exclude_list:
-                    self.B = tmp3[:,self.n_dim_states:]
-                if 'A' not in exclude_list and 'B' not in exclude_list:
-                    if 'Q' not in exclude_list:
-                        self.Q = (Psum2 - self.A.dot(Psum_ttm1.T) - self.B.dot(UXsum_ttm1.T))/(n_samples-1.)
-                else:
-                    if 'Q' not in exclude_list:
-                        self.Q = (Psum2 - self.A.dot(Psum_ttm1.T) - Psum_ttm1.dot(self.A.T) + self.A.dot(Psum1).dot(self.A.T)
-                                  - self.B.dot(UXsum_ttm1.T) - UXsum_ttm1.dot(self.B.T) + self.B.dot(UXsum.T).dot(self.A.T)
-                                  + self.A.dot(UXsum).dot(self.B.T) + self.B.dot(Usum).dot(self.B.T))
+                if 'Q' not in exclude_list:
+                    self.Q = (Psum2 - np.dot(omega, E_xups.T) - np.dot(E_xups, omega.T) + omega.dot(np.dot(E_upsups, omega.T)))
 
             # optionally diagonalize the covariance matrices
             if diagonal_covariance:
@@ -490,7 +500,7 @@ class BilinearGaussianSSM:
             # LL += multivariate_normal.logpdf(e, mean=np.zeros(e.shape), cov=S)
             LL += np.linalg.slogdet(Sinv)[1]/2. - np.sum(e*np.dot(Sinv,e))/2.
             if t != n_samples-1:
-                A_tilde = (self.A + (self.D.T*U[:,t]).T)
+                A_tilde = (self.A + np.sum((self.D.T*U[:,t]).T, axis=0))
                 mu_predict = A_tilde.dot(mu_filter[:,t]) + self.B.dot(U[:,t])
                 V_predict = A_tilde.dot(V_filter[t]).dot(A_tilde.T) + self.Q
 
@@ -511,7 +521,7 @@ class BilinearGaussianSSM:
         V_smooth[-1] = V_filter[-1]
         for t in range(n_samples-2,-1,-1):
             print >>open('progress.txt','a'), "smoothing time %d" % t
-            A_tilde = (self.A + (self.D.T*U[:,t]).T)
+            A_tilde = (self.A + np.sum((self.D.T*U[:,t]).T, axis=0))
             mu_predict = A_tilde.dot(mu_filter[:,t]) + self.B.dot(U[:,t])
             V_predict = A_tilde.dot(V_filter[t]).dot(A_tilde.T) + self.Q
             J[t] = V_filter[t].dot(A_tilde.T).dot(la.inv(V_predict))
