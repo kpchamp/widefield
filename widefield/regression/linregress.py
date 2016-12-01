@@ -89,7 +89,7 @@ class DynamicRegression:
             n_inputs = X.shape[1]
         else:
             n_inputs = 0
-        n_samples, n_features = Y.shape[1]
+        n_samples, n_features = Y.shape
         if self.convolution_length > n_samples:
             raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length, n_samples))
         design_matrix = np.zeros((n_samples-1, int(self.fit_offset) + n_inputs*self.convolution_length
@@ -146,7 +146,7 @@ class BilinearRegression:
             n_inputs = X.shape[1]
         else:
             n_inputs = 0
-        n_samples, n_features = Y.shape[1]
+        n_samples, n_features = Y.shape
         if self.convolution_length > n_samples:
             raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length, n_samples))
         design_matrix = np.zeros((n_samples-1, int(self.fit_offset) + n_inputs*self.convolution_length +
