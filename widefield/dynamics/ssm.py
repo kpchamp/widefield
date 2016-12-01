@@ -485,7 +485,6 @@ class BilinearGaussianSSM:
         LL = 0
         const = -self.n_dim_observations*np.log(2.*np.pi)/2.
         for t in range(n_samples):
-            print >>open('progress.txt','a'), "filtering time %d" % t
             e = Y[:,t] - self.C.dot(mu_predict)
 
             # Invert S using dpotrf
@@ -520,7 +519,6 @@ class BilinearGaussianSSM:
         mu_smooth[:,-1] = mu_filter[:,-1]
         V_smooth[-1] = V_filter[-1]
         for t in range(n_samples-2,-1,-1):
-            print >>open('progress.txt','a'), "smoothing time %d" % t
             A_tilde = (self.A + np.sum((self.D.T*U[:,t]).T, axis=0))
             mu_predict = A_tilde.dot(mu_filter[:,t]) + self.B.dot(U[:,t])
             V_predict = A_tilde.dot(V_filter[t]).dot(A_tilde.T) + self.Q
