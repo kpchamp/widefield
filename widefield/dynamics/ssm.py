@@ -44,7 +44,7 @@ class LinearGaussianSSM:
         # Optional control
         if 'B' in kwargs:
             self.B = kwargs['B']
-            self.n_dim_control = kwargs['B'].shape[0]
+            self.n_dim_control = kwargs['B'].shape[1]
         elif 'n_dim_control' in kwargs:
             self.B = np.ones((self.n_dim_states, kwargs['n_dim_control']))
             self.n_dim_control = kwargs['n_dim_control']
@@ -345,7 +345,7 @@ class BilinearGaussianSSM:
         # Control
         if 'B' in kwargs:
             self.B = kwargs['B']
-            self.n_dim_control = kwargs['B'].shape[0]
+            self.n_dim_control = kwargs['B'].shape[1]
         elif 'n_dim_control' in kwargs:
             self.B = np.ones((self.n_dim_states, kwargs['n_dim_control']))
             self.n_dim_control = kwargs['n_dim_control']
