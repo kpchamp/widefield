@@ -1,4 +1,4 @@
-from widefield.regression.linregress import LinearRegression, RecurrentRegression
+from widefield.regression.linregress import LinearRegression, DynamicRegression
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -60,13 +60,13 @@ if run_regional_regression:
     # based on cross-correlations, convolve over 4 seconds
     lr_If_regions = LinearRegression(use_design_matrix=True, convolution_length=400)
     lr_If_regions.fit(region_data_train['Y'], region_data_train['X'])
-    lr_D_regions = LinearRegression(use_design_matrix=True, convolution_length=1)
-    lr_D_regions.fit(region_data_train['Y'][1:], region_data_train['Y'][:-1])
-    lr_Df_regions = LinearRegression(use_design_matrix=True, convolution_length=400)
-    lr_Df_regions.fit(region_data_train['Y'][1:], region_data_train['Y'][:-1])
-    lr_DIf_regions = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=1)
+    lr_D_regions = DynamicRegression(use_design_matrix=True, recurrent_convolution_length=1)
+    lr_D_regions.fit(region_data_train['Y'])
+    lr_Df_regions = DynamicRegression(use_design_matrix=True, recurrent_convolution_length=400)
+    lr_Df_regions.fit(region_data_train['Y'])
+    lr_DIf_regions = DynamicRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=1)
     lr_DIf_regions.fit(region_data_train['Y'], region_data_train['X'])
-    lr_DfIf_regions = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
+    lr_DfIf_regions = DynamicRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
     lr_DfIf_regions.fit(region_data_train['Y'], region_data_train['X'])
 
 
@@ -93,8 +93,8 @@ def create_region_plot():
     f = {}
     f['percent_error'] = np.zeros((5,len(region_data_test['Y_labels'])))
     f['percent_error'][0] = lr_If_regions.compute_loss_percentage(region_data_test['Y'], region_data_test['X'])
-    f['percent_error'][1] = lr_D_regions.compute_loss_percentage(region_data_test['Y'][1:], region_data_test['Y'][:-1])
-    f['percent_error'][2] = lr_Df_regions.compute_loss_percentage(region_data_test['Y'][1:], region_data_test['Y'][:-1])
+    f['percent_error'][1] = lr_D_regions.compute_loss_percentage(region_data_test['Y'])
+    f['percent_error'][2] = lr_Df_regions.compute_loss_percentage(region_data_test['Y'])
     f['percent_error'][3] = lr_DIf_regions.compute_loss_percentage(region_data_test['Y'], region_data_test['X'])
     f['percent_error'][4] = lr_DfIf_regions.compute_loss_percentage(region_data_test['Y'], region_data_test['X'])
     f['bar_width'] = 0.15
@@ -120,8 +120,8 @@ def get_region_reconstructions(idxs):
     reconstructions = np.empty((6,idxs.size,len(region_data_test['Y_labels'])))
     reconstructions[0] = region_data_test['Y'][idxs]
     reconstructions[1] = lr_If_regions.reconstruct(region_data_test['X'])[idxs]
-    reconstructions[2] = lr_D_regions.reconstruct(region_data_test['Y'][:-1])[idxs-1]
-    reconstructions[3] = lr_Df_regions.reconstruct(region_data_test['Y'][:-1])[idxs-1]
+    reconstructions[2] = lr_D_regions.reconstruct(region_data_test['Y'])[idxs-1]
+    reconstructions[3] = lr_Df_regions.reconstruct(region_data_test['Y'])[idxs-1]
     reconstructions[4] = lr_DIf_regions.reconstruct(region_data_test['Y'],region_data_test['X'])[idxs-1]
     reconstructions[5] = lr_DfIf_regions.reconstruct(region_data_test['Y'],region_data_test['X'])[idxs-1]
     recon_labels = ['data', 'If', 'D', 'Df', 'DIf', 'DfIf']
@@ -193,13 +193,13 @@ if run_pca_regression:
 
     lr_If_pca = LinearRegression(use_design_matrix=True, convolution_length=400)
     lr_If_pca.fit(pca_data_train['Y'], pca_data_train['X'])
-    lr_D_pca = LinearRegression(use_design_matrix=True, convolution_length=1)
-    lr_D_pca.fit(pca_data_train['Y'][1:], pca_data_train['Y'][:-1])
-    lr_Df_pca = LinearRegression(use_design_matrix=True, convolution_length=400)
-    lr_Df_pca.fit(pca_data_train['Y'][1:], pca_data_train['Y'][:-1])
-    lr_DIf_pca = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=1)
+    lr_D_pca = DynamicRegression(use_design_matrix=True, recurrent_convolution_length=1)
+    lr_D_pca.fit(pca_data_train['Y'])
+    lr_Df_pca = DynamicRegression(use_design_matrix=True, recurrent_convolution_length=400)
+    lr_Df_pca.fit(pca_data_train['Y'])
+    lr_DIf_pca = DynamicRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=1)
     lr_DIf_pca.fit(pca_data_train['Y'], pca_data_train['X'])
-    lr_DfIf_pca = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
+    lr_DfIf_pca = DynamicRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
     lr_DfIf_pca.fit(pca_data_train['Y'], pca_data_train['X'])
 
     if save_pca_files:
@@ -226,8 +226,8 @@ def create_pca_plot():
     f = {}
     f['percent_error'] = np.zeros((5,pca_data_test['Y'].shape[1]))
     f['percent_error'][0] = lr_If_pca.compute_loss_percentage(pca_data_test['Y'], pca_data_test['X'])
-    f['percent_error'][1] = lr_D_pca.compute_loss_percentage(pca_data_test['Y'][1:], pca_data_test['Y'][:-1])
-    f['percent_error'][2] = lr_Df_pca.compute_loss_percentage(pca_data_test['Y'][1:], pca_data_test['Y'][:-1])
+    f['percent_error'][1] = lr_D_pca.compute_loss_percentage(pca_data_test['Y'])
+    f['percent_error'][2] = lr_Df_pca.compute_loss_percentage(pca_data_test['Y'])
     f['percent_error'][3] = lr_DIf_pca.compute_loss_percentage(pca_data_test['Y'], pca_data_test['X'])
     f['percent_error'][4] = lr_DfIf_pca.compute_loss_percentage(pca_data_test['Y'], pca_data_test['X'])
     f['bar_width'] = 0.15
@@ -251,8 +251,8 @@ def get_pca_reconstructions(idxs):
     reconstructions = np.empty((6,idxs.size,pca_data_test['Y'].shape[1]))
     reconstructions[0] = pca_data_test['Y'][idxs]
     reconstructions[1] = lr_If_pca.reconstruct(pca_data_test['X'])[idxs]
-    reconstructions[2] = lr_D_pca.reconstruct(pca_data_test['Y'][:-1])[idxs-1]
-    reconstructions[3] = lr_Df_pca.reconstruct(pca_data_test['Y'][:-1])[idxs-1]
+    reconstructions[2] = lr_D_pca.reconstruct(pca_data_test['Y'])[idxs-1]
+    reconstructions[3] = lr_Df_pca.reconstruct(pca_data_test['Y'])[idxs-1]
     reconstructions[4] = lr_DIf_pca.reconstruct(pca_data_test['Y'],pca_data_test['X'])[idxs-1]
     reconstructions[5] = lr_DfIf_pca.reconstruct(pca_data_test['Y'],pca_data_test['X'])[idxs-1]
     recon_labels = ['data', 'If', 'D', 'Df', 'DIf', 'DfIf']
@@ -308,13 +308,13 @@ if run_ica:
 
     lr_If_ica = LinearRegression(use_design_matrix=True, convolution_length=400)
     lr_If_ica.fit(ica_data_train['Y'], ica_data_train['X'])
-    lr_D_ica = LinearRegression(use_design_matrix=True, convolution_length=1)
-    lr_D_ica.fit(ica_data_train['Y'][1:], ica_data_train['Y'][:-1])
-    lr_Df_ica = LinearRegression(use_design_matrix=True, convolution_length=400)
-    lr_Df_ica.fit(ica_data_train['Y'][1:], ica_data_train['Y'][:-1])
-    lr_DIf_ica = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=1)
+    lr_D_ica = DynamicRegression(use_design_matrix=True, recurrent_convolution_length=1)
+    lr_D_ica.fit(ica_data_train['Y'])
+    lr_Df_ica = DynamicRegression(use_design_matrix=True, recurrent_convolution_length=400)
+    lr_Df_ica.fit(ica_data_train['Y'])
+    lr_DIf_ica = DynamicRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=1)
     lr_DIf_ica.fit(ica_data_train['Y'], ica_data_train['X'])
-    lr_DfIf_ica = RecurrentRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
+    lr_DfIf_ica = DynamicRegression(use_design_matrix=True, convolution_length=400, recurrent_convolution_length=400)
     lr_DfIf_ica.fit(ica_data_train['Y'], ica_data_train['X'])
 
     if save_ica_files:
@@ -342,8 +342,8 @@ def create_ica_plot():
     f = {}
     f['percent_error'] = np.zeros((5,ica_data_test['Y'].shape[1]))
     f['percent_error'][0] = lr_If_ica.compute_loss_percentage(ica_data_test['Y'], ica_data_test['X'])
-    f['percent_error'][1] = lr_D_ica.compute_loss_percentage(ica_data_test['Y'][1:], ica_data_test['Y'][:-1])
-    f['percent_error'][2] = lr_Df_ica.compute_loss_percentage(ica_data_test['Y'][1:], ica_data_test['Y'][:-1])
+    f['percent_error'][1] = lr_D_ica.compute_loss_percentage(ica_data_test['Y'])
+    f['percent_error'][2] = lr_Df_ica.compute_loss_percentage(ica_data_test['Y'])
     f['percent_error'][3] = lr_DIf_ica.compute_loss_percentage(ica_data_test['Y'], ica_data_test['X'])
     f['percent_error'][4] = lr_DfIf_ica.compute_loss_percentage(ica_data_test['Y'], ica_data_test['X'])
     f['bar_width'] = 0.15
@@ -367,8 +367,8 @@ def get_ica_reconstructions(idxs):
     reconstructions = np.empty((6,idxs.size,ica_data_test['Y'].shape[1]))
     reconstructions[0] = ica_data_test['Y'][idxs]
     reconstructions[1] = lr_If_ica.reconstruct(ica_data_test['X'])[idxs]
-    reconstructions[2] = lr_D_ica.reconstruct(ica_data_test['Y'][:-1])[idxs-1]
-    reconstructions[3] = lr_Df_ica.reconstruct(ica_data_test['Y'][:-1])[idxs-1]
+    reconstructions[2] = lr_D_ica.reconstruct(ica_data_test['Y'])[idxs-1]
+    reconstructions[3] = lr_Df_ica.reconstruct(ica_data_test['Y'])[idxs-1]
     reconstructions[4] = lr_DIf_ica.reconstruct(ica_data_test['Y'],ica_data_test['X'])[idxs-1]
     reconstructions[5] = lr_DfIf_ica.reconstruct(ica_data_test['Y'],ica_data_test['X'])[idxs-1]
     recon_labels = ['data', 'If', 'D', 'Df', 'DIf', 'DfIf']
