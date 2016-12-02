@@ -48,7 +48,7 @@ pickle.dump(train, open(basepath + "ml_project/train.pkl",'w'))
 pickle.dump(test, open(basepath + "ml_project/test.pkl",'w'))
 
 fit_original_model = False
-fit_original_LR = True
+fit_original_LR = False
 
 if fit_original_LR:
     print >>open('progress.txt','a'), "Doing linear regression - basic model"
@@ -68,7 +68,7 @@ if fit_original_model:
 #    model1 = pickle.load(open(basepath + "ml_project/ssm_diagonal.pkl",'r'))
 
 fit_input_model = False
-fit_input_LR = True
+fit_input_LR = False
 if fit_input_LR:
     print >>open('progress.txt','a'), "Doing linear regression - input model"
     lr2 = DynamicRegression(fit_offset=False)
@@ -87,7 +87,7 @@ if fit_input_model:
 #    model2 = pickle.load(open(basepath + "ml_project/ssm_input_diagonal.pkl",'r'))
 
 fit_bilinear_model = True
-fit_bilinear_LR = True
+fit_bilinear_LR = False
 if fit_input_LR:
     print >>open('progress.txt','a'), "Doing linear regression - bilinear model"
     lr3 = BilinearRegression(fit_offset=False)
