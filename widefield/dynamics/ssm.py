@@ -53,7 +53,7 @@ class LinearGaussianSSM:
 
         self.mean_observation = None
         self.mean_input = None
-        self.LL = None
+        self.LL = []
         self.fitting_em = False
 
     # Fit the parameters of the LDS model using EM
@@ -74,8 +74,8 @@ class LinearGaussianSSM:
         if exclude_list is None:
             exclude_list = []
 
-        self.LL = []
-        for i in range(max_iters):
+        for i in range(len(self.LL),len(self.LL)+max_iters):
+            print >>open('progress.txt','a'), "EM iteration %d" % i
             # E step - run Kalman smoothing algorithm
             mu_smooth, V_smooth, J = self.kalman_smoothing(Y,U)
 
@@ -83,6 +83,7 @@ class LinearGaussianSSM:
             # print self.LL[i]
             if i>0:
                 LL_diff = self.LL[i] - self.LL[i-1]
+                print >>open('progress.txt','a'), "LL: %f" % self.LL[i]
                 if LL_diff < 0:
                     warnings.warn("log likelihood increased on iteration %d - numerical instability or bug detected" % i, RuntimeWarning)
                     break
@@ -200,7 +201,6 @@ class LinearGaussianSSM:
         LL = 0
         const = -self.n_dim_observations*np.log(2.*np.pi)/2.
         for t in range(n_samples):
-            print >>open('progress.txt','a'), "filtering time %d" % t
             e = Y[:,t] - self.C.dot(mu_predict)
 
             # Invert S using dpotrf
@@ -240,7 +240,6 @@ class LinearGaussianSSM:
         mu_smooth[:,-1] = mu_filter[:,-1]
         V_smooth[-1] = V_filter[-1]
         for t in range(n_samples-2,-1,-1):
-            print >>open('progress.txt','a'), "smoothing time %d" % t
             mu_predict = self.A.dot(mu_filter[:,t])
             if self.B is not None:
                 mu_predict += self.B.dot(U[:,t])
