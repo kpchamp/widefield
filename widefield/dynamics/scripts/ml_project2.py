@@ -89,7 +89,7 @@ if fit_input_model:
 
 fit_bilinear_model = True
 fit_bilinear_LR = True
-if fit_input_LR:
+if fit_bilinear_LR:
     print >>open('progress.txt','a'), "Doing linear regression - bilinear model"
     lr3 = BilinearRegression(fit_offset=False)
     lr3.fit(train['Y'], train['X'])
