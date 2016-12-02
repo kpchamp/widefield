@@ -360,7 +360,7 @@ class BilinearGaussianSSM:
             for k in range(self.n_dim_control):
                 self.D[k] = np.eye(self.n_dim_states)
 
-        self.LL = None
+        self.LL = []
         self.fitting_em = False
 
     # Fit the parameters of the LDS model using EM
@@ -373,15 +373,14 @@ class BilinearGaussianSSM:
         if exclude_list is None:
             exclude_list = []
 
-        self.LL = []
-        for i in range(max_iters):
+        for i in range(len(self.LL),len(self.LL)+max_iters):
             print >>open('progress.txt','a'), "EM iteration %d" % i
             # E step - run Kalman smoothing algorithm
             mu_smooth, V_smooth, J = self.kalman_smoothing(Y,U)
 
             if i>0:
                 LL_diff = self.LL[i] - self.LL[i-1]
-                print >>open('progress.txt','a'), "LL difference: %f" % LL_diff
+                print >>open('progress.txt','a'), "LL: %f" % self.LL[i]
                 if LL_diff < 0:
                     warnings.warn("log likelihood increased on iteration %d - numerical instability or bug detected" % i, RuntimeWarning)
                     break

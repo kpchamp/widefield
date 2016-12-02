@@ -101,7 +101,7 @@ if fit_bilinear_model:
     # Fit EM parameters for the model, based on the sampled data
     model3 = BilinearGaussianSSM(A=np.copy(lr3.coefficients[4:25].T), B=np.copy(lr3.coefficients[0:4].T),
                                  D=np.copy(np.stack(np.split(lr3.coefficients[25:].T,4,axis=1),axis=0)), C=np.eye(21))
-    model3.fit_em(train['Y'].T, train['X'].T, max_iters=5000, exclude_list=['C'], diagonal_covariance=True)
+    model3.fit_em(train['Y'].T, train['X'].T, max_iters=500, tol=1., exclude_list=['C'], diagonal_covariance=True)
     pickle.dump(model3,open(basepath + "ml_project/ssm_bilinear_diagonal.pkl",'w'))
 #else:
 #    model3 = pickle.load(open(basepath + "ml_project/ssm_bilinear_diagonal.pkl",'r'))
