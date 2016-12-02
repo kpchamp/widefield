@@ -68,8 +68,8 @@ if fit_original_model:
 #else:
 #    model1 = pickle.load(open(basepath + "ml_project/ssm_diagonal.pkl",'r'))
 
-fit_input_model = False
-fit_input_LR = False
+fit_input_model = True
+fit_input_LR = True
 if fit_input_LR:
     print >>open('progress.txt','a'), "Doing linear regression - input model"
     lr2 = DynamicRegression(fit_offset=False)
@@ -82,13 +82,16 @@ if fit_input_model:
     print >>open('progress.txt','a'), "Fitting SSM - input model"
     # Fit EM parameters for the model, based on the sampled data
     model2 = LinearGaussianSSM(A=np.copy(lr2.coefficients[4:].T), B=np.copy(lr2.coefficients[0:4].T), C=np.eye(21))
-    model2.fit_em(train['Y'].T, train['X'].T, max_iters=5000, exclude_list=['C'], diagonal_covariance=True)
+    start_time = time.time()
+    model2.fit_em(train['Y'].T, train['X'].T, max_iters=500, tol=1., exclude_list=['C'], diagonal_covariance=True)
     pickle.dump(model2,open(basepath + "ml_project/ssm_input_diagonal.pkl",'w'))
+    end_time = time.time()
+    print >>open('progress.txt','a'), "EM took %f seconds" % (end_time-start_time)
 #else:
 #    model2 = pickle.load(open(basepath + "ml_project/ssm_input_diagonal.pkl",'r'))
 
-fit_bilinear_model = True
-fit_bilinear_LR = True
+fit_bilinear_model = False
+fit_bilinear_LR = False
 if fit_bilinear_LR:
     print >>open('progress.txt','a'), "Doing linear regression - bilinear model"
     lr3 = BilinearRegression(fit_offset=False)
