@@ -20,7 +20,7 @@ test_model = LinearGaussianSSM(A=test_params['W'], Q=np.diag(test_params['Q']), 
 pickle.dump(test_model, open(basepath + "ml_project/test_model.pkl",'w'))
 
 # Sample the SSM
-T = 5000
+T = 20000
 Z,Y = test_model.sample(T, U=train['U'][0:T].T)
 
 # See if we can learn the SSM, starting with the fit LR model
