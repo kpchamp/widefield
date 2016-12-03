@@ -14,7 +14,7 @@ train = pickle.load(open(basepath + "ml_project/small_test/train.pkl",'r'))
 
 # Create SSM with the test parameters
 test_params = pickle.load(open(basepath + "ml_project/small_test/params.pkl",'r'))
-test_model = LinearGaussianSSM(A=test_params['W'], Q=np.diag(test_params['Q']), C=np.eye(3), R=np.diag(test_params['R']),
+test_model = LinearGaussianSSM(A=test_params['W'], Q=test_params['Q'], C=np.eye(3), R=test_params['R'],
                                B=test_params['B'], mu0=test_params['mu0'], V0=test_params['V0'])
 pickle.dump(test_model, open(basepath + "ml_project/small_test/model.pkl",'w'))
 # test_model = pickle.load(open(basepath + "ml_project/small_test/model.pkl",'r'))
