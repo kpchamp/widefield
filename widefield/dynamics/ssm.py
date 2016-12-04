@@ -86,7 +86,7 @@ class LinearGaussianSSM:
                 print >>open('progress.txt','a'), "LL: %f" % self.LL[i]
                 if LL_diff < 0:
                     warnings.warn("log likelihood increased on iteration %d - numerical instability or bug detected" % i, RuntimeWarning)
-                    #break
+                    break
                 if np.abs(LL_diff) < tol:
                     break
 
