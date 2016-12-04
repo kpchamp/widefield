@@ -74,14 +74,15 @@ class LinearGaussianSSM:
         if exclude_list is None:
             exclude_list = []
 
-        for i in range(len(self.LL),len(self.LL)+max_iters):
+        starting_iter = len(self.LL)
+        for i in range(starting_iter,starting_iter+max_iters):
             print >>open('progress.txt','a'), "EM iteration %d" % i
             # E step - run Kalman smoothing algorithm
             mu_smooth, V_smooth, J = self.kalman_smoothing(Y,U)
 
             # self.LL[i] = self.complete_log_likelihood(Y, mu_smooth, U)
             # print self.LL[i]
-            if i>0:
+            if i>starting_iter:
                 LL_diff = self.LL[i] - self.LL[i-1]
                 print >>open('progress.txt','a'), "LL: %f" % self.LL[i]
                 if LL_diff < 0:
@@ -372,12 +373,13 @@ class BilinearGaussianSSM:
         if exclude_list is None:
             exclude_list = []
 
-        for i in range(len(self.LL),len(self.LL)+max_iters):
+        starting_iter = len(self.LL)
+        for i in range(starting_iter,starting_iter+max_iters):
             print >>open('progress.txt','a'), "EM iteration %d" % i
             # E step - run Kalman smoothing algorithm
             mu_smooth, V_smooth, J = self.kalman_smoothing(Y,U)
 
-            if i>0:
+            if i>starting_iter:
                 LL_diff = self.LL[i] - self.LL[i-1]
                 print >>open('progress.txt','a'), "LL: %f" % self.LL[i]
                 if LL_diff < 0:
