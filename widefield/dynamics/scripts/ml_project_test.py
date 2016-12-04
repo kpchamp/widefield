@@ -27,6 +27,8 @@ Z,Y = test_model.sample(T, U=train['U'][0:T].T)
 # See if we can learn the SSM, starting with the fit LR model
 lr_test = DynamicRegression(fit_offset=False)
 lr_test.fit(train['Y'], train['U'])
-test_model_learn = LinearGaussianSSM(A=np.copy(lr_test.coefficients[4:].T), B=np.copy(lr_test.coefficients[0:4].T), C=np.eye(21))
+leftover_var = np.mean((train['Y'] - lr_test.reconstruct(train['Y'], train['U']))**2, axis=1)
+test_model_learn = LinearGaussianSSM(A=np.copy(lr_test.coefficients[4:].T), B=np.copy(lr_test.coefficients[0:4].T), C=np.eye(21),
+                                     Q=np.diag(leftover_var/2.), R=np.diag(leftover_var/2.), V0=np.diag(leftover_var/10.))
 test_model_learn.fit_em(Y, train['U'][0:T].T, max_iters=500, tol=1., exclude_list=['C'], diagonal_covariance=True)
 pickle.dump(test_model_learn, open(basepath + "ml_project/big_test/model_learn_50000.pkl",'w'))
