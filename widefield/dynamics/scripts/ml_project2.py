@@ -110,10 +110,10 @@ if fit_bilinear_model:
     # Fit EM parameters for the model, based on the sampled data
     #model3 = BilinearGaussianSSM(A=np.copy(lr3.coefficients[4:25].T), B=np.copy(lr3.coefficients[0:4].T),
     #                             D=np.copy(np.stack(np.split(lr3.coefficients[25:].T,4,axis=1),axis=0)), C=np.eye(21))
-    model3 = pickle.load(open(basepath + "ml_project/ssm_bilinear_diagonal.pkl",'r'))
+    model3 = pickle.load(open(basepath + "ml_project/ssm_bilinear_diagonal2.pkl",'r'))
     start_time = time.time()
     model3.fit_em(train['Y'].T, train['U'].T, max_iters=500, tol=0.1, exclude_list=['C'], diagonal_covariance=True)
-    pickle.dump(model3,open(basepath + "ml_project/ssm_bilinear_diagonal2.pkl",'w'))
+    pickle.dump(model3,open(basepath + "ml_project/ssm_bilinear_diagonal.pkl",'w'))
     end_time = time.time()
     print >>open('progress.txt','a'), "EM took %f seconds" % (end_time-start_time)
 else:
