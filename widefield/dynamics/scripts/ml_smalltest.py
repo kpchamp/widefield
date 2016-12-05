@@ -41,15 +41,15 @@ test_model = BilinearGaussianSSM(A=test_params['W'], Q=test_params['Q'], C=np.ey
 pickle.dump(test_model, open(basepath + "ml_project/small_test/bilinear_model.pkl",'w'))
 
 # Sample the SSM
-T = 20000
+T = 50000
 Z,Y = test_model.sample(T, U=train['U'][0:T].T)
-pickle.dump(Y, open(basepath + "ml_project/small_test/bilinear_sample_20000.pkl",'w'))
+pickle.dump(Y, open(basepath + "ml_project/small_test/bilinear_sample_50000pkl",'w'))
 
 # See if we can learn the SSM, starting with the fit LR model
 lr_test = BilinearRegression(fit_offset=False)
 lr_test.fit(train['Y'], train['U'])
-pickle.dump(lr_test, open(basepath + "ml_project/small_test/bilinear_lr_20000.pkl",'w'))
+pickle.dump(lr_test, open(basepath + "ml_project/small_test/bilinear_lr_50000.pkl",'w'))
 test_model_learn = BilinearGaussianSSM(A=np.copy(lr_test.coefficients[1:4].T), B=np.copy(lr_test.coefficients[0:1].T),
                                      D=np.copy(lr_test.coefficients[4:].T.reshape((1,3,3))), C=np.eye(3))
 test_model_learn.fit_em(Y, train['U'][0:T].T, max_iters=500, tol=1., exclude_list=['C'], diagonal_covariance=True)
-pickle.dump(test_model_learn, open(basepath + "ml_project/small_test/bilinear_model_learn_20000.pkl",'w'))
+pickle.dump(test_model_learn, open(basepath + "ml_project/small_test/bilinear_model_learn_50000.pkl",'w'))
