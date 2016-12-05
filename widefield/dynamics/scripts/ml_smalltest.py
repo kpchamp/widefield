@@ -48,7 +48,7 @@ pickle.dump(Y, open(basepath + "ml_project/small_test/bilinear_sample.pkl",'w'))
 # See if we can learn the SSM, starting with the fit LR model
 lr_test = BilinearRegression(fit_offset=False)
 lr_test.fit(train['Y'], train['U'])
-test_model_learn = LinearGaussianSSM(A=np.copy(lr_test.coefficients[1:4].T), B=np.copy(lr_test.coefficients[0:1].T),
+test_model_learn = BilinearGaussianSSM(A=np.copy(lr_test.coefficients[1:4].T), B=np.copy(lr_test.coefficients[0:1].T),
                                      D=np.copy(lr_test.coefficients[4:].T.reshape((1,3,3))), C=np.eye(3))
 test_model_learn.fit_em(Y, train['U'][0:T].T, max_iters=500, tol=1., exclude_list=['C'], diagonal_covariance=True)
 pickle.dump(test_model_learn, open(basepath + "ml_project/small_test/bilinear_model_learn_5000.pkl",'w'))
