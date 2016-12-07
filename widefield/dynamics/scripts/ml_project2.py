@@ -53,7 +53,7 @@ else:
     train = pickle.load(open(basepath + "ml_project/train.pkl",'r'))
     test = pickle.load(open(basepath + "ml_project/test.pkl",'r'))
 
-fit_original_model = False
+fit_original_model = True
 fit_original_LR = False
 
 if fit_original_LR:
@@ -61,26 +61,26 @@ if fit_original_LR:
     lr1 = DynamicRegression(fit_offset=False)
     lr1.fit(train['Y'])
     pickle.dump(lr1,open(basepath + "ml_project/lr.pkl",'w'))
-else:
+elif fit_original_model:
     lr1 = pickle.load(open(basepath + "ml_project/lr.pkl",'r'))
 
 if fit_original_model:
     print >>open('progress.txt','a'), "Fitting SSM - basic model"
     # Fit EM parameters for the model, based on the sampled data
     model1 = LinearGaussianSSM(A=np.copy(lr1.coefficients.T), C=np.eye(21))
-    model1.fit_em(train['Y'].T, max_iters=500, tol=1., exclude_list=['C'], diagonal_covariance=True)
+    model1.fit_em(train['Y'].T, max_iters=1000, tol=0.1, exclude_list=['C'], diagonal_covariance=True)
     pickle.dump(model1,open(basepath + "ml_project/ssm_diagonal.pkl",'w'))
-else:
-    model1 = pickle.load(open(basepath + "ml_project/ssm_diagonal.pkl",'r'))
+#else:
+#    model1 = pickle.load(open(basepath + "ml_project/ssm_diagonal.pkl",'r'))
 
-fit_input_model = True
+fit_input_model = False
 fit_input_LR = False
 if fit_input_LR:
     print >>open('progress.txt','a'), "Doing linear regression - input model"
     lr2 = DynamicRegression(fit_offset=False)
     lr2.fit(train['Y'], train['U'])
     pickle.dump(lr2,open(basepath + "ml_project/lr_input.pkl",'w'))
-else:
+elif fit_input_model:
     lr2 = pickle.load(open(basepath + "ml_project/lr_input.pkl",'r'))
 
 if fit_input_model:
@@ -93,8 +93,8 @@ if fit_input_model:
     pickle.dump(model2,open(basepath + "ml_project/ssm_input_diagonal.pkl",'w'))
     end_time = time.time()
     print >>open('progress.txt','a'), "EM took %f seconds" % (end_time-start_time)
-else:
-    model2 = pickle.load(open(basepath + "ml_project/ssm_input_diagonal.pkl",'r'))
+#else:
+#    model2 = pickle.load(open(basepath + "ml_project/ssm_input_diagonal.pkl",'r'))
 
 fit_bilinear_model = False
 fit_bilinear_LR = False
@@ -103,7 +103,7 @@ if fit_bilinear_LR:
     lr3 = BilinearRegression(fit_offset=False)
     lr3.fit(train['Y'], train['U'])
     pickle.dump(lr3,open(basepath + "ml_project/lr_bilinear.pkl",'w'))
-else:
+elif fit_bilinear_model:
     lr3 = pickle.load(open(basepath + "ml_project/lr_bilinear.pkl",'r'))
 
 if fit_bilinear_model:
@@ -117,5 +117,5 @@ if fit_bilinear_model:
     pickle.dump(model3,open(basepath + "ml_project/ssm_bilinear_diagonal.pkl",'w'))
     end_time = time.time()
     print >>open('progress.txt','a'), "EM took %f seconds" % (end_time-start_time)
-else:
-    model3 = pickle.load(open(basepath + "ml_project/ssm_bilinear_diagonal.pkl",'r'))
+#else:
+#    model3 = pickle.load(open(basepath + "ml_project/ssm_bilinear_diagonal.pkl",'r'))
