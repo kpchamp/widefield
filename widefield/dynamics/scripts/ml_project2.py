@@ -97,7 +97,7 @@ else:
     model2 = pickle.load(open(basepath + "ml_project/ssm_input_diagonal.pkl",'r'))
 
 fit_bilinear_model = True
-fit_bilinear_LR = True
+fit_bilinear_LR = False
 if fit_bilinear_LR:
     print >>open('progress.txt','a'), "Doing linear regression - bilinear model"
     lr3 = BilinearRegression(fit_offset=False)
