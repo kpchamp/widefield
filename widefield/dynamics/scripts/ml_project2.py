@@ -67,7 +67,8 @@ elif fit_original_model:
 if fit_original_model:
     print >>open('progress.txt','a'), "Fitting SSM - basic model"
     # Fit EM parameters for the model, based on the sampled data
-    model1 = LinearGaussianSSM(A=np.copy(lr1.coefficients.T), C=np.eye(21))
+    #model1 = LinearGaussianSSM(A=np.copy(lr1.coefficients.T), C=np.eye(21))
+    model1 = pickle.load(open(basepath + "ml_project/ssm_diagonal.pkl",'r'))
     model1.fit_em(train['Y'].T, max_iters=1000, tol=0.1, exclude_list=['C'], diagonal_covariance=True)
     pickle.dump(model1,open(basepath + "ml_project/ssm_diagonal.pkl",'w'))
 #else:
