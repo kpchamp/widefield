@@ -73,7 +73,7 @@ if fit_original_model:
 else:
     model1 = pickle.load(open(basepath + "ml_project/ssm_diagonal.pkl",'r'))
 
-fit_input_model = True
+fit_input_model = False
 fit_input_LR = False
 if fit_input_LR:
     print >>open('progress.txt','a'), "Doing linear regression - input model"
@@ -96,8 +96,8 @@ if fit_input_model:
 else:
     model2 = pickle.load(open(basepath + "ml_project/ssm_input_diagonal.pkl",'r'))
 
-fit_bilinear_model = False
-fit_bilinear_LR = False
+fit_bilinear_model = True
+fit_bilinear_LR = True
 if fit_bilinear_LR:
     print >>open('progress.txt','a'), "Doing linear regression - bilinear model"
     lr3 = BilinearRegression(fit_offset=False)
@@ -109,11 +109,11 @@ else:
 if fit_bilinear_model:
     print >>open('progress.txt','a'), "Fitting SSM - bilinear model"
     # Fit EM parameters for the model, based on the sampled data
-    #model3 = BilinearGaussianSSM(A=np.copy(lr3.coefficients[4:25].T), B=np.copy(lr3.coefficients[0:4].T),
-    #                             D=np.copy(np.stack(np.split(lr3.coefficients[25:].T,4,axis=1),axis=0)), C=np.eye(21))
-    model3 = pickle.load(open(basepath + "ml_project/ssm_bilinear_diagonal.pkl",'r'))
+    model3 = BilinearGaussianSSM(A=np.copy(lr3.coefficients[4:25].T), B=np.copy(lr3.coefficients[0:4].T),
+                                 D=np.copy(np.stack(np.split(lr3.coefficients[25:].T,4,axis=1),axis=0)), C=np.eye(21))
+    #model3 = pickle.load(open(basepath + "ml_project/ssm_bilinear_diagonal.pkl",'r'))
     start_time = time.time()
-    model3.fit_em(train['Y'].T, train['U'].T, max_iters=500, tol=0.1, exclude_list=['C'], diagonal_covariance=True)
+    model3.fit_em(train['Y'].T, train['U'].T, max_iters=1500, tol=0.1, exclude_list=['C'], diagonal_covariance=True)
     pickle.dump(model3,open(basepath + "ml_project/ssm_bilinear_diagonal.pkl",'w'))
     end_time = time.time()
     print >>open('progress.txt','a'), "EM took %f seconds" % (end_time-start_time)
