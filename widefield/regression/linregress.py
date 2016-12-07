@@ -165,7 +165,7 @@ class BilinearRegression:
                 for i in range(self.bilinear_convolution_length):
                     design_matrix[i:, int(self.fit_offset) + n_inputs*self.convolution_length +
                                       n_features*self.dynamic_convolution_length +
-                                      k*j*self.bilinear_convolution_length +
+                                      (k*n_features+j)*self.bilinear_convolution_length +
                                       i] = X[0:n_samples-i-1, k] * Y[0:n_samples-i-1, j]
         return design_matrix
 
