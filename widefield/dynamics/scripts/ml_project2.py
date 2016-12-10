@@ -74,7 +74,7 @@ if fit_original_model:
 #else:
 #    model1 = pickle.load(open(basepath + "ml_project/ssm_diagonal.pkl",'r'))
 
-fit_input_model = False
+fit_input_model = True
 fit_input_LR = False
 if fit_input_LR:
     print >>open('progress.txt','a'), "Doing linear regression - input model"
@@ -87,17 +87,19 @@ elif fit_input_model:
 if fit_input_model:
     print >>open('progress.txt','a'), "Fitting SSM - input model"
     # Fit EM parameters for the model, based on the sampled data
-    # model2 = LinearGaussianSSM(A=np.copy(lr2.coefficients[4:].T), B=np.copy(lr2.coefficients[0:4].T), C=np.eye(21))
-    model2 = pickle.load(open(basepath + "ml_project/ssm_input_diagonal.pkl",'r'))
+    residual_variance = np.mean((lr2.reconstruct(train['Y'],train['U']) - train['Y'][1:])**2, axis=0)
+    model2 = LinearGaussianSSM(A=np.copy(lr2.coefficients[4:].T), B=np.copy(lr2.coefficients[0:4].T), C=np.eye(21),
+                               Q=np.diag(residual_variance), R=np.diag(residual_variance))
+    #model2 = pickle.load(open(basepath + "ml_project/ssm_input_diagonal.pkl",'r'))
     start_time = time.time()
-    model2.fit_em(train['Y'].T, train['U'].T, max_iters=1000, tol=0.1, exclude_list=['C'], diagonal_covariance=True)
-    pickle.dump(model2,open(basepath + "ml_project/ssm_input_diagonal.pkl",'w'))
+    model2.fit_em(train['Y'].T, train['U'].T, max_iters=1500, tol=0.1, exclude_list=['C'], diagonal_covariance=True)
+    pickle.dump(model2,open(basepath + "ml_project/ssm_input_diagonal__lowNoiseStart.pkl",'w'))
     end_time = time.time()
     print >>open('progress.txt','a'), "EM took %f seconds" % (end_time-start_time)
 #else:
 #    model2 = pickle.load(open(basepath + "ml_project/ssm_input_diagonal.pkl",'r'))
 
-fit_bilinear_model = True
+fit_bilinear_model = False
 fit_bilinear_LR = False
 if fit_bilinear_LR:
     print >>open('progress.txt','a'), "Doing linear regression - bilinear model"
