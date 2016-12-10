@@ -53,7 +53,7 @@ else:
     train = pickle.load(open(basepath + "ml_project/train.pkl",'r'))
     test = pickle.load(open(basepath + "ml_project/test.pkl",'r'))
 
-fit_original_model = False
+fit_original_model = True
 fit_original_LR = False
 
 if fit_original_LR:
@@ -67,14 +67,16 @@ elif fit_original_model:
 if fit_original_model:
     print >>open('progress.txt','a'), "Fitting SSM - basic model"
     # Fit EM parameters for the model, based on the sampled data
-    #model1 = LinearGaussianSSM(A=np.copy(lr1.coefficients.T), C=np.eye(21))
-    model1 = pickle.load(open(basepath + "ml_project/ssm_diagonal.pkl",'r'))
-    model1.fit_em(train['Y'].T, max_iters=1000, tol=0.1, exclude_list=['C'], diagonal_covariance=True)
-    pickle.dump(model1,open(basepath + "ml_project/ssm_diagonal.pkl",'w'))
+    residual_variance = np.mean((lr1.reconstruct(train['Y']) - train['Y'][1:])**2, axis=0)
+    model1 = LinearGaussianSSM(A=np.copy(lr1.coefficients.T), C=np.eye(21),
+                               Q=np.diag(residual_variance), R=np.diag(residual_variance))
+    #model1 = pickle.load(open(basepath + "ml_project/ssm_diagonal.pkl",'r'))
+    model1.fit_em(train['Y'].T, max_iters=1500, tol=0.1, exclude_list=['C'], diagonal_covariance=True)
+    pickle.dump(model1,open(basepath + "ml_project/ssm_diagonal_lowNoiseStart.pkl",'w'))
 #else:
 #    model1 = pickle.load(open(basepath + "ml_project/ssm_diagonal.pkl",'r'))
 
-fit_input_model = True
+fit_input_model = False
 fit_input_LR = False
 if fit_input_LR:
     print >>open('progress.txt','a'), "Doing linear regression - input model"
