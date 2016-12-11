@@ -41,7 +41,7 @@ test_model = BilinearGaussianSSM(A=test_params['W'], Q=test_params['Q'], C=np.ey
 pickle.dump(test_model, open(basepath + "ml_project/small_test/bilinear_model.pkl",'w'))
 
 # Sample the SSM
-T = 50000
+T = 5000
 Z,Y = test_model.sample(T, U=train['U'][0:T].T)
 pickle.dump(Y, open(basepath + "ml_project/small_test/bilinear_sample_50000pkl",'w'))
 
