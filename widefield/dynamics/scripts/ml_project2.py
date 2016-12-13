@@ -120,7 +120,7 @@ if fit_bilinear_model:
     #                              Q=np.diag(residual_variance), R=np.diag(residual_variance))
     model3 = pickle.load(open(basepath + "ml_project/ssm_bilinear_lowNoiseStart.pkl",'r'))
     start_time = time.time()
-    model3.fit_em(train['Y'].T, train['U'].T, max_iters=100, tol=0.1, exclude_list=['C'], diagonal_covariance=True)
+    model3.fit_em(train['Y'].T, train['U'].T, max_iters=1300, tol=0.1, exclude_list=['C'], diagonal_covariance=True)
     pickle.dump(model3,open(basepath + "ml_project/ssm_bilinear_lowNoiseStart.pkl",'w'))
     end_time = time.time()
     print >>open('progress.txt','a'), "EM took %f seconds" % (end_time-start_time)
