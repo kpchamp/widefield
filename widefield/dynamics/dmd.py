@@ -21,7 +21,7 @@ class DynamicModeDecomposition:
         elif X.ndim == 2:
             # One continuous time series - dimensions TIMESTEPS x FEATURES
             self.multiple_trials = False
-            n_samples, n_features = X.shape
+            n_samples, self.n_features = X.shape
             X_left = X[1:].T
             X_right = X[:-1].T
         else:
@@ -47,9 +47,9 @@ class DynamicModeDecomposition:
         if dynamics_rank is not None:
             self.dynamics_rank = dynamics_rank
         else:
-            self.dynamics_rank = n_features+n_inputs
+            self.dynamics_rank = self.n_features+self.n_inputs
         U_right,s_right,V_right = la.svd(Omega, full_matrices=False)
-        U1 = U_right[:n_features, :self.dynamics_rank]
+        U1 = U_right[:self.n_features, :self.dynamics_rank]
         U_left,s_left,V_left = la.svd(X_left, full_matrices=False)
         # Compute matrix products that are reused for A and B
         tmp = np.dot(X_left, V_right[:self.dynamics_rank].T*(1./s_right[:self.dynamics_rank]))
