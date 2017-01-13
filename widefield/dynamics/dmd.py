@@ -106,7 +106,7 @@ class DynamicModeDecomposition:
                 raise ValueError("missing input matrix")
             if self.multiple_trials:
                 if U.ndim == 3:
-                    n_samples, n_trials, n_inputs = U.shape[2]
+                    n_samples, n_trials, n_inputs = U.shape
                     if n_inputs != self.n_inputs:
                         raise ValueError("wrong number of inputs")
                     U_right = U[:,:-1,:].reshape((n_samples-n_trials, n_inputs)).T
