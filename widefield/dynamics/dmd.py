@@ -64,10 +64,10 @@ class DynamicModeDecomposition:
     def reconstruct(self, X, U=None):
         if self.n_inputs > 0:
             X_left, X_right, U_right = self.construct_data_matrices(X, U)
-            X_recon = np.dot(self.A, X_right)
+            X_recon = np.dot(self.A, X_right) + np.dot(self.B, U_right)
         else:
             X_left, X_right = self.construct_data_matrices(X)
-            X_recon = np.dot(self.A, X_right) + np.dot(self.B, U_right)
+            X_recon = np.dot(self.A, X_right)
         X_dot = X_recon - X_right
         return X_recon, X_dot
 
@@ -106,10 +106,10 @@ class DynamicModeDecomposition:
                 raise ValueError("missing input matrix")
             if self.multiple_trials:
                 if U.ndim == 3:
-                    n_inputs = U.shape[2]
+                    n_samples, n_trials, n_inputs = U.shape[2]
                     if n_inputs != self.n_inputs:
                         raise ValueError("wrong number of inputs")
-                    U_right = U[:,:-1,:].reshape((n_samples-1, n_inputs)).T
+                    U_right = U[:,:-1,:].reshape((n_samples-n_trials, n_inputs)).T
                     # Omega = np.concatenate((X_right, U[:,:-1,:].reshape((self.n_samples-self.n_trials, n_inputs)).T), axis=0)
                 else:
                     raise ValueError("data matrix must be 3 dimensions")
