@@ -21,6 +21,7 @@ class DynamicModeDecomposition:
         elif X.ndim == 2:
             # One continuous time series - dimensions TIMESTEPS x FEATURES
             self.multiple_trials = False
+            n_trials = 1
             n_samples, self.n_features = X.shape
             X_left = X[1:].T
             X_right = X[:-1].T
@@ -55,19 +56,18 @@ class DynamicModeDecomposition:
         tmp = np.dot(X_left, V_right[:self.dynamics_rank].T*(1./s_right[:self.dynamics_rank]))
         self.A = np.dot(tmp, U1.T)
         self.A_reduced = np.dot(U_left[:,:self.dynamics_rank].T, self.A)
-        if n_inputs != 0:
-            U2 = U_right[n_features:, :self.dynamics_rank]
+        if self.n_inputs != 0:
+            U2 = U_right[self.n_features:, :self.dynamics_rank]
             self.B = np.dot(tmp, U2.T)
             self.B_reduced = np.dot(U_left[:,:self.dynamics_rank].T, self.B)
 
     def reconstruct(self, X, U=None):
         if self.n_inputs > 0:
             X_left, X_right, U_right = self.construct_data_matrices(X, U)
+            X_recon = np.dot(self.A, X_right)
         else:
             X_left, X_right = self.construct_data_matrices(X)
-        X_recon = np.dot(self.A, X_right)
-        if self.n_inputs > 0:
-            X_recon += np.dot(self.B, U_right)
+            X_recon = np.dot(self.A, X_right) + np.dot(self.B, U_right)
         X_dot = X_recon - X_right
         return X_recon, X_dot
 
@@ -75,11 +75,10 @@ class DynamicModeDecomposition:
         if self.n_inputs > 0:
             X_left, X_right, U_right = self.construct_data_matrices(X, U)
             X_recon = np.dot(self.A, X_right) + np.dot(self.B, U_right)
-            X_dot = X_recon - X_right
         else:
             X_left, X_right = self.construct_data_matrices(X)
             X_recon = np.dot(self.A, X_right)
-            X_dot = X_recon - X_right
+        X_dot = X_recon - X_right
         X_dot_true = X_left - X_right
         return 1. - np.var(X_dot - X_dot_true)/np.var(X_dot_true)
 
@@ -96,7 +95,7 @@ class DynamicModeDecomposition:
         else:
             if X.ndim == 2:
                 n_samples, n_features = X.shape
-                if self.n_features != n_features:
+                if n_features != self.n_features:
                     raise ValueError("wrong number of features")
                 X_left = X[1:].T
                 X_right = X[:-1].T
