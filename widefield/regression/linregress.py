@@ -9,7 +9,7 @@ class LinearRegression:
             self.offset = None
         self.convolution_length = convolution_length
         self.coefficients = None
-        self.training_loss = None
+        self.training_r2 = None
 
     def create_design_matrix(self, X):
         n_samples, n_regressors = X.shape
@@ -34,7 +34,7 @@ class LinearRegression:
                 self.coefficients[:,i] = np.squeeze(self.gradient_descent(X, Y[:,i]))
         if self.fit_offset:
             self.offset = self.coefficients[0]
-        self.training_loss = self.compute_loss_percentage(Y, Xin)
+        self.training_r2 = self.compute_rsquared(Y, Xin)
 
     def gradient_descent(self, X, y, start=None, learning_rate=0.1, tolerance=0.00001):
         raise NotImplementedError("haven't suffieciently tested this implementation")
@@ -85,7 +85,7 @@ class DynamicRegression:
         self.convolution_length = convolution_length
         self.dynamic_convolution_length = dynamic_convolution_length
         self.coefficients = None
-        self.training_loss = None
+        self.training_r2 = None
 
     def create_design_matrix(self, Y, X=None):
         if X is not None:
@@ -119,7 +119,7 @@ class DynamicRegression:
                 self.coefficients[:,i] = la.lstsq(X, Y[1:,i])[0]
         if self.fit_offset:
             self.offset = self.coefficients[0]
-        self.training_loss = self.compute_loss_percentage(Y, Xin)
+        self.training_r2 = self.compute_rsquared(Y, Xin)
 
     def reconstruct(self, Y, Xin=None):
         if Xin is not None:
@@ -154,7 +154,7 @@ class BilinearRegression:
         self.dynamic_convolution_length = dynamic_convolution_length
         self.bilinear_convolution_length = bilinear_convolution_length
         self.coefficients = None
-        self.training_loss = None
+        self.training_r2 = None
 
     def create_design_matrix(self, Y, X=None):
         if X is not None:
@@ -197,7 +197,7 @@ class BilinearRegression:
                 self.coefficients[:,i] = la.lstsq(X, Y[1:,i])[0]
         if self.fit_offset:
             self.offset = self.coefficients[0]
-        self.training_loss = self.compute_loss_percentage(Y, Xin)
+        self.training_r2 = self.compute_rsquared(Y, Xin)
 
     def reconstruct(self, Y, Xin=None):
         if Xin is not None:
