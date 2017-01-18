@@ -181,7 +181,7 @@ class BilinearRegression:
                     design_matrix[i:, int(self.fit_offset) + n_inputs*self.convolution_length +
                                       n_features*self.dynamic_convolution_length +
                                       (k*n_features+j)*self.bilinear_convolution_length +
-                                      i] = X[0:n_samples-i-1, k] * Y[n_samples-i-1, j]
+                                      i] = X[0:n_samples-i-1, k] * Y[i:n_samples-1, j]
         return design_matrix
 
     def fit(self, Y, Xin=None, method='least squares'):
