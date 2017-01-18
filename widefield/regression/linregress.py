@@ -51,8 +51,11 @@ class LinearRegression:
         X = self.create_design_matrix(Xin)
         return X.dot(self.coefficients)
 
-    def compute_loss_percentage(self, Y, Xin):
-        return np.mean((Y - self.reconstruct(Xin))**2, axis=0)/np.var(Y, axis=0)
+    def compute_rsquared(self, Y, Xin, by_region):
+        if by_region:
+            return 1. - np.var((Y - self.reconstruct(Xin))**2, axis=0)/np.var(Y, axis=0)
+        else:
+            return 1. - np.var((Y - self.reconstruct(Xin))**2)/np.var(Y)
 
     # def zeropad(x, n_zeros=1):
     #     if len(x.shape) == 1:
@@ -125,9 +128,21 @@ class DynamicRegression:
             X = self.create_design_matrix(Y)
         return X.dot(self.coefficients)
 
-    def compute_loss_percentage(self, Y, Xin=None):
-        return np.mean((Y[1:] - self.reconstruct(Y, Xin))**2, axis=0)/np.var(Y[1:], axis=0)
+    def compute_rsquared(self, Y, Xin=None, by_region=False):
+        true_increments = Y[1:] - Y[:-1]
+        Y_recon = self.reconstruct(Y, Xin)
+        Y_dot = Y_recon - Y[:-1]
+        if by_region:
+            return 1. - np.var(Y_dot - true_increments, axis=0)/np.var(true_increments, axis=0)
+        else:
+            return 1. - np.var(Y_dot - true_increments)/np.var(true_increments)
 
+    def compute_rsquared_data(self, Y, Xin=None, by_region=False):
+        Y_recon = self.reconstruct(Y, Xin)
+        if by_region:
+            return 1. - np.var(Y_recon - Y[1:], axis=0)/np.var(Y[1:], axis=0)
+        else:
+            return 1. - np.var(Y_recon - Y[1:])/np.var(Y[1:])
 
 class BilinearRegression:
     def __init__(self, fit_offset=True, convolution_length=1, dynamic_convolution_length=1,
@@ -166,7 +181,7 @@ class BilinearRegression:
                     design_matrix[i:, int(self.fit_offset) + n_inputs*self.convolution_length +
                                       n_features*self.dynamic_convolution_length +
                                       (k*n_features+j)*self.bilinear_convolution_length +
-                                      i] = X[0:n_samples-i-1, k] * Y[0:n_samples-i-1, j]
+                                      i] = X[0:n_samples-i-1, k] * Y[n_samples-i-1, j]
         return design_matrix
 
     def fit(self, Y, Xin=None, method='least squares'):
@@ -191,8 +206,21 @@ class BilinearRegression:
             X = self.create_design_matrix(Y)
         return X.dot(self.coefficients)
 
-    def compute_loss_percentage(self, Y, Xin=None):
-        return np.mean((Y[1:] - self.reconstruct(Y, Xin))**2, axis=0)/np.var(Y[1:], axis=0)
+    def compute_rsquared(self, Y, Xin=None, by_region=False):
+        true_increments = Y[1:] - Y[:-1]
+        Y_recon = self.reconstruct(Y, Xin)
+        Y_dot = Y_recon - Y[:-1]
+        if by_region:
+            return 1. - np.var(Y_dot - true_increments, axis=0)/np.var(true_increments, axis=0)
+        else:
+            return 1. - np.var(Y_dot - true_increments)/np.var(true_increments)
+
+    def compute_rsquared_data(self, Y, Xin=None, by_region=False):
+        Y_recon = self.reconstruct(Y, Xin)
+        if by_region:
+            return 1. - np.var(Y_recon - Y[1:], axis=0)/np.var(Y[1:], axis=0)
+        else:
+            return 1. - np.var(Y_recon - Y[1:])/np.var(Y[1:])
 
 
 def create_convolution_matrix(X, convolution_length):
