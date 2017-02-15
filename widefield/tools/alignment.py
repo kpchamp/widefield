@@ -27,7 +27,7 @@ def reshape_trial_to_sequence(movie, left_truncation=0, right_truncation=0):
     if right_truncation == 0:
         return movie[:,left_truncation:,:].reshape((n_samples, n_pixels)).T
     else:
-        return movie[:left_truncation:-right_truncation,:].reshape((n_samples, n_pixels)).T
+        return movie[:,left_truncation:-right_truncation,:].reshape((n_samples, n_pixels)).T
 
 
 def reshape_sequence_to_trial(movie, n_trials):
