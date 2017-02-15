@@ -4,7 +4,7 @@ from scipy.stats import multivariate_normal
 from cvxopt import matrix, solvers
 
 
-class lds_model:
+class LinearGaussianSSM:
     def __init__(self, *args, **kwargs):
         if 'n_dim_state' in kwargs and 'n_dim_obs' in kwargs:
             self.n_dim_state = kwargs['n_dim_state']
@@ -78,7 +78,7 @@ class lds_model:
             self.A = Psum_ttm1.dot(la.inv(Psum1))
             self.C = Y.dot(mu_smooth.T).dot(la.inv(Psum_all))
             self.R = np.diag((Y.dot(Y.T) - self.C.dot(mu_smooth).dot(Y.T))/n_samples)
-            # bishop version of updates
+            # Bishop version of updates
             # self.A = Psum_ttm1.dot(la.inv(Psum1))
             # self.C = Y.dot(Ez.T).dot(la.inv(Psum_all))
             # self.R = np.diag(Y.dot(Y.T) - self.C.dot(Ez).dot(Y.T) - Y.dot(Ez.T.dot(self.C.T)) + self.C.dot(Psum_all).dot(self.C.T))/n_samples
