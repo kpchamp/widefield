@@ -52,3 +52,12 @@ def unmask(mov_detrend,pushmask,npxls):
         mov_full = np.zeros((npxls,frames))
         mov_full[pushmask,:] = mov_detrend
     return mov_full
+
+
+def unmask_to_movie(mov_detrend,pushmask,npxls1,npxls2):
+    if mov_detrend.ndim == 1:
+        return unmask(mov_detrend,pushmask,npxls1*npxls2).reshape((npxls1,npxls2))
+    else:
+        frames = mov_detrend.shape[1]
+        return unmask(mov_detrend,pushmask,npxls1*npxls2).reshape((npxls1,npxls2,frames))
+    
