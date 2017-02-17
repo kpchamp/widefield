@@ -54,7 +54,9 @@ class LinearRegression:
         X = self.create_convolution_matrix(Xin)
         Y_recon = X.dot(self.coefficients)
         if Xin.ndim == 3:
-            return Y_recon.reshape(())
+            return Y_recon.reshape((Xin.shape[0], Xin.shape[1], Y_recon.shape[-1]))
+        else:
+            return Y_recon
 
     def compute_rsquared(self, Xin, Yin, by_output=False):
         X, Y = self.construct_data_matrices(Xin, Yin)
