@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.linalg as la
+from widefield.tools.alignment import reshape_trial_to_sequence, reshape_sequence_to_trial
 
 
 class LinearRegression:
@@ -10,31 +11,33 @@ class LinearRegression:
         self.convolution_length = convolution_length
         self.coefficients = None
         self.training_r2 = None
+        self.multiple_trials = None
 
-    def create_design_matrix(self, X):
-        n_samples, n_regressors = X.shape
-        if self.convolution_length > n_samples:
-            raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
-        design_matrix = np.zeros((n_samples, int(self.fit_offset) + n_regressors*self.convolution_length))
-        design_matrix[:,0] += 1.
-        for k in range(n_regressors):
-            for j in range(self.convolution_length):
-                design_matrix[j:, int(self.fit_offset) + k*self.convolution_length + j] = X[0:n_samples-j, k]
-        return design_matrix
+    # def create_design_matrix(self, X):
+    #     n_samples, n_regressors = X.shape
+    #     if self.convolution_length > n_samples:
+    #         raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
+    #     design_matrix = np.zeros((n_samples, int(self.fit_offset) + n_regressors*self.convolution_length))
+    #     design_matrix[:,0] += 1.
+    #     for k in range(n_regressors):
+    #         for j in range(self.convolution_length):
+    #             design_matrix[j:, int(self.fit_offset) + k*self.convolution_length + j] = X[0:n_samples-j, k]
+    #     return design_matrix
 
-    def fit(self, Y, Xin, method='least squares'):
-        n_samples, n_features = Y.shape
-        X = self.create_design_matrix(Xin)
-        n_regressors = X.shape[1]
-        self.coefficients = np.zeros((n_regressors, n_features))
-        for i in range(n_features):
+    def fit(self, Xin, Yin, method='least squares'):
+        self.multiple_trials = (Yin.ndim == 3)
+        X, Y = self.construct_data_matrices(Xin, Yin)
+        n_samples, n_outputs = Y.shape
+        n_inputs = X.shape[1]
+        self.coefficients = np.zeros((n_inputs, n_outputs))
+        for i in range(n_outputs):
             if method == 'least squares':
                 self.coefficients[:,i] = la.lstsq(X, Y[:,i])[0]
             elif method == 'gradient descent':
                 self.coefficients[:,i] = np.squeeze(self.gradient_descent(X, Y[:,i]))
         if self.fit_offset:
             self.offset = self.coefficients[0]
-        self.training_r2 = self.compute_rsquared(Y, Xin)
+        self.training_r2 = self.compute_rsquared(Xin, Yin)
 
     def gradient_descent(self, X, y, start=None, learning_rate=0.1, tolerance=0.00001):
         raise NotImplementedError("haven't suffieciently tested this implementation")
@@ -48,33 +51,56 @@ class LinearRegression:
         return coefficients
 
     def reconstruct(self, Xin):
-        X = self.create_design_matrix(Xin)
-        return X.dot(self.coefficients)
+        X = self.create_convolution_matrix(Xin)
+        Y_recon = X.dot(self.coefficients)
+        if Xin.ndim == 3:
+            return Y_recon.reshape(())
 
-    def compute_rsquared(self, Y, Xin, by_region):
-        if by_region:
-            return 1. - np.var((Y - self.reconstruct(Xin))**2, axis=0)/np.var(Y, axis=0)
+    def compute_rsquared(self, Xin, Yin, by_output=False):
+        X, Y = self.construct_data_matrices(Xin, Yin)
+        if by_output:
+            return 1. - np.var((Y - X.dot(self.coefficients))**2, axis=0)/np.var(Y, axis=0)
         else:
-            return 1. - np.var((Y - self.reconstruct(Xin))**2)/np.var(Y)
+            return 1. - np.var((Y - X.dot(self.coefficients))**2)/np.var(Y)
 
-    # def zeropad(x, n_zeros=1):
-    #     if len(x.shape) == 1:
-    #         xout = np.zeros(x.shape[0] + 2*n_zeros)
-    #         xout[n_zeros:-n_zeros] = x
-    #     else:
-    #         xout = np.zeros((x.shape[0] + 2*n_zeros,x.shape[1]))
-    #         xout[n_zeros:-n_zeros,:] = x
-    #     return xout
-    #
-    # # Note: This function fits a linear regression in the case where you only have one regressor
-    # # and want to find the function G that is convolved with your regressor.
-    # def fit_lr_analytic(self, Y, x):
-    #     Ypad = self.zeropad(Y, n_zeros=100)
-    #     Xpad = self.zeropad(x, n_zeros=100)
-    #     Yft = np.fft.rfft(Ypad, axis=0)
-    #     Xft = np.fft.rfft(Xpad)
-    #     G = np.fft.irfft((Yft.T/Xft).T, axis=0)
-    #     return G
+    def construct_data_matrices(self, Xin, Yin=None):
+        if self.multiple_trials:
+            if Xin.ndim != 3:
+                raise ValueError("input matrix must be 3 dimensions")
+            n_trials, n_samples, n_inputs = Xin.shape
+            if self.convolution_length > n_samples:
+                raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
+            X = np.zeros((n_trials*n_samples, int(self.fit_offset) + n_inputs*self.convolution_length))
+            for i in range(n_trials):
+                X[i*n_samples:(i+1):n_samples] = self.create_convolution_matrix(Xin[i])
+            if Yin is not None:
+                if Yin.ndim != 3:
+                    raise ValueError("output matrix must be 3 dimensions")
+                Y = reshape_trial_to_sequence(Yin).T
+                return X, Y
+            return X
+        else:
+            if Xin.ndim != 2:
+                raise ValueError("input matrix must be 2 dimensions")
+            n_samples, n_inputs = Xin.shape
+            if self.convolution_length > n_samples:
+                raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
+            X = self.create_convolution_matrix(Xin)
+            if Yin is not None:
+                if Yin.ndim != 2:
+                    raise ValueError("output matrix must be 2 dimensions")
+                Y = Yin
+                return X, Y
+            return X
+
+    def create_convolution_matrix(self, X):
+        n_samples, n_inputs = X.shape
+        design_matrix = np.zeros((n_samples, int(self.fit_offset) + n_inputs*self.convolution_length))
+        design_matrix[:,0] += 1.
+        for k in range(n_inputs):
+            for j in range(self.convolution_length):
+                design_matrix[j:, int(self.fit_offset) + k*self.convolution_length + j] = X[0:n_samples-j, k]
+        return design_matrix
 
 
 class DynamicRegression:
