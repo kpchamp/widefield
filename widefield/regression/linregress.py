@@ -61,9 +61,9 @@ class LinearRegression:
     def compute_rsquared(self, Xin, Yin, by_output=False):
         X, Y = self.construct_data_matrices(Xin, Yin)
         if by_output:
-            return 1. - np.var((Y - X.dot(self.coefficients))**2, axis=0)/np.var(Y, axis=0)
+            return 1. - np.var(Y - X.dot(self.coefficients), axis=0)/np.var(Y, axis=0)
         else:
-            return 1. - np.var((Y - X.dot(self.coefficients))**2)/np.var(Y)
+            return 1. - np.var(Y - X.dot(self.coefficients))/np.var(Y)
 
     def construct_data_matrices(self, Xin, Yin=None):
         if self.multiple_trials:
@@ -134,7 +134,12 @@ class DynamicRegression:
                 design_matrix[j:, int(self.fit_offset) + n_inputs*self.convolution_length + k*self.dynamic_convolution_length + j] = Y[0:n_samples - j - 1, k]
         return design_matrix
 
-    def fit(self, Y, Xin=None, method='least squares'):
+    def fit(self, Yin, Xin=None, method='least squares'):
+        self.multiple_trials = (Yin.ndim == 3)
+        X, Y = self.construct_data_matrices(Xin, Yin)
+        n_samples, n_outputs = Y.shape
+        n_inputs = X.shape[1]
+        self.coefficients = np.zeros((n_inputs, n_outputs))
         n_samples, n_features = Y.shape
         if Xin is not None:
             X = self.create_design_matrix(Y, X=Xin)
@@ -171,6 +176,36 @@ class DynamicRegression:
             return 1. - np.var(Y_recon - Y[1:], axis=0)/np.var(Y[1:], axis=0)
         else:
             return 1. - np.var(Y_recon - Y[1:])/np.var(Y[1:])
+
+    def construct_data_matrices(self, Yin, Xin=None):
+        if self.multiple_trials:
+            if Xin.ndim != 3:
+                raise ValueError("input matrix must be 3 dimensions")
+            n_trials, n_samples, n_inputs = Xin.shape
+            if self.convolution_length > n_samples:
+                raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
+            X = np.zeros((n_trials*n_samples, int(self.fit_offset) + n_inputs*self.convolution_length))
+            for i in range(n_trials):
+                X[i*n_samples:(i+1):n_samples] = self.create_convolution_matrix(Xin[i])
+            if Xin is not None:
+                if Yin.ndim != 3:
+                    raise ValueError("output matrix must be 3 dimensions")
+                Y = reshape_trial_to_sequence(Yin).T
+                return Y, X
+            return X
+        else:
+            if Xin.ndim != 2:
+                raise ValueError("input matrix must be 2 dimensions")
+            n_samples, n_inputs = Xin.shape
+            if self.convolution_length > n_samples:
+                raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
+            X = self.create_convolution_matrix(Xin)
+            if Yin is not None:
+                if Yin.ndim != 2:
+                    raise ValueError("output matrix must be 2 dimensions")
+                Y = Yin
+                return X, Y
+            return X
 
 class BilinearRegression:
     def __init__(self, fit_offset=True, convolution_length=1, dynamic_convolution_length=1,
