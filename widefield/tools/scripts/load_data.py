@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from widefield.dynamics.dmd import DynamicModeDecomposition
 from widefield.preprocess.movie_mask import unmask, unmask_to_movie
 from widefield.tools.alignment import *
+import pandas as pd
 
 basepath = "/suppscr/riekesheabrown/kpchamp/data/"
 # mouse_id = "m187474"
@@ -33,5 +34,5 @@ if os.path.isfile(os.path.join(basepath, mouse_id, collection_date, "data_region
     region_data = pickle.load(open(os.path.join(basepath, mouse_id, collection_date, "data_regions.pkl"),'r'))
 
 # load regression input variables
-if os.path.isfile(os.path.join(basepath, mouse_id, collection_date, "data_inputs.npy")):
-    U = np.load(os.path.join(basepath, mouse_id, collection_date, "data_inputs.npy"))
+if os.path.isfile(os.path.join(basepath, mouse_id, collection_date, "SummaryTimeSeries.pkl")):
+    summary_data = pd.read_pickle(os.path.join(basepath, mouse_id, collection_date, "SummaryTimeSeries.pkl"))

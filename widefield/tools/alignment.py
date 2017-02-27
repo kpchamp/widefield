@@ -5,17 +5,23 @@
 import numpy as np
 
 
-def align_by_stimulus(movie, stimulus_vector, time_before, time_after):
+def align_by_stimulus(movie, stimulus_vector, time_before, time_after, reward_vector):
     n_frames, n_pixels = movie.shape
-    stimulus_times = np.where(stimulus_vector != 0)[0]
-    n_trials = stimulus_times.size
+    f = {}
+    f['stimulus_times'] = np.where(stimulus_vector != 0)[0]
+    f['stimulus_contrast'] = stimulus_vector[f['stimulus_times']]
+    n_trials = f['stimulus_times'].size
     trial_length = time_after + time_before
-    start_times = np.maximum(0, stimulus_times - time_before)
-    end_times = np.minimum(n_frames, stimulus_times + time_after)
-    new_movie = np.empty((n_trials, trial_length, n_pixels))
+    f['start_times'] = np.maximum(0, f['stimulus_times'] - time_before)
+    f['end_times'] = np.minimum(n_frames, f['stimulus_times'] + time_after)
+    f['data'] = np.empty((n_trials, trial_length, n_pixels))
     for i in range(n_trials):
-        new_movie[i] = movie[start_times[i]:end_times[i],:]
-    return new_movie
+        f['data'][i] = movie[f['start_times'][i]:f['end_times'][i],:]
+    f['reward_times'] = np.where(reward_vector != 0)[0]
+    f['was_reward'] = np.zeros(n_trials)
+    for i in range(f['reward_times'].size):
+        f['was_reward'] = np.logical_or(f['was_reward'], np.logical_and(f['reward_times'][i] > f['stimulus_times'], f['reward_times'][i] < f['end_times']))
+    return f
 
 # Takes a movie that is organized by trials and returns a movie organized sequentially
 # (3-dim to 2-dim). Left and right truncation values can be used if you don't want to
