@@ -70,12 +70,13 @@ class NMF:
 
 class SparseNMF:
     # Reference: "Sparse NMF, half-baked or well done?"
-    def __init__(self, n_components=None, cf='KL', beta=1.0, sparsity_penalty=0.0, max_iter=200):
+    def __init__(self, n_components=None, cf='KL', beta=1.0, sparsity_penalty=0.0, max_iter=200, tol=1e-4):
         self.n_components = n_components
         self.sparsity_penalty = sparsity_penalty
         self.max_iter = max_iter
         self.beta = beta
         self.flr = 1e-9
+        self.tol = 1e-4
 
     def fit(self, X, h_ind=None, w_ind=None, display=False):
         n_samples, n_features = X.shape
@@ -177,6 +178,9 @@ class SparseNMF:
                 e = np.abs(cost - last_cost) / last_cost
             if cost >= last_cost:
                 print "cost increased on iteration %d" % i
+                break
+            elif last_cost - cost < self.tol:
+                break
 
             last_cost = cost
 
