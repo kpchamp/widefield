@@ -62,7 +62,8 @@ class NMF:
 
             objective_new = np.sum((Xin - np.dot(W,H.T))**2) + l1_H*np.sum(np.sum(np.abs(H),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(H**2) + l2_W*np.sum(W**2)
             if objective_new > objective:
-                print "warning: objective value increased"
+                print "warning: objective value increased on iteration %d" % i
+                break
             objective = objective_new
 
         self.components = H
