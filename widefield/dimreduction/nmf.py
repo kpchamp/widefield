@@ -24,9 +24,9 @@ class NMF:
         W = avg * np.random.randn(n_samples, self.n_components)
         np.abs(H, H)
         np.abs(W, W)
-        Hn = np.sqrt(np.sum(H**2, axis=0))
-        H /= Hn
-        W *= Hn
+        # Hn = np.sqrt(np.sum(H**2, axis=0))
+        # H /= Hn
+        # W *= Hn
 
         l1_H, l2_H, l1_W, l2_W = 0, 0, 0, 0
         if self.sparsity in ('both', 'components'):
@@ -57,8 +57,9 @@ class NMF:
             for i in range(n_features):
                 Hnew[i] = nnls(np.concatenate((W, np.sqrt(l1_H)*np.ones((1,self.n_components)), np.sqrt(l2_H)*np.eye(self.n_components)),axis=0),
                      np.hstack((Xin[:,i], np.zeros(self.n_components+1))))[0]
+            H = Hnew
             # normalize H
-            H = Hnew/np.sqrt(np.sum(Hnew**2, axis=0))
+            # H = Hnew/np.sqrt(np.sum(Hnew**2, axis=0))
 
             objective_new = np.sum((Xin - np.dot(W,H.T))**2) + l1_H*np.sum(np.sum(np.abs(H),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(H**2) + l2_W*np.sum(W**2)
             if objective_new > objective:
