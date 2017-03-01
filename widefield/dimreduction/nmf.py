@@ -24,7 +24,9 @@ class NMF:
         W = avg * np.random.randn(n_samples, self.n_components)
         np.abs(H, H)
         np.abs(W, W)
-        H /= np.sqrt(np.sum(H**2, axis=0))
+        Hn = np.sqrt(np.sum(H**2, axis=0))
+        H /= Hn
+        W *= Hn
 
         l1_H, l2_H, l1_W, l2_W = 0, 0, 0, 0
         if self.sparsity in ('both', 'components'):
@@ -45,7 +47,7 @@ class NMF:
                      np.hstack((Xin[i], np.zeros(self.n_components+1))))[0]
             W = Wnew
 
-            objective_new = np.sum((Xin - np.dot(W,H.T))**2) + l1_H*np.sum(np.abs(H)**2) + l1_W*np.sum(np.abs(W)**2) + l2_H*np.sum(H**2) + l2_W*np.sum(W**2)
+            objective_new = np.sum((Xin - np.dot(W,H.T))**2) + l1_H*np.sum(np.sum(np.abs(H),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(H**2) + l2_W*np.sum(W**2)
             if objective_new > objective:
                 print "warning: objective value increased"
             objective = objective_new
@@ -55,11 +57,10 @@ class NMF:
             for i in range(n_features):
                 Hnew[i] = nnls(np.concatenate((W, np.sqrt(l1_H)*np.ones((1,self.n_components)), np.sqrt(l2_H)*np.eye(self.n_components)),axis=0),
                      np.hstack((Xin[:,i], np.zeros(self.n_components+1))))[0]
-            H = Hnew
             # normalize H
-            H /= np.sqrt(np.sum(H**2, axis=0))
+            H = Hnew/np.sqrt(np.sum(Hnew**2, axis=0))
 
-            objective_new = np.sum((Xin - np.dot(W,H.T))**2) + l1_H*np.sum(np.abs(H)**2) + l1_W*np.sum(np.abs(W)**2) + l2_H*np.sum(H**2) + l2_W*np.sum(W**2)
+            objective_new = np.sum((Xin - np.dot(W,H.T))**2) + l1_H*np.sum(np.sum(np.abs(H),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(H**2) + l2_W*np.sum(W**2)
             if objective_new > objective:
                 print "warning: objective value increased"
             objective = objective_new
@@ -132,6 +133,8 @@ class SparseNMF:
                     dmh = np.dot(W[:, h_ind].T, (X * lam**(self.beta - 2.0)))
                     H[h_ind, :] = H[h_ind, :] * dmh / dph
 
+                # # Normalize the rows of H
+                # H = (H.T/np.sqrt(np.sum(H**2,axis=1))).T
                 lam = np.maximum(np.dot(W,H), self.flr)
 
             # W updates
