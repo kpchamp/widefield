@@ -1,19 +1,111 @@
 import numpy as np
 from scipy.optimize import nnls
-from sklearn.decomposition import NMF
+# from sklearn.decomposition import NMF
+from sklearn.decomposition.cdnmf_fast import _update_cdnmf_fast
+
 
 class NMF:
-    def __init__(self, n_components=None, sparsity=None, sparsity_penalty=1., regularization=None, regularization_penalty=1., max_iter=200):
+    def __init__(self, n_components=None, sparsity=None, sparsity_penalty=1., regularization=None, regularization_penalty=1.):
         self.n_components = n_components
         self.sparsity = sparsity
         self.sparsity_penalty = sparsity_penalty
         self.regularization = regularization
         self.regularization_penalty = regularization_penalty
-        self.max_iter = max_iter
         #raise NotImplementedError("NMF not implemented yet")
 
-    def fit(self, Xin):
+    def fit(self, X, shuffle=False, max_iter=200, tol=1e-4):
         # Fit X = W*H, implementing coordinate descent as in scikit-learn implementation
+        n_samples, n_features = X.shape
+        if self.n_components is None:
+            self.n_components = min(n_samples, n_features)
+
+        avg = np.sqrt(X.mean() / self.n_components)
+        Ht = avg * np.random.randn(n_features, self.n_components)
+        W = avg * np.random.randn(n_samples, self.n_components)
+        np.abs(Ht, Ht)
+        np.abs(W, W)
+
+        l1_H, l2_H, l1_W, l2_W = 0, 0, 0, 0
+        if self.sparsity in ('both', 'components'):
+            l1_H = self.sparsity_penalty
+        if self.sparsity in ('both', 'transformation'):
+            l1_W = self.sparsity_penalty
+        if self.regularization in ('both', 'components'):
+            l2_H = self.regularization_penalty
+        if self.regularization in ('both', 'transformation'):
+            l2_W = self.regularization_penalty
+
+        objective = np.inf
+        for i in range(max_iter):
+            violation = 0.
+
+            # -------------- Update W --------------
+            HHt = np.dot(Ht.T, Ht)
+            XHt = np.dot(X, Ht)
+
+            # L2 regularization corresponds to increase of the diagonal of HHt
+            if l2_W != 0.:
+                # adds l2_reg only on the diagonal
+                HHt.flat[::self.n_components + 1] += l2_W
+            # L1 regularization corresponds to decrease of each element of XHt
+            if l1_W != 0.:
+                XHt -= l1_W
+
+            if shuffle:
+                permutation = np.random.permutation(self.n_components)
+            else:
+                permutation = np.arange(self.n_components)
+            permutation = np.asarray(permutation, dtype=np.intp)
+            violation += _update_cdnmf_fast(W, HHt, XHt, permutation)
+
+            objective_new = np.sum((X - np.dot(W,Ht.T))**2) + l1_H*np.sum(np.sum(np.abs(Ht),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(Ht**2) + l2_W*np.sum(W**2)
+            if objective_new > objective:
+                print "warning: objective value increased"
+            objective = objective_new
+
+            # -------------- Update H --------------
+            WWt = np.dot(W.T, W)
+            XWt = np.dot(X.T, W)
+
+            # L2 regularization corresponds to increase of the diagonal of HHt
+            if l2_H != 0.:
+                # adds l2_reg only on the diagonal
+                WWt.flat[::self.n_components + 1] += l2_H
+            # L1 regularization corresponds to decrease of each element of XHt
+            if l1_H != 0.:
+                XWt -= l1_H
+
+            if shuffle:
+                permutation = np.random.permutation(self.n_components)
+            else:
+                permutation = np.arange(self.n_components)
+            permutation = np.asarray(permutation, dtype=np.intp)
+            violation += _update_cdnmf_fast(Ht, WWt, XWt, permutation)
+
+            objective_new = np.sum((X - np.dot(W,Ht.T))**2) + l1_H*np.sum(np.sum(np.abs(Ht),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(Ht**2) + l2_W*np.sum(W**2)
+            if objective_new > objective:
+                print "warning: objective value increased"
+            objective = objective_new
+
+            if i == 0:
+                violation_init = violation
+            elif violation > violation_last:
+                print("increase in violation")
+            violation_last = violation
+
+            if violation_init == 0:
+                break
+
+            if violation / violation_init <= tol:
+                print("Converged at iteration", i + 1)
+                break
+
+
+        self.components = Ht
+        return W
+
+    def fit_nnls(self, Xin):
+        # Fit X = W*H, using NNLS as in ``Spare Non-Negative Matrix Factorization for Clustering", Kim and Park
         n_samples, n_features = Xin.shape
         if self.n_components is None:
             self.n_components = min(n_samples, n_features)
