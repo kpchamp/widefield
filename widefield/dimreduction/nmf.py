@@ -13,7 +13,7 @@ class NMF:
         self.regularization_penalty = regularization_penalty
         #raise NotImplementedError("NMF not implemented yet")
 
-    def fit(self, X, shuffle=False, max_iter=200, tol=1e-4):
+    def fit(self, X, shuffle=False, max_iter=200, tol=1e-4, verbose=False):
         # Fit X = W*H, implementing coordinate descent as in scikit-learn implementation
         n_samples, n_features = X.shape
         if self.n_components is None:
@@ -106,6 +106,9 @@ class NMF:
 
             if violation_init == 0:
                 break
+
+            if verbose:
+                print("violation:", violation / violation_init)
 
             if violation / violation_init <= tol:
                 print("Converged at iteration", i + 1)
