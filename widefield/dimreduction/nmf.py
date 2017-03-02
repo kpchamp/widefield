@@ -13,7 +13,7 @@ class NMF:
         self.regularization_penalty = regularization_penalty
         #raise NotImplementedError("NMF not implemented yet")
 
-    def fit(self, X, shuffle=False, max_iter=200, tol=1e-4, verbose=False, W=None, H=None):
+    def fit(self, X, shuffle=False, max_iter=200, tol=1e-4, verbose=False, W=None, Ht=None):
         # Fit X = W*H, implementing coordinate descent as in scikit-learn implementation
         n_samples, n_features = X.shape
         if self.n_components is None:
@@ -21,7 +21,7 @@ class NMF:
 
         # Determine whether or not to initialize matrices randomly
         avg = np.sqrt(X.mean() / self.n_components)
-        if H is None:
+        if Ht is None:
             Ht = avg * np.random.randn(n_features, self.n_components)
             np.abs(Ht, Ht)
         if W is None:
