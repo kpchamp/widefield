@@ -39,53 +39,64 @@ class NMF:
         for i in range(max_iter):
             violation = 0.
 
-            # -------------- Update W --------------
-            HHt = np.dot(Ht.T, Ht)
-            XHt = np.dot(X, Ht)
+            # Update W
+            violation += self.nmf_iteration_update(X, W, Ht, l1_W, l2_W, shuffle)
 
-            # L2 regularization corresponds to increase of the diagonal of HHt
-            if l2_W != 0.:
-                # adds l2_reg only on the diagonal
-                HHt.flat[::self.n_components + 1] += l2_W
-            # L1 regularization corresponds to decrease of each element of XHt
-            if l1_W != 0.:
-                XHt -= l1_W
+            # objective_new = np.sum((X - np.dot(W,Ht.T))**2) + l1_H*np.sum(np.sum(np.abs(Ht),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(Ht**2) + l2_W*np.sum(W**2)
+            # if objective_new > objective:
+            #     print "warning: objective value increased"
+            # objective = objective_new
 
-            if shuffle:
-                permutation = np.random.permutation(self.n_components)
-            else:
-                permutation = np.arange(self.n_components)
-            permutation = np.asarray(permutation, dtype=np.intp)
-            violation += _update_cdnmf_fast(W, HHt, XHt, permutation)
+            # Update H
+            violation += self.nmf_iteration_update(X.T, Ht, W, l1_H, l2_H, shuffle)
 
-            objective_new = np.sum((X - np.dot(W,Ht.T))**2) + l1_H*np.sum(np.sum(np.abs(Ht),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(Ht**2) + l2_W*np.sum(W**2)
-            if objective_new > objective:
-                print "warning: objective value increased"
-            objective = objective_new
+            # # -------------- Update W --------------
+            # HHt = np.dot(Ht.T, Ht)
+            # XHt = np.dot(X, Ht)
+            #
+            # # L2 regularization corresponds to increase of the diagonal of HHt
+            # if l2_W != 0.:
+            #     # adds l2_reg only on the diagonal
+            #     HHt.flat[::self.n_components + 1] += l2_W
+            # # L1 regularization corresponds to decrease of each element of XHt
+            # if l1_W != 0.:
+            #     XHt -= l1_W
+            #
+            # if shuffle:
+            #     permutation = np.random.permutation(self.n_components)
+            # else:
+            #     permutation = np.arange(self.n_components)
+            # permutation = np.asarray(permutation, dtype=np.intp)
+            # violation += _update_cdnmf_fast(W, HHt, XHt, permutation)
+            #
+            # objective_new = np.sum((X - np.dot(W,Ht.T))**2) + l1_H*np.sum(np.sum(np.abs(Ht),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(Ht**2) + l2_W*np.sum(W**2)
+            # if objective_new > objective:
+            #     print "warning: objective value increased"
+            # objective = objective_new
+            #
+            # # -------------- Update H --------------
+            # WWt = np.dot(W.T, W)
+            # XWt = np.dot(X.T, W)
+            #
+            # # L2 regularization corresponds to increase of the diagonal of HHt
+            # if l2_H != 0.:
+            #     # adds l2_reg only on the diagonal
+            #     WWt.flat[::self.n_components + 1] += l2_H
+            # # L1 regularization corresponds to decrease of each element of XHt
+            # if l1_H != 0.:
+            #     XWt -= l1_H
+            #
+            # if shuffle:
+            #     permutation = np.random.permutation(self.n_components)
+            # else:
+            #     permutation = np.arange(self.n_components)
+            # permutation = np.asarray(permutation, dtype=np.intp)
+            # violation += _update_cdnmf_fast(Ht, WWt, XWt, permutation)
 
-            # -------------- Update H --------------
-            WWt = np.dot(W.T, W)
-            XWt = np.dot(X.T, W)
-
-            # L2 regularization corresponds to increase of the diagonal of HHt
-            if l2_H != 0.:
-                # adds l2_reg only on the diagonal
-                WWt.flat[::self.n_components + 1] += l2_H
-            # L1 regularization corresponds to decrease of each element of XHt
-            if l1_H != 0.:
-                XWt -= l1_H
-
-            if shuffle:
-                permutation = np.random.permutation(self.n_components)
-            else:
-                permutation = np.arange(self.n_components)
-            permutation = np.asarray(permutation, dtype=np.intp)
-            violation += _update_cdnmf_fast(Ht, WWt, XWt, permutation)
-
-            objective_new = np.sum((X - np.dot(W,Ht.T))**2) + l1_H*np.sum(np.sum(np.abs(Ht),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(Ht**2) + l2_W*np.sum(W**2)
-            if objective_new > objective:
-                print "warning: objective value increased"
-            objective = objective_new
+            # objective_new = np.sum((X - np.dot(W,Ht.T))**2) + l1_H*np.sum(np.sum(np.abs(Ht),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(Ht**2) + l2_W*np.sum(W**2)
+            # if objective_new > objective:
+            #     print "warning: objective value increased"
+            # objective = objective_new
 
             if i == 0:
                 violation_init = violation
@@ -100,9 +111,30 @@ class NMF:
                 print("Converged at iteration", i + 1)
                 break
 
-
         self.components = Ht
         return W
+
+    def nmf_iteration_update(self, X, W, Ht, l1_reg, l2_reg, shuffle):
+        n_components = Ht.shape[1]
+
+        HHt = np.dot(Ht.T, Ht)
+        XHt = np.dot(X, Ht)
+
+        # L2 regularization corresponds to increase of the diagonal of HHt
+        if l2_reg != 0.:
+            # adds l2_reg only on the diagonal
+            HHt.flat[::n_components + 1] += l2_reg
+        # L1 regularization corresponds to decrease of each element of XHt
+        if l1_reg != 0.:
+            XHt -= l1_reg
+
+        if shuffle:
+            permutation = np.random.permutation(n_components)
+        else:
+            permutation = np.arange(n_components)
+        # The following seems to be required on 64-bit Windows w/ Python 3.5.
+        permutation = np.asarray(permutation, dtype=np.intp)
+        return _update_cdnmf_fast(W, HHt, XHt, permutation)
 
     def fit_nnls(self, Xin):
         # Fit X = W*H, using NNLS as in ``Spare Non-Negative Matrix Factorization for Clustering", Kim and Park
