@@ -13,17 +13,20 @@ class NMF:
         self.regularization_penalty = regularization_penalty
         #raise NotImplementedError("NMF not implemented yet")
 
-    def fit(self, X, shuffle=False, max_iter=200, tol=1e-4, verbose=False):
+    def fit(self, X, shuffle=False, max_iter=200, tol=1e-4, verbose=False, W=None, H=None):
         # Fit X = W*H, implementing coordinate descent as in scikit-learn implementation
         n_samples, n_features = X.shape
         if self.n_components is None:
             self.n_components = min(n_samples, n_features)
 
+        # Determine whether or not to initialize matrices randomly
         avg = np.sqrt(X.mean() / self.n_components)
-        Ht = avg * np.random.randn(n_features, self.n_components)
-        W = avg * np.random.randn(n_samples, self.n_components)
-        np.abs(Ht, Ht)
-        np.abs(W, W)
+        if H is None:
+            Ht = avg * np.random.randn(n_features, self.n_components)
+            np.abs(Ht, Ht)
+        if W is None:
+            W = avg * np.random.randn(n_samples, self.n_components)
+            np.abs(W, W)
 
         l1_H, l2_H, l1_W, l2_W = 0, 0, 0, 0
         if self.sparsity in ('both', 'components'):
