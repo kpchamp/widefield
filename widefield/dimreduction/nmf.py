@@ -13,7 +13,7 @@ class NMF:
         self.regularization_penalty = regularization_penalty
         #raise NotImplementedError("NMF not implemented yet")
 
-    def fit(self, X, shuffle=False, max_iter=200, tol=1e-4, verbose=False, W=None, Ht=None):
+    def fit(self, X, shuffle=False, max_iter=200, tol=1e-4, verbose=False, W=None, H=None):
         # Fit X = W*H, implementing coordinate descent as in scikit-learn implementation
         n_samples, n_features = X.shape
         if self.n_components is None:
@@ -21,12 +21,16 @@ class NMF:
 
         # Determine whether or not to initialize matrices randomly
         avg = np.sqrt(X.mean() / self.n_components)
-        if Ht is None:
-            Ht = avg * np.random.randn(n_features, self.n_components)
-            np.abs(Ht, Ht)
+        if H is None:
+            H = avg * np.random.randn(n_features, self.n_components)
+            np.abs(H, H)
+        else:
+            H = np.copy(H)
         if W is None:
             W = avg * np.random.randn(n_samples, self.n_components)
             np.abs(W, W)
+        else:
+            W = np.copy(W)
 
         l1_H, l2_H, l1_W, l2_W = 0, 0, 0, 0
         if self.sparsity in ('both', 'components'):
@@ -38,12 +42,11 @@ class NMF:
         if self.regularization in ('both', 'transformation'):
             l2_W = self.regularization_penalty
 
-        objective = np.inf
         for i in range(max_iter):
             violation = 0.
 
             # Update W
-            violation += self.nmf_iteration_update(X, W, Ht, l1_W, l2_W, shuffle)
+            violation += self.nmf_iteration_update(X, W, H, l1_W, l2_W, shuffle)
 
             # objective_new = np.sum((X - np.dot(W,Ht.T))**2) + l1_H*np.sum(np.sum(np.abs(Ht),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(Ht**2) + l2_W*np.sum(W**2)
             # if objective_new > objective:
@@ -51,61 +54,10 @@ class NMF:
             # objective = objective_new
 
             # Update H
-            violation += self.nmf_iteration_update(X.T, Ht, W, l1_H, l2_H, shuffle)
-
-            # # -------------- Update W --------------
-            # HHt = np.dot(Ht.T, Ht)
-            # XHt = np.dot(X, Ht)
-            #
-            # # L2 regularization corresponds to increase of the diagonal of HHt
-            # if l2_W != 0.:
-            #     # adds l2_reg only on the diagonal
-            #     HHt.flat[::self.n_components + 1] += l2_W
-            # # L1 regularization corresponds to decrease of each element of XHt
-            # if l1_W != 0.:
-            #     XHt -= l1_W
-            #
-            # if shuffle:
-            #     permutation = np.random.permutation(self.n_components)
-            # else:
-            #     permutation = np.arange(self.n_components)
-            # permutation = np.asarray(permutation, dtype=np.intp)
-            # violation += _update_cdnmf_fast(W, HHt, XHt, permutation)
-            #
-            # objective_new = np.sum((X - np.dot(W,Ht.T))**2) + l1_H*np.sum(np.sum(np.abs(Ht),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(Ht**2) + l2_W*np.sum(W**2)
-            # if objective_new > objective:
-            #     print "warning: objective value increased"
-            # objective = objective_new
-            #
-            # # -------------- Update H --------------
-            # WWt = np.dot(W.T, W)
-            # XWt = np.dot(X.T, W)
-            #
-            # # L2 regularization corresponds to increase of the diagonal of HHt
-            # if l2_H != 0.:
-            #     # adds l2_reg only on the diagonal
-            #     WWt.flat[::self.n_components + 1] += l2_H
-            # # L1 regularization corresponds to decrease of each element of XHt
-            # if l1_H != 0.:
-            #     XWt -= l1_H
-            #
-            # if shuffle:
-            #     permutation = np.random.permutation(self.n_components)
-            # else:
-            #     permutation = np.arange(self.n_components)
-            # permutation = np.asarray(permutation, dtype=np.intp)
-            # violation += _update_cdnmf_fast(Ht, WWt, XWt, permutation)
-
-            # objective_new = np.sum((X - np.dot(W,Ht.T))**2) + l1_H*np.sum(np.sum(np.abs(Ht),axis=1)**2) + l1_W*np.sum(np.sum(np.abs(W),axis=1)**2) + l2_H*np.sum(Ht**2) + l2_W*np.sum(W**2)
-            # if objective_new > objective:
-            #     print "warning: objective value increased"
-            # objective = objective_new
+            violation += self.nmf_iteration_update(X.T, H, W, l1_H, l2_H, shuffle)
 
             if i == 0:
                 violation_init = violation
-            elif violation > violation_last:
-                print("increase in violation")
-            violation_last = violation
 
             if violation_init == 0:
                 break
@@ -117,14 +69,14 @@ class NMF:
                 print("Converged at iteration", i + 1)
                 break
 
-        self.components = Ht
+        self.components = H
         return W
 
-    def nmf_iteration_update(self, X, W, Ht, l1_reg, l2_reg, shuffle):
-        n_components = Ht.shape[1]
+    def nmf_iteration_update(self, X, W, H, l1_reg, l2_reg, shuffle):
+        n_components = H.shape[1]
 
-        HHt = np.dot(Ht.T, Ht)
-        XHt = np.dot(X, Ht)
+        HHt = np.dot(H.T, H)
+        XHt = np.dot(X, H)
 
         # L2 regularization corresponds to increase of the diagonal of HHt
         if l2_reg != 0.:
@@ -141,6 +93,52 @@ class NMF:
         # The following seems to be required on 64-bit Windows w/ Python 3.5.
         permutation = np.asarray(permutation, dtype=np.intp)
         return _update_cdnmf_fast(W, HHt, XHt, permutation)
+
+    def infer_latent(self, X, W=None, max_iter=100, shuffle=False, tol=1e-4, verbose=False):
+        # Fit X = W*H, using H as already found from fitting above
+        n_samples, n_features = X.shape
+        if self.n_components is None:
+            self.n_components = min(n_samples, n_features)
+
+        # Determine whether or not to initialize W randomly
+        avg = np.sqrt(X.mean() / self.n_components)
+        if W is None:
+            W = avg * np.random.randn(n_samples, self.n_components)
+            np.abs(W, W)
+        else:
+            W = np.copy(W)
+
+        l1_W, l2_W = 0, 0
+        if self.sparsity in ('both', 'transformation'):
+            l1_W = self.sparsity_penalty
+        if self.regularization in ('both', 'transformation'):
+            l2_W = self.regularization_penalty
+
+        for i in range(max_iter):
+            violation = 0.
+
+            # Update W
+            violation += self.nmf_iteration_update(X, W, self.components, l1_W, l2_W, shuffle)
+
+            if i == 0:
+                violation_init = violation
+
+            if violation_init == 0:
+                break
+
+            if verbose:
+                print("violation:", violation / violation_init)
+
+            if violation / violation_init <= tol:
+                print("Converged at iteration", i + 1)
+                break
+
+        return W
+
+    def reconstruct(self, X, W=None):
+        if W is None:
+            W = self.infer_latent(X)
+        return np.dot(W, self.components)
 
     def fit_nnls(self, Xin):
         # Fit X = W*H, using NNLS as in ``Spare Non-Negative Matrix Factorization for Clustering", Kim and Park
