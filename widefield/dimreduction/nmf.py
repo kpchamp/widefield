@@ -138,7 +138,7 @@ class NMF:
     def reconstruct(self, X, W=None):
         if W is None:
             W = self.infer_latent(X)
-        return np.dot(W, self.components)
+        return np.dot(W, self.components.T)
 
     def fit_nnls(self, Xin):
         # Fit X = W*H, using NNLS as in ``Spare Non-Negative Matrix Factorization for Clustering", Kim and Park
