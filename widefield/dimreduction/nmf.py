@@ -2,6 +2,7 @@ import numpy as np
 from scipy.optimize import nnls
 # from sklearn.decomposition import NMF
 from sklearn.decomposition.cdnmf_fast import _update_cdnmf_fast
+from sklearn.decomposition.nmf import _initialize_nmf
 
 
 class NMF:
@@ -19,18 +20,20 @@ class NMF:
         if self.n_components is None:
             self.n_components = min(n_samples, n_features)
 
+        # Initialize using sklearn method
+        W, H = _initialize_nmf(X, self.n_components)
         # Determine whether or not to initialize matrices randomly
-        avg = np.sqrt(X.mean() / self.n_components)
-        if H is None:
-            H = avg * np.random.randn(n_features, self.n_components)
-            np.abs(H, H)
-        else:
-            H = np.copy(H)
-        if W is None:
-            W = avg * np.random.randn(n_samples, self.n_components)
-            np.abs(W, W)
-        else:
-            W = np.copy(W)
+        # avg = np.sqrt(X.mean() / self.n_components)
+        # if H is None:
+        #     H = avg * np.random.randn(n_features, self.n_components)
+        #     np.abs(H, H)
+        # else:
+        #     H = np.copy(H)
+        # if W is None:
+        #     W = avg * np.random.randn(n_samples, self.n_components)
+        #     np.abs(W, W)
+        # else:
+        #     W = np.copy(W)
 
         l1_H, l2_H, l1_W, l2_W = 0, 0, 0, 0
         if self.sparsity in ('both', 'components'):
