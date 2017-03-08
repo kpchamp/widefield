@@ -22,7 +22,7 @@ class NMF:
 
         # Initialize using sklearn method
         W, Ht = _initialize_nmf(X, self.n_components)
-        H = H.T
+        H = Ht.T
         # Determine whether or not to initialize matrices randomly
         # avg = np.sqrt(X.mean() / self.n_components)
         # if H is None:
