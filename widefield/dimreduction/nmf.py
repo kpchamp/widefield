@@ -21,7 +21,8 @@ class NMF:
             self.n_components = min(n_samples, n_features)
 
         # Initialize using sklearn method
-        W, H = _initialize_nmf(X, self.n_components)
+        W, Ht = _initialize_nmf(X, self.n_components)
+        H = H.T
         # Determine whether or not to initialize matrices randomly
         # avg = np.sqrt(X.mean() / self.n_components)
         # if H is None:
