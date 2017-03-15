@@ -203,6 +203,59 @@ class NMF:
         return W
 
 
+class SemiNMF:
+    def __init__(self, n_components=None, sparsity_penalty=1., regularization_penalty=1.):
+        self.n_components = n_components
+        self.sparsity_penalty = sparsity_penalty
+        self.regularization_penalty = regularization_penalty
+        #raise NotImplementedError("NMF not implemented yet")
+
+    def fit(self, X, shuffle=False, max_iter=200, tol=1e-4, verbose=False, W=None, H=None):
+        # Fit X = W*H, implementing coordinate descent as in scikit-learn implementation
+        n_samples, n_features = X.shape
+        if self.n_components is None:
+            self.n_components = min(n_samples, n_features)
+
+        # Initialize matrices
+        avg = np.sqrt(X.mean() / self.n_components)
+        if H is None:
+            H = avg * np.random.randn(n_features, self.n_components)
+            np.abs(H, H)
+        else:
+            H = np.copy(H)
+        if W is None:
+            W = avg * np.random.randn(n_samples, self.n_components)
+        else:
+            W = np.copy(W)
+
+        lambda1 = self.sparsity_penalty
+        lambda2 = self.regularization_penalty
+
+        obj_last = np.sum((X - np.dot(W,H.T))**2)/2. + lambda2/2.*np.sum(W**2) + lambda1*np.sum(np.abs(H))
+        for i in range(max_iter):
+            grad_W = np.dot(np.dot(W,H.T) - X, H)
+            lipschitz_W = np.sum(np.dot(H,H.T)**2)
+
+            W = (W - 1./lipschitz_W*grad_W)/(1. + lambda2/lipschitz_W)
+
+            grad_H = np.dot(W.T, np.dot(W,H.T) - X).T
+            lipschitz_H = np.sum(np.dot(W,W.T)**2)
+
+            H = np.maximum((H - 1./lipschitz_H*grad_H) - lambda1/lipschitz_H, 0.0)
+
+            obj = np.sum((X - np.dot(W,H.T))**2)/2. + lambda2/2.*np.sum(W**2) + lambda1*np.sum(np.abs(H))
+            if obj_last - obj < 0:
+                print "warning: objective function increased on iteration %d" % i
+            if obj_last - obj < tol:
+                print "converged on iteration %d" % i
+            if verbose:
+                print obj_last - obj
+            obj_last = obj
+
+        self.components = H
+        return W
+
+
 class SparseNMF:
     # Reference: "Sparse NMF, half-baked or well done?"
     def __init__(self, n_components=None, cf='KL', beta=1.0, sparsity_penalty=0.0, max_iter=200, tol=1e-4):
