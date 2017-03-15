@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.linalg as la
 from scipy.optimize import nnls
 # from sklearn.decomposition import NMF
 from sklearn.decomposition.cdnmf_fast import _update_cdnmf_fast
@@ -144,6 +145,40 @@ class NMF:
             W = self.infer_latent(X)
         return np.dot(W, self.components.T)
 
+    def initialize_nmf(self, X, n_components):
+        n_samples, n_features = X.shape
+        W = np.empty((n_samples, n_components))
+        H = np.empty((n_features, n_components))
+
+        U,s,V = la.svd(X, full_matrices=False)
+        W[:,0] = np.sqrt(s[0])*np.abs(U[:,0])
+        H[:,0] = np.sqrt(s[0])*np.abs(V[0])
+        for i in range(1, n_components):
+            x = U[:,i]
+            y = V[i]
+            xp = np.maximum(x,0)
+            xn = np.abs(np.minimum(x,0))
+            yp = np.maximum(y,0)
+            yn = np.abs(np.minimum(y,0))
+            xpnrm = np.sqrt(np.sum(xp**2))
+            ypnrm = np.sqrt(np.sum(yp**2))
+            mp = xpnrm*ypnrm
+            xnnrm = np.sqrt(np.sum(xn**2))
+            ynnrm = np.sqrt(np.sum(yn**2))
+            mn = xnnrm*ynnrm
+            if mp > mn:
+                u = xp/xpnrm
+                v = yp/ypnrm
+                sigma = mp
+            else:
+                u = xn/xnnrm
+                v = yn/ynnrm
+                sigma = mn
+            W[:,i] = np.sqrt(s[i]*sigma)*u
+            H[:,i] = np.sqrt(s[i]*sigma)*v
+
+        return W, H
+
     def fit_nnls(self, Xin):
         # Fit X = W*H, using NNLS as in ``Spare Non-Negative Matrix Factorization for Clustering", Kim and Park
         n_samples, n_features = Xin.shape
@@ -217,16 +252,17 @@ class SemiNMF:
             self.n_components = min(n_samples, n_features)
 
         # Initialize matrices
-        avg = np.sqrt(X.mean() / self.n_components)
-        if H is None:
-            H = avg * np.random.randn(n_features, self.n_components)
-            np.abs(H, H)
-        else:
-            H = np.copy(H)
-        if W is None:
-            W = avg * np.random.randn(n_samples, self.n_components)
-        else:
-            W = np.copy(W)
+        W, H = self.initialize_nmf(X, self.n_components)
+        # avg = np.sqrt(X.mean() / self.n_components)
+        # if H is None:
+        #     H = avg * np.random.randn(n_features, self.n_components)
+        #     np.abs(H, H)
+        # else:
+        #     H = np.copy(H)
+        # if W is None:
+        #     W = avg * np.random.randn(n_samples, self.n_components)
+        # else:
+        #     W = np.copy(W)
 
         lambda1 = self.sparsity_penalty
         lambda2 = self.regularization_penalty
@@ -255,6 +291,30 @@ class SemiNMF:
         self.components = H
         return W
 
+    def initialize_nmf(self, X, n_components):
+        n_samples, n_features = X.shape
+        W = np.empty((n_samples, n_components))
+        H = np.empty((n_features, n_components))
+
+        U,s,V = la.svd(X, full_matrices=False)
+        W[:,0] = np.sqrt(s[0])*U[:,0]
+        H[:,0] = np.sqrt(s[0])*np.abs(V[0])
+        for i in range(1, n_components):
+            y = V[i]
+            yp = np.maximum(y,0)
+            yn = np.abs(np.minimum(y,0))
+            ypnrm = np.sqrt(np.sum(yp**2))
+            ynnrm = np.sqrt(np.sum(yn**2))
+            if ypnrm > ynnrm:
+                v = yp/ypnrm
+                sigma = ypnrm
+            else:
+                v = yn/ynnrm
+                sigma = ynnrm
+            W[:,i] = np.sqrt(s[i]*sigma)*U[:,i]
+            H[:,i] = np.sqrt(s[i]*sigma)*v
+
+        return W,H
 
 class SparseNMF:
     # Reference: "Sparse NMF, half-baked or well done?"
