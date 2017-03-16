@@ -255,7 +255,7 @@ class SemiNMF:
         if H is not None:
             W = np.empty((n_samples, self.n_components))
             for i in range(n_samples):
-                W[i] = np.linalg.lstsq(H,X[i])
+                W[i] = np.linalg.lstsq(H,X[i])[0]
         else:
             W, H = self.initialize_nmf(X, self.n_components)
         # avg = np.sqrt(X.mean() / self.n_components)
