@@ -297,21 +297,46 @@ class SemiNMF:
         H = np.empty((n_features, n_components))
 
         U,s,V = la.svd(X, full_matrices=False)
-        W[:,0] = np.sqrt(s[0])*U[:,0]
+        # W[:,0] = np.sqrt(s[0])*U[:,0]
+        # H[:,0] = np.sqrt(s[0])*np.abs(V[0])
+        # for i in range(1, n_components):
+        #     y = V[i]
+        #     yp = np.maximum(y,0)
+        #     yn = np.abs(np.minimum(y,0))
+        #     ypnrm = np.sqrt(np.sum(yp**2))
+        #     ynnrm = np.sqrt(np.sum(yn**2))
+        #     if ypnrm > ynnrm:
+        #         v = yp/ypnrm
+        #         sigma = ypnrm
+        #     else:
+        #         v = yn/ynnrm
+        #         sigma = ynnrm
+        #     W[:,i] = np.sqrt(s[i]*sigma)*U[:,i]
+        #     H[:,i] = np.sqrt(s[i]*sigma)*v
+        W[:,0] = np.sqrt(s[0])*np.abs(U[:,0])
         H[:,0] = np.sqrt(s[0])*np.abs(V[0])
         for i in range(1, n_components):
+            x = U[:,i]
             y = V[i]
+            xp = np.maximum(x,0)
+            xn = np.abs(np.minimum(x,0))
             yp = np.maximum(y,0)
             yn = np.abs(np.minimum(y,0))
+            xpnrm = np.sqrt(np.sum(xp**2))
             ypnrm = np.sqrt(np.sum(yp**2))
+            mp = xpnrm*ypnrm
+            xnnrm = np.sqrt(np.sum(xn**2))
             ynnrm = np.sqrt(np.sum(yn**2))
-            if ypnrm > ynnrm:
+            mn = xnnrm*ynnrm
+            if mp > mn:
+                u = xp/xpnrm
                 v = yp/ypnrm
-                sigma = ypnrm
+                sigma = mp
             else:
+                u = xn/xnnrm
                 v = yn/ynnrm
-                sigma = ynnrm
-            W[:,i] = np.sqrt(s[i]*sigma)*U[:,i]
+                sigma = mn
+            W[:,i] = np.sqrt(s[i]*sigma)*u
             H[:,i] = np.sqrt(s[i]*sigma)*v
 
         return W,H
