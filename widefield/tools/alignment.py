@@ -37,5 +37,5 @@ def reshape_trial_to_sequence(movie, left_truncation=0, right_truncation=0):
 
 
 def reshape_sequence_to_trial(movie, n_trials):
-    n_pixels, n_samples = movie.shape
+    n_samples, n_pixels = movie.shape
     return movie.reshape((n_trials, n_samples/n_trials, n_pixels))
