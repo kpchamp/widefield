@@ -207,6 +207,15 @@ class DynamicRegression:
                 return X, Y
             return X
 
+    def create_convolution_matrix(self, X):
+        n_samples, n_inputs = X.shape
+        design_matrix = np.zeros((n_samples, int(self.fit_offset) + n_inputs*self.convolution_length))
+        design_matrix[:,0] += 1.
+        for k in range(n_inputs):
+            for j in range(self.convolution_length):
+                design_matrix[j:, int(self.fit_offset) + k*self.convolution_length + j] = X[0:n_samples-j, k]
+        return design_matrix
+
 class BilinearRegression:
     def __init__(self, fit_offset=True, convolution_length=1, dynamic_convolution_length=1,
                  bilinear_convolution_length=1):
