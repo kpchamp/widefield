@@ -146,14 +146,14 @@ class DynamicRegression:
                 self.coefficients[:,i] = la.lstsq(input_matrix, output_matrix[:,i])[0]
         if self.fit_offset:
             self.offset = self.coefficients[0]
-        self.training_r2 = self.compute_rsquared(Yin, Xin)
+        #self.training_r2 = self.compute_rsquared(Yin, Xin)
 
     def reconstruct(self, Yin, Xin=None):
         output_matrix, input_matrix = self.construct_data_matrices(Yin, Xin)
         output_reconstructed = np.dot(input_matrix, self.coefficients)
         if Yin.ndim == 3:
             n_trials = Yin.shape[0]
-            return reshape_sequence_to_trial(output_reconstructed, n_trials-1)
+            return reshape_sequence_to_trial(output_reconstructed, n_trials)
         else:
             return output_reconstructed
 
