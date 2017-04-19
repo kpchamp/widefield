@@ -192,7 +192,7 @@ class DynamicRegression:
                 return Yleft, np.concatenate((Yright, X), axis=1)
             else:
                 if self.fit_offset:
-                    return Yleft, np.concatenate((Yright, np.ones((n_samples-1,1))),axis=1)
+                    return Yleft, np.concatenate((Yright, np.ones((Yright.shape[0],1))),axis=1)
                 else:
                     return Yleft, Yright
         else:
@@ -208,7 +208,7 @@ class DynamicRegression:
                 return Yleft, np.concatenate((Yright, X), axis=1)
             else:
                 if self.fit_offset:
-                    return Yleft, np.concatenate((Yright, np.ones((n_samples-1,1))),axis=1)
+                    return Yleft, np.concatenate((Yright, np.ones((Yright.shape[0],1))),axis=1)
                 else:
                     return Yleft, Yright
 
