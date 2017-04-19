@@ -146,7 +146,7 @@ class DynamicRegression:
                 self.coefficients[:,i] = la.lstsq(input_matrix, output_matrix[:,i])[0]
         if self.fit_offset:
             self.offset = self.coefficients[0]
-        #self.training_r2 = self.compute_rsquared(Yin, Xin)
+        self.training_r2 = self.compute_rsquared(Yin, Xin)
 
     def reconstruct(self, Yin, Xin=None):
         output_matrix, input_matrix = self.construct_data_matrices(Yin, Xin)
@@ -161,7 +161,7 @@ class DynamicRegression:
         if Yin.ndim == 3:
             true_increments = Yin[:,1:,:] - Yin[:,:-1,:]
             output_reconstructed = self.reconstruct(Yin, Xin)
-            predicted_increments = output_reconstructed[:,1:,:] - output_reconstructed[:,:-1,:]
+            predicted_increments = output_reconstructed - Yin[:,:-1,:]
         else:
             true_increments = Yin[1:] - Yin[:-1]
             output_reconstructed = self.reconstruct(Yin, Xin)
