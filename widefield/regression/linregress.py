@@ -180,8 +180,8 @@ class DynamicRegression:
             if Yin.ndim != 3:
                 raise ValueError("data matrix must be 3 dimensions")
             n_trials, n_samples, n_outputs = Yin.shape
-            Yleft = reshape_trial_to_sequence(Yin[:,1:,:]).T
-            Yright = reshape_trial_to_sequence(Yin[:,:-1,:]).T
+            Yleft = reshape_trial_to_sequence(Yin[:,1:,:])
+            Yright = reshape_trial_to_sequence(Yin[:,:-1,:])
             if Xin is not None:
                 n_inputs = Xin.shape[2]
                 if self.convolution_length > n_samples:
