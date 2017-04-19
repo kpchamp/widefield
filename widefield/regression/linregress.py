@@ -153,7 +153,7 @@ class DynamicRegression:
         output_reconstructed = np.dot(input_matrix, self.coefficients)
         if Yin.ndim == 3:
             n_trials = Yin.shape[0]
-            return reshape_sequence_to_trial(output_reconstructed, n_trials)
+            return reshape_sequence_to_trial(output_reconstructed, n_trials-1)
         else:
             return output_reconstructed
 
