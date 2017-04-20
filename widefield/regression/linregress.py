@@ -75,7 +75,7 @@ class LinearRegression:
                 raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
             X = np.zeros((n_trials*n_samples, int(self.fit_offset) + n_inputs*self.convolution_length))
             for i in range(n_trials):
-                X[i*n_samples:(i+1):n_samples] = self.create_convolution_matrix(Xin[i])
+                X[i*n_samples:(i+1)*n_samples] = self.create_convolution_matrix(Xin[i])
             if Yin is not None:
                 if Yin.ndim != 3:
                     raise ValueError("output matrix must be 3 dimensions")
@@ -186,9 +186,9 @@ class DynamicRegression:
                 n_inputs = Xin.shape[2]
                 if self.convolution_length > n_samples:
                     raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
-                X = np.zeros((n_trials*n_samples, int(self.fit_offset) + n_inputs*self.convolution_length))
+                X = np.zeros((n_trials*(n_samples-1), int(self.fit_offset) + n_inputs*self.convolution_length))
                 for i in range(n_trials):
-                    X[i*n_samples:(i+1):n_samples] = self.create_convolution_matrix(Xin[i])
+                    X[i*(n_samples-1):(i+1)*(n_samples-1)] = self.create_convolution_matrix(Xin[i])
                 return Yleft, np.concatenate((Yright, X), axis=1)
             else:
                 if self.fit_offset:
