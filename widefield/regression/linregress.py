@@ -188,7 +188,7 @@ class DynamicRegression:
                     raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
                 X = np.zeros((n_trials*(n_samples-1), int(self.fit_offset) + n_inputs*self.convolution_length))
                 for i in range(n_trials):
-                    X[i*(n_samples-1):(i+1)*(n_samples-1)] = self.create_convolution_matrix(Xin[i])
+                    X[i*(n_samples-1):(i+1)*(n_samples-1)] = self.create_convolution_matrix(Xin[i])[:-1]
                 return Yleft, np.concatenate((Yright, X), axis=1)
             else:
                 if self.fit_offset:
