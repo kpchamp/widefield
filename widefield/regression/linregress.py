@@ -79,7 +79,7 @@ class LinearRegression:
             if Yin is not None:
                 if Yin.ndim != 3:
                     raise ValueError("output matrix must be 3 dimensions")
-                Y = reshape_trial_to_sequence(Yin).T
+                Y = reshape_trial_to_sequence(Yin)
                 return X, Y
             return X
         else:
