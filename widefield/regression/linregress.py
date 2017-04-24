@@ -52,7 +52,7 @@ class LinearRegression:
         return coefficients
 
     def reconstruct(self, Xin):
-        X = self.create_convolution_matrix(Xin)
+        X, Y = self.construct_data_matrices(Xin)
         Y_recon = X.dot(self.coefficients)
         if Xin.ndim == 3:
             return Y_recon.reshape((Xin.shape[0], Xin.shape[1], Y_recon.shape[-1]))
