@@ -135,7 +135,8 @@ class DynamicRegression:
                 design_matrix[j:, int(self.fit_offset) + n_inputs*self.convolution_length + k*self.dynamic_convolution_length + j] = Y[0:n_samples - j - 1, k]
         return design_matrix
 
-    def fit(self, Yin, Xin=None, method='least squares'):
+    def fit(self, Yin, Xin=None, method='least squares', input_inclusions=None):
+        # inclusions should be a list of numpy arrays--list element i includes inputs to be included for output i
         self.multiple_trials = (Yin.ndim == 3)
         output_matrix, input_matrix = self.construct_data_matrices(Yin, Xin)
         n_outputs = output_matrix.shape[1]
@@ -143,7 +144,15 @@ class DynamicRegression:
         self.coefficients = np.zeros((n_inputs, n_outputs))
         for i in range(n_outputs):
             if method == 'least squares':
-                self.coefficients[:,i] = la.lstsq(input_matrix, output_matrix[:,i])[0]
+                if input_inclusions is None:
+                    self.coefficients[:,i] = la.lstsq(input_matrix, output_matrix[:,i])[0]
+                else:
+                    if input_inclusions[i].size == 0:
+                        input_idxs = np.concatenate((np.arange(n_outputs),n_inputs-1))
+                        self.coefficients[input_idxs,i] = la.lstsq(input_matrix[:,input_idxs], output_matrix[:,i])[0]
+                    else:
+                        input_idxs = np.concatenate((np.arange(n_outputs),n_outputs-1+input_inclusions[i],n_inputs-1))
+                        self.coefficients[input_idxs,i] = la.lstsq(input_matrix[:,input_idxs], output_matrix[:,i])[0]
         if self.fit_offset:
             self.offset = self.coefficients[0]
         self.training_r2 = self.compute_rsquared(Yin, Xin)
