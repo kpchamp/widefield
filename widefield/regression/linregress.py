@@ -147,7 +147,7 @@ class DynamicRegression:
                     self.coefficients[:,i] = la.lstsq(input_matrix, output_matrix[:,i])[0]
                 else:
                     if input_inclusions[i].size == 0:
-                        input_idxs = np.concatenate((np.arange(n_outputs),n_inputs-1))
+                        input_idxs = np.concatenate((np.arange(n_outputs),np.array([n_inputs-1])))
                         self.coefficients[input_idxs,i] = la.lstsq(input_matrix[:,input_idxs], output_matrix[:,i])[0]
                     else:
                         input_idxs = np.arange(n_outputs)
