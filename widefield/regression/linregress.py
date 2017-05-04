@@ -107,12 +107,11 @@ class LinearRegression:
 
 
 class DynamicRegression:
-    def __init__(self, fit_offset=True, convolution_length=1, dynamic_convolution_length=1):
+    def __init__(self, fit_offset=True, convolution_length=1):
         self.fit_offset = fit_offset
         if fit_offset:
             self.offset = None
         self.convolution_length = convolution_length
-        self.dynamic_convolution_length = dynamic_convolution_length
         self.coefficients = None
         self.training_r2 = None
 
@@ -151,7 +150,10 @@ class DynamicRegression:
                         input_idxs = np.concatenate((np.arange(n_outputs),n_inputs-1))
                         self.coefficients[input_idxs,i] = la.lstsq(input_matrix[:,input_idxs], output_matrix[:,i])[0]
                     else:
-                        input_idxs = np.concatenate((np.arange(n_outputs),n_outputs-1+input_inclusions[i],n_inputs-1))
+                        input_idxs = np.arange(n_outputs)
+                        for j in input_inclusions[i]:
+                            input_idxs = np.concatenate((input_idxs,n_outputs+np.arange(j*self.convolution_length,(j+1)*self.convolution_length)))
+                        input_idxs = np.concatenate((input_idxs,n_inputs-1))
                         self.coefficients[input_idxs,i] = la.lstsq(input_matrix[:,input_idxs], output_matrix[:,i])[0]
         if self.fit_offset:
             self.offset = self.coefficients[0]
