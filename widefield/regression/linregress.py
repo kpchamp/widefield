@@ -149,7 +149,7 @@ class DynamicRegression:
                     if input_inclusions[i].size == 0:
                         print "no inclusions for ",i
                         input_idxs = np.concatenate((np.arange(n_outputs),np.array([n_inputs-1])))
-                        if i==0:
+                        if i==10:
                             print input_idxs
                         self.coefficients[input_idxs,i] = la.lstsq(input_matrix[:,input_idxs], output_matrix[:,i])[0]
                     else:
