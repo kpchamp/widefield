@@ -6,7 +6,7 @@ import sys
 import numpy as np
 
 ## GLOABL VARS
-basepath = '/suppscr/riekesheabrown/kpchamp/data/'
+basepath = '/home/kpchamp/data/'
 
 mouseId = sys.argv[1]
 collectionDate = sys.argv[2]
