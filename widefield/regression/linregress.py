@@ -148,8 +148,6 @@ class DynamicRegression:
                 else:
                     if input_inclusions[i].size == 0:
                         input_idxs = np.arange(n_outputs+1)
-                        if i==10:
-                            print input_idxs
                         self.coefficients[input_idxs,i] = la.lstsq(input_matrix[:,input_idxs], output_matrix[:,i])[0]
                     else:
                         input_idxs = np.arange(n_outputs+1)
@@ -233,15 +231,16 @@ class DynamicRegression:
                 design_matrix[j:, int(self.fit_offset) + k*self.convolution_length + j] = X[0:n_samples-j, k]
         return design_matrix
 
+
 class BilinearRegression:
     def __init__(self, fit_offset=True, convolution_length=1, dynamic_convolution_length=1,
-                 bilinear_convolution_length=1):
+                 bilinear_only=False):
         self.fit_offset = fit_offset
         if fit_offset:
             self.offset = None
         self.convolution_length = convolution_length
         self.dynamic_convolution_length = dynamic_convolution_length
-        self.bilinear_convolution_length = bilinear_convolution_length
+        self.bilinear_only = bilinear_only
         self.coefficients = None
         self.training_r2 = None
 
@@ -273,43 +272,167 @@ class BilinearRegression:
                                       i] = X[0:n_samples-i-1, k] * Y[i:n_samples-1, j]
         return design_matrix
 
-    def fit(self, Y, Xin=None, method='least squares'):
-        n_samples, n_features = Y.shape
-        if Xin is not None:
-            X = self.create_design_matrix(Y, X=Xin)
-        else:
-            X = self.create_design_matrix(Y)
-        n_regressors = X.shape[1]
-        self.coefficients = np.zeros((n_regressors, n_features))
-        for i in range(n_features):
+    def fit(self, Yin, Xin=None, method='least squares'):
+        self.multiple_trials = (Yin.ndim == 3)
+        output_matrix, input_matrix = self.construct_data_matrices(Yin, Xin)
+        n_outputs = output_matrix.shape[1]
+        n_inputs = input_matrix.shape[1]
+        self.coefficients = np.zeros((n_inputs, n_outputs))
+        for i in range(n_outputs):
             if method == 'least squares':
-                self.coefficients[:,i] = la.lstsq(X, Y[1:,i])[0]
+                self.coefficients[:,i] = la.lstsq(input_matrix, output_matrix[:,i])[0]
         if self.fit_offset:
             self.offset = self.coefficients[0]
-        self.training_r2 = self.compute_rsquared(Y, Xin)
+        self.training_r2 = self.compute_rsquared(Yin, Xin)
 
-    def reconstruct(self, Y, Xin=None):
-        if Xin is not None:
-            X = self.create_design_matrix(Y, X=Xin)
+    def reconstruct(self, Yin, Xin=None):
+        output_matrix, input_matrix = self.construct_data_matrices(Yin, Xin)
+        output_reconstructed = np.dot(input_matrix, self.coefficients)
+        if Yin.ndim == 3:
+            n_trials = Yin.shape[0]
+            return reshape_sequence_to_trial(output_reconstructed, n_trials)
         else:
-            X = self.create_design_matrix(Y)
-        return X.dot(self.coefficients)
+            return output_reconstructed
 
-    def compute_rsquared(self, Y, Xin=None, by_region=False):
-        true_increments = Y[1:] - Y[:-1]
-        Y_recon = self.reconstruct(Y, Xin)
-        Y_dot = Y_recon - Y[:-1]
-        if by_region:
-            return 1. - np.var(Y_dot - true_increments, axis=0)/np.var(true_increments, axis=0)
+    def compute_rsquared(self, Yin, Xin=None):
+        if Yin.ndim == 3:
+            true_increments = Yin[:,1:,:] - Yin[:,:-1,:]
+            output_reconstructed = self.reconstruct(Yin, Xin)
+            predicted_increments = output_reconstructed - Yin[:,:-1,:]
         else:
-            return 1. - np.var(Y_dot - true_increments)/np.var(true_increments)
+            true_increments = Yin[1:] - Yin[:-1]
+            output_reconstructed = self.reconstruct(Yin, Xin)
+            predicted_increments = output_reconstructed - Yin[:-1]
+        return 1. - np.var(predicted_increments - true_increments)/np.var(true_increments)
 
-    def compute_rsquared_data(self, Y, Xin=None, by_region=False):
-        Y_recon = self.reconstruct(Y, Xin)
-        if by_region:
-            return 1. - np.var(Y_recon - Y[1:], axis=0)/np.var(Y[1:], axis=0)
+    def compute_rsquared_data(self, Yin, Xin=None):
+        output_reconstructed = self.reconstruct(Yin, Xin)
+        if Yin.ndim == 3:
+            return 1. - np.var(Yin[:,1:,:] - output_reconstructed)/np.var(Yin[:,1:,:])
         else:
-            return 1. - np.var(Y_recon - Y[1:])/np.var(Y[1:])
+            return 1. - np.var(Yin[1:] - output_reconstructed)/np.var(Yin[1:])
+
+    def construct_data_matrices(self, Yin, Xin):
+        if self.multiple_trials:
+            if Yin.ndim != 3:
+                raise ValueError("data matrix must be 3 dimensions")
+            n_trials, n_samples, n_outputs = Yin.shape
+            Yleft = reshape_trial_to_sequence(Yin[:,1:,:])
+            Yright = reshape_trial_to_sequence(Yin[:,:-1,:])
+            n_inputs = Xin.shape[2]
+            XY = np.zeros((Yright.shape[0],n_outputs*n_inputs))
+            for i in range(n_inputs):
+                XY[:,i*n_outputs:(i+1)*n_outputs] = Yright*reshape_trial_to_sequence(Xin[:,:-1,i:i+1])
+            if not self.bilinear_only:
+                if self.convolution_length > n_samples:
+                    raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
+                X = np.zeros((n_trials*(n_samples-1), int(self.fit_offset) + n_inputs*self.convolution_length))
+                for i in range(n_trials):
+                    X[i*(n_samples-1):(i+1)*(n_samples-1)] = self.create_convolution_matrix(Xin[i])[:-1]
+                return Yleft, np.concatenate((Yright, X, XY), axis=1)
+            else:
+                return Yleft, np.concatenate((Yright, XY), axis=1)
+        else:
+            if Yin.ndim != 2:
+                raise ValueError("input matrix must be 2 dimensions")
+            n_samples, n_outputs = Yin.shape
+            Yleft = Yin[1:]
+            Yright = Yin[:-1]
+            XY = np.kron(Yright,Xin[:-1])
+            if not self.bilinear_only:
+                if self.convolution_length > n_samples:
+                    raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
+                X = self.create_convolution_matrix(Xin)
+                return Yleft, np.concatenate((Yright, X, XY), axis=1)
+            else:
+                return Yleft, np.concatenate((Yright, XY), axis=1)
+
+    def create_convolution_matrix(self, X):
+        n_samples, n_inputs = X.shape
+        design_matrix = np.zeros((n_samples, int(self.fit_offset) + n_inputs*self.convolution_length))
+        design_matrix[:,0] += 1.
+        for k in range(n_inputs):
+            for j in range(self.convolution_length):
+                design_matrix[j:, int(self.fit_offset) + k*self.convolution_length + j] = X[0:n_samples-j, k]
+        return design_matrix
+
+# class BilinearRegression:
+#     def __init__(self, fit_offset=True, convolution_length=1, dynamic_convolution_length=1,
+#                  bilinear_convolution_length=1):
+#         self.fit_offset = fit_offset
+#         if fit_offset:
+#             self.offset = None
+#         self.convolution_length = convolution_length
+#         self.dynamic_convolution_length = dynamic_convolution_length
+#         self.bilinear_convolution_length = bilinear_convolution_length
+#         self.coefficients = None
+#         self.training_r2 = None
+#
+#     def create_design_matrix(self, Y, X=None):
+#         if X is not None:
+#             n_inputs = X.shape[1]
+#         else:
+#             n_inputs = 0
+#         n_samples, n_features = Y.shape
+#         if self.convolution_length > n_samples:
+#             raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length, n_samples))
+#         design_matrix = np.zeros((n_samples-1, int(self.fit_offset) + n_inputs*self.convolution_length +
+#                                   n_features*self.dynamic_convolution_length +
+#                                   n_inputs*n_features*self.bilinear_convolution_length))
+#         design_matrix[:,0] += 1.
+#         for k in range(n_inputs):
+#             for j in range(self.convolution_length):
+#                 design_matrix[j:, int(self.fit_offset) + k*self.convolution_length + j] = X[0:n_samples-j-1, k]
+#         for k in range(n_features):
+#             for j in range(self.dynamic_convolution_length):
+#                 design_matrix[j:, int(self.fit_offset) + n_inputs*self.convolution_length +
+#                                   k*self.dynamic_convolution_length + j] = Y[0:n_samples - j - 1, k]
+#         for k in range(n_inputs):
+#             for j in range(n_features):
+#                 for i in range(self.bilinear_convolution_length):
+#                     design_matrix[i:, int(self.fit_offset) + n_inputs*self.convolution_length +
+#                                       n_features*self.dynamic_convolution_length +
+#                                       (k*n_features+j)*self.bilinear_convolution_length +
+#                                       i] = X[0:n_samples-i-1, k] * Y[i:n_samples-1, j]
+#         return design_matrix
+#
+#     def fit(self, Y, Xin=None, method='least squares'):
+#         n_samples, n_features = Y.shape
+#         if Xin is not None:
+#             X = self.create_design_matrix(Y, X=Xin)
+#         else:
+#             X = self.create_design_matrix(Y)
+#         n_regressors = X.shape[1]
+#         self.coefficients = np.zeros((n_regressors, n_features))
+#         for i in range(n_features):
+#             if method == 'least squares':
+#                 self.coefficients[:,i] = la.lstsq(X, Y[1:,i])[0]
+#         if self.fit_offset:
+#             self.offset = self.coefficients[0]
+#         self.training_r2 = self.compute_rsquared(Y, Xin)
+#
+#     def reconstruct(self, Y, Xin=None):
+#         if Xin is not None:
+#             X = self.create_design_matrix(Y, X=Xin)
+#         else:
+#             X = self.create_design_matrix(Y)
+#         return X.dot(self.coefficients)
+#
+#     def compute_rsquared(self, Y, Xin=None, by_region=False):
+#         true_increments = Y[1:] - Y[:-1]
+#         Y_recon = self.reconstruct(Y, Xin)
+#         Y_dot = Y_recon - Y[:-1]
+#         if by_region:
+#             return 1. - np.var(Y_dot - true_increments, axis=0)/np.var(true_increments, axis=0)
+#         else:
+#             return 1. - np.var(Y_dot - true_increments)/np.var(true_increments)
+#
+#     def compute_rsquared_data(self, Y, Xin=None, by_region=False):
+#         Y_recon = self.reconstruct(Y, Xin)
+#         if by_region:
+#             return 1. - np.var(Y_recon - Y[1:], axis=0)/np.var(Y[1:], axis=0)
+#         else:
+#             return 1. - np.var(Y_recon - Y[1:])/np.var(Y[1:])
 
 
 def create_convolution_matrix(X, convolution_length):
