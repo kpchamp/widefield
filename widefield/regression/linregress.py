@@ -214,7 +214,7 @@ class DynamicRegression:
             if Xin is not None:
                 if self.convolution_length > n_samples:
                     raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
-                X = self.create_convolution_matrix(Xin)
+                X = self.create_convolution_matrix(Xin)[:-1]
                 return Yleft, np.concatenate((Yright, X), axis=1)
             else:
                 if self.fit_offset:
@@ -344,7 +344,7 @@ class BilinearRegression:
             if not self.bilinear_only:
                 if self.convolution_length > n_samples:
                     raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
-                X = self.create_convolution_matrix(Xin)
+                X = self.create_convolution_matrix(Xin)[:-1]
                 return Yleft, np.concatenate((Yright, X, XY), axis=1)
             elif self.fit_offset:
                 return Yleft, np.concatenate((Yright, np.ones((Yright.shape[0],1)), XY), axis=1)
