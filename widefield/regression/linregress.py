@@ -147,17 +147,14 @@ class DynamicRegression:
                     self.coefficients[:,i] = la.lstsq(input_matrix, output_matrix[:,i])[0]
                 else:
                     if input_inclusions[i].size == 0:
-                        print "no inclusions for ",i
-                        input_idxs = np.concatenate((np.arange(n_outputs),np.array([n_inputs-1])))
+                        input_idxs = np.arange(n_outputs+1)
                         if i==10:
                             print input_idxs
                         self.coefficients[input_idxs,i] = la.lstsq(input_matrix[:,input_idxs], output_matrix[:,i])[0]
                     else:
-                        input_idxs = np.arange(n_outputs)
+                        input_idxs = np.arange(n_outputs+1)
                         for j in input_inclusions[i]:
-                            input_idxs = np.concatenate((input_idxs,n_outputs+np.arange(j*self.convolution_length,(j+1)*self.convolution_length)))
-                        input_idxs = np.concatenate((input_idxs,np.array([n_inputs-1])))
-                        print input_idxs
+                            input_idxs = np.concatenate((input_idxs,n_outputs+1+np.arange(j*self.convolution_length,(j+1)*self.convolution_length)))
                         self.coefficients[input_idxs,i] = la.lstsq(input_matrix[:,input_idxs], output_matrix[:,i])[0]
         if self.fit_offset:
             self.offset = self.coefficients[0]
