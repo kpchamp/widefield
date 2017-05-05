@@ -330,6 +330,8 @@ class BilinearRegression:
                 for i in range(n_trials):
                     X[i*(n_samples-1):(i+1)*(n_samples-1)] = self.create_convolution_matrix(Xin[i])[:-1]
                 return Yleft, np.concatenate((Yright, X, XY), axis=1)
+            elif self.fit_offset:
+                return Yleft, np.concatenate((Yright, np.ones((Yright.shape[0],1)), XY), axis=1)
             else:
                 return Yleft, np.concatenate((Yright, XY), axis=1)
         else:
@@ -344,6 +346,8 @@ class BilinearRegression:
                     raise ValueError("convolution_length=%d cannot be greater than n_samples=%d" % (self.convolution_length,n_samples))
                 X = self.create_convolution_matrix(Xin)
                 return Yleft, np.concatenate((Yright, X, XY), axis=1)
+            elif self.fit_offset:
+                return Yleft, np.concatenate((Yright, np.ones((Yright.shape[0],1)), XY), axis=1)
             else:
                 return Yleft, np.concatenate((Yright, XY), axis=1)
 
